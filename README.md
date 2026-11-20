@@ -79,7 +79,7 @@ projects stay on your machine.
 
 ## Feature showcase
 
-Six short clips, recorded from TailRef 1.4.1 and sped up. Every frame is the
+Eight short clips, recorded from TailRef 1.4.1 and sped up. Every frame is the
 real application — no mockups, no stock footage.
 
 ### 01 — Collect references without leaving the app
@@ -117,7 +117,23 @@ presets. Palette extraction pulls the colours out of each image.
 
 ![Eight selected references colour graded, rotated, flipped and cropped together](assets/demos/image-editor.gif)
 
-### 05 — Finish with a non-destructive FX stack
+### 05 — Pull the palette out of your references
+
+Extract the colours of any reference into a swatch card that sits next to the
+image on the board. Do it for a whole set and the board turns into a colour
+library for the project.
+
+![Palette cards extracted from eight reference images](assets/demos/palette-extraction.gif)
+
+### 06 — Draw straight on the reference
+
+Open a reference for drawing and it is placed on the canvas. Pick a colour from
+the wheel or a palette, choose a brush, and paint on top of the image — no
+export, no second app.
+
+![Brushing over a reference image in the drawing workspace](assets/demos/draw-on-reference.gif)
+
+### 07 — Finish with a non-destructive FX stack
 
 Stack oil paint, glitch, dithering, contour extraction, paper grain, halftone and
 more on any layer. Reorder effects, tune their parameters, save presets and
@@ -125,7 +141,7 @@ compare before and after — all without touching the original pixels.
 
 ![Non-destructive effects stack applied to a 3D capture](assets/demos/fx-stack.gif)
 
-### 06 — Make the workspace yours
+### 08 — Make the workspace yours
 
 Choose from ten built-in themes, build a custom palette, change panel opacity,
 interface density and UI scale, or load a complete interface skin. The interface
