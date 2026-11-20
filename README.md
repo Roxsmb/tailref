@@ -1,4 +1,4 @@
-<p align="center">
+﻿<p align="center">
   <a href="https://github.com/Roxsmb/tailref/releases/latest">
     <img src="assets/brand/hero.png" alt="TailRef Studio — Reference. Draw. Pose. The drawing workspace with an FX stack, the reference board and Pose3D shown side by side." width="100%">
   </a>
@@ -54,7 +54,8 @@ projects stay on your machine.
 > See [License](#license).
 
 <p align="center">
-  <sub>TailRef is free to use. If it saves you time, you can <a href="https://www.buymeacoffee.com/roxsmb"><strong>☕ buy me a coffee</strong></a> to support development.</sub>
+  <sub>TailRef is free to use. If it saves you time:</sub><br>
+  <a href="https://www.buymeacoffee.com/roxsmb"><img src="assets/brand/support-pill.png" alt="Buy me a coffee — support TailRef development" height="44"></a>
 </p>
 
 ## Why artists keep it open
@@ -179,27 +180,24 @@ Every image below is captured from TailRef 1.4.1 itself. The
 the rules used to take it.
 
 <p align="center">
-  <img src="assets/shots/reference-board.jpg" alt="Reference board with eight images selected and palette cards extracted from them" width="49%">
-  &nbsp;
-  <img src="assets/shots/image-editor.jpg" alt="Image Editor panel adjusting saturation, brightness, contrast and crop for eight selected references" width="49%">
+  <img src="assets/shots/reference-board.jpg" alt="Reference board with eight images selected and palette cards extracted from them" width="48%">
+  <img src="assets/shots/image-editor.jpg" alt="Image Editor panel adjusting saturation, brightness, contrast and crop for eight selected references" width="48%">
 </p>
 <p align="center">
   <sub><b>Reference board</b> — collect, arrange, annotate and pull palettes. &nbsp;·&nbsp; <b>Image Editor</b> — grade, rotate, flip and crop a whole selection.</sub>
 </p>
 
 <p align="center">
-  <img src="assets/shots/pose-capture.jpg" alt="Pose3D capture dialog showing the normal pass of a posing mannequin" width="49%">
-  &nbsp;
-  <img src="assets/shots/drawing-fx.jpg" alt="Drawing workspace with a contour extraction and dithering FX stack applied" width="49%">
+  <img src="assets/shots/pose-capture.jpg" alt="Pose3D capture dialog showing the normal pass of a posing mannequin" width="48%">
+  <img src="assets/shots/drawing-fx.jpg" alt="Drawing workspace with a contour extraction and dithering FX stack applied" width="48%">
 </p>
 <p align="center">
   <sub><b>Pose3D capture</b> — beauty, alpha, depth, normal and wireframe passes. &nbsp;·&nbsp; <b>Drawing + FX</b> — a non-destructive stack on any layer.</sub>
 </p>
 
 <p align="center">
-  <img src="assets/shots/themes.jpg" alt="Appearance settings with the built-in theme gallery and a custom Rain theme" width="49%">
-  &nbsp;
-  <img src="assets/shots/export.jpg" alt="Export dialog with scope, format, scale, DPI, margins and transparency options" width="49%">
+  <img src="assets/shots/themes.jpg" alt="Appearance settings with the built-in theme gallery and a custom Rain theme" width="48%">
+  <img src="assets/shots/export.jpg" alt="Export dialog with scope, format, scale, DPI, margins and transparency options" width="48%">
 </p>
 <p align="center">
   <sub><b>Appearance</b> — themes, custom palettes and panel opacity. &nbsp;·&nbsp; <b>Export</b> — format, scale, DPI, margins and transparency.</sub>
@@ -278,7 +276,7 @@ troubleshooting, are in [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 
 <p align="center">
   <a href="https://www.buymeacoffee.com/roxsmb">
-    <img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-support-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" height="46">
+    <img src="assets/brand/support-banner.png" alt="Buy me a coffee — support TailRef development at buymeacoffee.com/roxsmb" width="100%">
   </a>
 </p>
 
