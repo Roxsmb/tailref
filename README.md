@@ -79,7 +79,7 @@ projects stay on your machine.
 
 ## Feature showcase
 
-Four short clips, recorded from TailRef 1.4.1 and sped up. Every frame is the
+Six short clips, recorded from TailRef 1.4.1 and sped up. Every frame is the
 real application — no mockups, no stock footage.
 
 ### 01 — Collect references without leaving the app
@@ -99,7 +99,25 @@ and wireframe passes up to 8K and send them straight to the reference board.
 
 ![Pose3D mannequin rig, pose library and capture dialog](assets/demos/pose3d.gif)
 
-### 03 — Finish with a non-destructive FX stack
+### 03 — Capture it, then draw over it
+
+Pick a pass — beauty, alpha, depth, normal or wireframe — at up to 8K, and send
+it straight to the board. The shot arrives as a reference item and on the
+canvas, so you can switch from Pose3D to Drawing and start working on top of it
+without saving, importing or leaving the app.
+
+![Pose3D capture dialog, then the captured image opened for drawing](assets/demos/capture-to-draw.gif)
+
+### 04 — Grade and arrange a whole set at once
+
+Select any number of references and edit them together in the Image Editor:
+saturation, brightness, contrast, warmth and opacity, rotate 90° left or right,
+flip horizontally or vertically, and crop with free, 1:1, 16:9 and other
+presets. Palette extraction pulls the colours out of each image.
+
+![Eight selected references colour graded, rotated, flipped and cropped together](assets/demos/image-editor.gif)
+
+### 05 — Finish with a non-destructive FX stack
 
 Stack oil paint, glitch, dithering, contour extraction, paper grain, halftone and
 more on any layer. Reorder effects, tune their parameters, save presets and
@@ -107,7 +125,7 @@ compare before and after — all without touching the original pixels.
 
 ![Non-destructive effects stack applied to a 3D capture](assets/demos/fx-stack.gif)
 
-### 04 — Make the workspace yours
+### 06 — Make the workspace yours
 
 Choose from ten built-in themes, build a custom palette, change panel opacity,
 interface density and UI scale, or load a complete interface skin. The interface
@@ -139,18 +157,36 @@ keymap.
 
 ## Screenshots
 
-All images are captured from TailRef itself. See
-[`docs/screenshots/`](docs/screenshots/) for the complete set and the capture
-rules.
+Every image below is captured from TailRef 1.4.1 itself. The
+[`docs/screenshots/`](docs/screenshots/) folder holds the clean capture set and
+the rules used to take it.
 
-| | |
-|---|---|
-| ![Reference board](docs/screenshots/board.png) | ![Drawing workspace with brush library](docs/screenshots/brush-library.png) |
-| **Reference board** — a free canvas for collecting and arranging references. | **Drawing workspace** — brushes, presets, colour and layers. |
-| ![Pose3D](docs/screenshots/pose3d.png) | ![New canvas dialog](docs/screenshots/new-canvas.png) |
-| **Pose3D** — the two-figure rig, camera, lighting and capture. | **New canvas** — presets, size, name and background. |
-| ![Settings](docs/screenshots/settings-general.png) | ![Export dialog](docs/screenshots/export.png) |
-| **Settings** — a searchable hub with appearance, performance and input options. | **Export** — scope, format, scale, DPI, margins and transparency. |
+<p align="center">
+  <img src="assets/shots/reference-board.jpg" alt="Reference board with eight images selected and palette cards extracted from them" width="49%">
+  &nbsp;
+  <img src="assets/shots/image-editor.jpg" alt="Image Editor panel adjusting saturation, brightness, contrast and crop for eight selected references" width="49%">
+</p>
+<p align="center">
+  <sub><b>Reference board</b> — collect, arrange, annotate and pull palettes. &nbsp;·&nbsp; <b>Image Editor</b> — grade, rotate, flip and crop a whole selection.</sub>
+</p>
+
+<p align="center">
+  <img src="assets/shots/pose-capture.jpg" alt="Pose3D capture dialog showing the normal pass of a posing mannequin" width="49%">
+  &nbsp;
+  <img src="assets/shots/drawing-fx.jpg" alt="Drawing workspace with a contour extraction and dithering FX stack applied" width="49%">
+</p>
+<p align="center">
+  <sub><b>Pose3D capture</b> — beauty, alpha, depth, normal and wireframe passes. &nbsp;·&nbsp; <b>Drawing + FX</b> — a non-destructive stack on any layer.</sub>
+</p>
+
+<p align="center">
+  <img src="assets/shots/themes.jpg" alt="Appearance settings with the built-in theme gallery and a custom Rain theme" width="49%">
+  &nbsp;
+  <img src="assets/shots/export.jpg" alt="Export dialog with scope, format, scale, DPI, margins and transparency options" width="49%">
+</p>
+<p align="center">
+  <sub><b>Appearance</b> — themes, custom palettes and panel opacity. &nbsp;·&nbsp; <b>Export</b> — format, scale, DPI, margins and transparency.</sub>
+</p>
 
 ## Who is TailRef for?
 
