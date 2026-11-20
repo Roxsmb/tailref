@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/Roxsmb/tailref/releases/latest">
-    <img src="assets/brand/social-preview.png" alt="TailRef Studio — Reference. Draw. Pose. A reference board, drawing workspace and 3D posing studio for artists." width="100%">
+    <img src="assets/brand/hero.png" alt="TailRef Studio — Reference. Draw. Pose. The drawing workspace with an FX stack, the reference board and Pose3D shown side by side." width="100%">
   </a>
 </p>
 
@@ -16,7 +16,7 @@
 
 <p align="center">
   <strong>Collect references. Draw over them. Pose them in 3D.</strong><br>
-  A reference board, drawing workspace and 3D posing studio for artists — in one Windows app.
+  Free for Windows 10/11 x64 · no account, no cloud, no telemetry.
 </p>
 
 <p align="center">
