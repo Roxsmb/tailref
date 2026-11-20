@@ -139,6 +139,7 @@ keymap.
 | Area | What you get |
 |---|---|
 | **Reference board** | Infinite canvas, drag-and-drop, paste and multi-file import, move/scale/rotate/crop, grid and stack layouts, groups, locking, z-order, text notes, link items, trash with restore, image inspector, palette extraction. |
+| **Image editor** | Select any number of references and edit them together: saturation, brightness, contrast, warmth and opacity, rotate 90°, flip, crop presets and free crop, palette extraction. |
 | **Drawing** | Brush, pencil, eraser, paint bucket, gradient, smudge and liquify; shapes, text, eyedropper; rectangular and lasso selection; pressure and tilt, stabilizer, spacing and hardness; symmetry, shape snapping and a radial tool menu. |
 | **Layers & FX** | Layers with masks, blend modes and groups; region-aware undo/redo; a post-processing FX stack with presets and before/after preview; tile-based canvas with Web Worker and optional GL dab processing. |
 | **Brush library** | Built-in and custom brushes, procedural or PNG-tipped; categories, favorites, search and per-brush settings; Photoshop `.abr` import and export, including RLE and 16-bit tip data. |
