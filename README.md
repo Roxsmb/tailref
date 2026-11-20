@@ -8,6 +8,7 @@
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download for Windows 10 and 11" src="https://img.shields.io/badge/Download-Windows%2010%20%7C%2011-2F6FB0?style=for-the-badge&logo=windows11&logoColor=white"></a>
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.1" src="https://img.shields.io/badge/version-1.4.1-1F6FEB?style=for-the-badge"></a>
   <a href="LICENSE"><img alt="License: PolyForm Noncommercial 1.0.0" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-2F6FB0?style=for-the-badge"></a>
+  <a href="https://github.com/Roxsmb/tailref/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/Roxsmb/tailref/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://www.buymeacoffee.com/roxsmb"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-%E2%98%95-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
 </p>
 
@@ -59,7 +60,7 @@ projects stay on your machine.
 
 ## Why artists keep it open
 
-| | |
+| Benefit | Why it matters |
 |---|---|
 | **🔎 Your references stay in the project** | No more alt-tabbing to a browser or a folder. The images, the notes and the drawing live on the same board. |
 | **✏️ You can draw on the reference** | Trace, paint over, annotate and correct — directly on the image, in layers, without exporting to another app. |
@@ -128,6 +129,15 @@ keymap.
 | **Panels** | Pinterest, ArtStation and YouTube Music panels; dock them or detach into an always-on-top window; guest sites run in restricted, sandboxed sessions. |
 | **Interface** | Light and dark themes, custom palettes, interface skins, validated UI packages, floating and dockable panels, compact modes, searchable settings, shortcut overlay, 10 UI languages. |
 
+## Works with
+
+| | |
+|---|---|
+| **Export** | PNG, JPEG, WebP, AVIF, BMP, ICO, PDF |
+| **3D models** | FBX, GLTF/GLB, OBJ, HDR environments |
+| **Brushes** | Photoshop `.abr` import and export |
+| **Projects** | `.tail` project files, automatic backups, crash recovery |
+
 ## Screenshots
 
 All images are captured from TailRef itself. See
@@ -138,11 +148,10 @@ rules.
 |---|---|
 | ![Reference board](docs/screenshots/board.png) | ![Drawing workspace with brush library](docs/screenshots/brush-library.png) |
 | **Reference board** — a free canvas for collecting and arranging references. | **Drawing workspace** — brushes, presets, colour and layers. |
+| ![Pose3D](docs/screenshots/pose3d.png) | ![New canvas dialog](docs/screenshots/new-canvas.png) |
+| **Pose3D** — the two-figure rig, camera, lighting and capture. | **New canvas** — presets, size, name and background. |
 | ![Settings](docs/screenshots/settings-general.png) | ![Export dialog](docs/screenshots/export.png) |
 | **Settings** — a searchable hub with appearance, performance and input options. | **Export** — scope, format, scale, DPI, margins and transparency. |
-
-Also available: [new canvas](docs/screenshots/new-canvas.png) and
-[Pose3D](docs/screenshots/pose3d.png).
 
 ## Who is TailRef for?
 
