@@ -1,0 +1,136 @@
+{
+  "name": "tailref",
+  "version": "1.4.1",
+  "description": "TailRef — a free, source-available reference board, drawing workspace and 3D posing tool for artists.",
+  "main": "src/main/main.js",
+  "author": "Emre Melik Nameli",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
+  "keywords": [
+    "art",
+    "drawing",
+    "reference-board",
+    "3d-posing",
+    "artist-tools",
+    "electron"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "bundle": "node scripts/build-app.js",
+    "build:native": "node scripts/build-native.js",
+    
+    "start": "node scripts/build-app.js && electron .",
+    "build": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win",
+    "build:portable": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win portable",
+    "build:setup": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win nsis",
+    "build:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win dir",
+    "gates": "node scripts/run-gates.js",
+    "gates:full": "node scripts/run-gates.js --full",
+    "test": "node scripts/build-app.js && node tests/pose3d-unit.js && node tests/smoke-test.js && node tests/pinterest-test.js && node tests/artstation-test.js",
+    "test:smoke": "node scripts/build-app.js && node tests/smoke-test.js",
+    "test:desktop": "node scripts/build-app.js && node tests/desktop-smoke.js",
+    "test:ink": "node scripts/build-app.js && node tests/ink-smoke.js",
+    "qa:fx": "node scripts/build-app.js && node tests/fx-visual-qa.js",
+    "test:select": "node scripts/build-app.js && node tests/ink-select-check.js",
+    "test:radial": "node scripts/build-app.js && node tests/ink-radial-check.js",
+    "test:outside": "node scripts/build-app.js && node tests/ink-outside-check.js",
+    "test:commit": "node scripts/build-app.js && node tests/ink-commit-check.js",
+    "test:compositor": "node scripts/build-app.js && node tests/compositor-test.js",
+    "bench:ink": "node scripts/build-app.js && node scripts/ink-bench.js",
+    "test:package": "node scripts/verify-package.js",
+    
+    "test:projects": "node scripts/build-app.js && node tests/projects-test.js",
+    "test:overload": "node scripts/build-app.js && node tests/overload-test.js",
+    "test:close": "node scripts/build-app.js && node tests/save-on-close-test.js",
+    "test:pinterest": "node scripts/build-app.js && node tests/pinterest-test.js",
+    "test:artstation": "node scripts/build-app.js && node tests/artstation-test.js",
+    "test:pose3d": "node tests/pose3d-smoke.js",
+    "test:unit": "node tests/pose3d-unit.js"
+  },
+  "devDependencies": {
+    "electron": "45.0.0",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "com.tailref.studio",
+    "productName": "TailRef Studio",
+    "copyright": "Copyright © 2026 Emre Melik Nameli",
+    "asar": true,
+    "fileAssociations": [
+      {
+        "ext": "tail",
+        "name": "TailRef Board",
+        "role": "Editor"
+      }
+    ],
+    "files": [
+      "src/main/**",
+      "src/preload/**",
+      "src/renderer/**",
+      "native/inkcore/build/Release/inkcore.node",
+      "LICENSE",
+      "NOTICE",
+      "THIRD_PARTY_NOTICES.md",
+      "docs/licenses/**"
+    ],
+    "asarUnpack": [
+      "native/inkcore/build/Release/inkcore.node"
+    ],
+    "extraResources": [
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      }
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": true,
+      "requestedExecutionLevel": "asInvoker",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "TailRef_Studio.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TailRef Studio",
+      "uninstallDisplayName": "TailRef Studio",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "TailRef_Studio_Setup.exe",
+      "language": "1055",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "runAfterFinish": true,
+      "include": "build/installer.nsh"
+    },
+    "compression": "normal"
+  },
+  "allowScripts": {
+    "electron@45.0.0": true
+  }
+}

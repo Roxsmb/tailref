@@ -1,0 +1,307 @@
+﻿/* ======================================================================
+   TailRef · Tur T Faz 4 — Canvas Editor · SGI IRIX (4Dwm) skin
+   ======================================================================
+   Kullanıcı kararı: canvas editor irix dönüşümüne DAHİL. Bu skin
+   yalnızca [data-interface="irix"] altında uygulanır (ce-skin.js
+   link'i açar); classic'te --ce-* sabit tema aynen kalır (parite).
+   Kimlik: --irix-* IRIX paleti + Motif 3px ridge bevel + Helvetica +
+   kare köşe. Palet ui-irix.css v4 ile eşleşir.
+   Davranış korunur: aynı ID'ler/event'ler.
+   ====================================================================== */
+
+:root[data-interface="irix"]{
+  --irix-face:#868b96;
+  --irix-face-light:#c3c7d1;
+  --irix-hilite:#c3c7d1;
+  --irix-shadow:#40444d;
+  --irix-dark:#1d2026;
+  --irix-text:#14161a;
+  --irix-title:#3b446b;
+  --irix-title-text:#ffffff;
+  /* Faz 7: odak dışı pencere caption grisi */
+  --irix-title-inactive:#6a6d77;
+  --irix-field:#ffffff;
+  --irix-selected:#d9a441;
+  --irix-selected-text:#14161a;
+  --ce-font:'Helvetica','Nimbus Sans L','Liberation Sans',Arial,sans-serif;
+  /* gri zeminde okunurluk: dim/faint etiketler siyahlaşır */
+  --ce-text-dim:#000000;
+  --ce-text-faint:#202020;
+  --ce-text:#000000;
+}
+
+/* ---------- genel ---------- */
+:root[data-interface="irix"] #ce-app{
+  font-family:var(--ce-font);
+  font-size:12px;
+  background:var(--irix-face);
+  color:var(--irix-text);
+}
+:root[data-interface="irix"] #ce-app *{border-radius:0}
+
+/* ---------- başlık çubuğu ---------- */
+:root[data-interface="irix"] #ce-titlebar{
+  background:var(--irix-title);
+  color:var(--irix-title-text);
+  border-radius:0;
+  height:30px;
+  font-family:var(--ce-font);
+}
+:root[data-interface="irix"] #ce-titlebar .ce-brand-name,
+:root[data-interface="irix"] #ce-doc-name{
+  color:var(--irix-title-text);
+  font-family:var(--ce-font);
+  font-style:italic;
+  font-weight:700;
+  font-size:12px;
+}
+:root[data-interface="irix"] #ce-titlebar svg{stroke:var(--irix-title-text)}
+/* doküman adı caption DEĞİL: düz metin kalsın */
+:root[data-interface="irix"] #ce-doc-name{
+  font-style:normal;
+  font-weight:400;
+}
+:root[data-interface="irix"] #ce-titlebar .ce-btn:hover:not(:disabled){
+  background:rgba(255,255,255,.12);
+}
+:root[data-interface="irix"] #ce-titlebar .ce-wc{
+  background:var(--irix-face);
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-hilite),
+    inset 3px 3px 0 var(--irix-hilite),
+    inset -1px -1px 0 var(--irix-shadow),
+    inset -3px -3px 0 var(--irix-shadow);
+}
+:root[data-interface="irix"] #ce-titlebar .ce-wc svg{stroke:#000}
+:root[data-interface="irix"] #ce-titlebar .ce-wc:active,
+:root[data-interface="irix"] #ce-titlebar .ce-wc-close:active{
+  background:var(--irix-face);
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+}
+
+/* ---------- Faz 7: odak dışı pencere — inactive caption grisi ----------
+   Gerçek odak durumuna bağlı: ce-skin.js window blur/focus'ta :root'a
+   .irix-window-inactive yazar (sahte durum YOK). Metin beyaz kalır.
+   Yalnız ANA başlık çubuğu grileşir; panel başlıkları zaten gri. */
+:root[data-interface="irix"].irix-window-inactive #ce-titlebar{
+  background:var(--irix-title-inactive);
+}
+
+/* ---------- yan paneller ---------- */
+:root[data-interface="irix"] .ce-panel{
+  background:var(--irix-face);
+  border-radius:0;
+  font-family:var(--ce-font);
+  color:var(--irix-text);
+}
+:root[data-interface="irix"] .ce-panel-head{
+  background:var(--irix-face);
+  color:var(--irix-text);
+  border-radius:0;
+  font-family:var(--ce-font);
+  font-size:11px;
+  font-weight:700;
+  box-shadow:inset 0 -1px 0 var(--irix-shadow),inset 0 -2px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] .ce-panel-body{
+  background:var(--irix-face);
+  color:var(--irix-text);
+}
+:root[data-interface="irix"] .ce-panel-foot{
+  background:var(--irix-face);
+  color:var(--irix-text);
+  border-radius:0;
+}
+
+/* ---------- düğmeler ---------- */
+:root[data-interface="irix"] .ce-btn{
+  background:var(--irix-face);
+  color:var(--irix-text);
+  border:0;
+  border-radius:0;
+  font-family:var(--ce-font);
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-hilite),
+    inset 3px 3px 0 var(--irix-hilite),
+    inset -1px -1px 0 var(--irix-shadow),
+    inset -3px -3px 0 var(--irix-shadow);
+}
+:root[data-interface="irix"] .ce-btn:hover:not(:disabled){background:var(--irix-face)}
+:root[data-interface="irix"] .ce-btn:active:not(:disabled){
+  background:var(--irix-face);
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] .ce-btn.is-active{
+  /* kalıcı basılı: damalıtkan + sunken (Paint seçili aracı) */
+  background:repeating-conic-gradient(var(--irix-hilite) 0% 25%,var(--irix-face) 0% 50%) 0 0/2px 2px;
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] .ce-tool{
+  background:var(--irix-face);
+  border-radius:0;
+  color:var(--irix-text);
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-hilite),
+    inset 3px 3px 0 var(--irix-hilite),
+    inset -1px -1px 0 var(--irix-shadow),
+    inset -3px -3px 0 var(--irix-shadow);
+}
+:root[data-interface="irix"] .ce-tool:hover{background:var(--irix-face)}
+:root[data-interface="irix"] .ce-tool:active:not(:disabled){
+  background:var(--irix-face);
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] .ce-tool.is-active{
+  background:repeating-conic-gradient(var(--irix-hilite) 0% 25%,var(--irix-face) 0% 50%) 0 0/2px 2px;
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] .ce-tool svg{stroke:#000}
+
+/* ---------- form bileşenleri ---------- */
+:root[data-interface="irix"] #ce-app input[type="text"],
+:root[data-interface="irix"] #ce-app input[type="number"],
+:root[data-interface="irix"] #ce-app select,
+:root[data-interface="irix"] #ce-app textarea{
+  background:var(--irix-field);
+  color:var(--irix-text);
+  border:0;
+  border-radius:0;
+  font-family:var(--ce-font);
+  font-size:11px;
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] #ce-app input[type="color"]{
+  border:0;
+  border-radius:0;
+  padding:0;
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] #ce-app input[type="range"]{
+  appearance:none;
+  background:transparent;
+  height:20px;
+}
+:root[data-interface="irix"] #ce-app input[type="range"]::-webkit-slider-runnable-track{
+  height:4px;
+  background:var(--irix-face-light);
+  box-shadow:inset 1px 1px 0 var(--irix-shadow),inset -1px -1px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] #ce-app input[type="range"]::-webkit-slider-thumb{
+  appearance:none;
+  width:11px;height:18px;
+  margin-top:-7px;
+  background:var(--irix-face);
+  border-radius:0;
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-hilite),
+    inset 3px 3px 0 var(--irix-hilite),
+    inset -1px -1px 0 var(--irix-shadow),
+    inset -3px -3px 0 var(--irix-shadow);
+}
+:root[data-interface="irix"] #ce-app input[type="checkbox"]{
+  appearance:none;
+  width:13px;height:13px;
+  background:var(--irix-field);
+  border:0;
+  border-radius:0;
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] #ce-app input[type="checkbox"]:checked{
+  background:var(--irix-field)
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 13"><path d="M3 7l2.5 2.5L11 3.5" stroke="black" stroke-width="2" fill="none"/></svg>')
+    center/9px no-repeat;
+}
+
+/* ---------- scrollbar: ok düğmeli klasik ---------- */
+:root[data-interface="irix"] .ce-panel-body::-webkit-scrollbar,
+:root[data-interface="irix"] #ce-app ::-webkit-scrollbar-corner{
+  width:16px;
+  height:16px;
+  background:var(--irix-face);
+  box-shadow:inset 1px 1px 0 var(--irix-shadow);
+}
+:root[data-interface="irix"] #ce-app ::-webkit-scrollbar-thumb{
+  background:var(--irix-face);
+  border-radius:0;
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-hilite),
+    inset 3px 3px 0 var(--irix-hilite),
+    inset -1px -1px 0 var(--irix-shadow),
+    inset -3px -3px 0 var(--irix-shadow);
+}
+:root[data-interface="irix"] #ce-app ::-webkit-scrollbar-button{
+  width:16px;height:16px;
+  background:var(--irix-face) center/8px no-repeat;
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-hilite),
+    inset 3px 3px 0 var(--irix-hilite),
+    inset -1px -1px 0 var(--irix-shadow),
+    inset -3px -3px 0 var(--irix-shadow);
+}
+:root[data-interface="irix"] #ce-app ::-webkit-scrollbar-button:single-button:vertical:decrement{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path d="M4 2L7 6H1z" fill="black"/></svg>');
+}
+:root[data-interface="irix"] #ce-app ::-webkit-scrollbar-button:single-button:vertical:increment{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path d="M4 6L1 2h6z" fill="black"/></svg>');
+}
+:root[data-interface="irix"] #ce-app ::-webkit-scrollbar-button:single-button:horizontal:decrement{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path d="M2 4L6 1v6z" fill="black"/></svg>');
+}
+:root[data-interface="irix"] #ce-app ::-webkit-scrollbar-button:single-button:horizontal:increment{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path d="M6 4L2 7V1z" fill="black"/></svg>');
+}
+
+/* ---------- durum çubuğu / alt bilgiler ---------- */
+:root[data-interface="irix"] #ce-app .ce-status,
+:root[data-interface="irix"] #ce-app [class*="ce-status"]{
+  background:var(--irix-face);
+  color:var(--irix-text);
+  font-family:var(--ce-font);
+  font-size:11px;
+}

@@ -1,0 +1,92 @@
+name: Bug report
+description: Report something that is broken or behaves unexpectedly.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem.
+
+        Please **do not** report security vulnerabilities here — see the
+        `SECURITY.md` file in the repository root for the private reporting
+        process.
+
+  - type: input
+    id: version
+    attributes:
+      label: TailRef version
+      description: Shown in the About panel (or the release you downloaded).
+      placeholder: "1.4.1 (portable)"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Reference board
+        - Ink / drawing
+        - Brush library / .abr
+        - Layers
+        - Pose3D
+        - Panels (Pinterest / ArtStation)
+        - Projects / saving
+        - Settings / themes / interface
+        - Export / import
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps, starting from a fresh launch if possible.
+      placeholder: |
+        1. Open TailRef
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots, recordings or console output
+      description: Drag files here. Remove private information first.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I can reproduce this on the latest release.
+          required: false

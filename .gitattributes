@@ -1,0 +1,46 @@
+# Normalise line endings: text files are stored with LF in the repository.
+* text=auto eol=lf
+
+# Source and docs
+*.js      text eol=lf
+*.json    text eol=lf
+*.css     text eol=lf
+*.html    text eol=lf
+*.md      text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.nsh     text eol=lf
+*.gyp     text eol=lf
+*.cpp     text eol=lf
+*.hpp     text eol=lf
+
+# Windows scripts
+*.bat     text eol=crlf
+*.cmd     text eol=crlf
+*.ps1     text eol=crlf
+
+# Generated bundle — do not count it in language statistics or diffs
+src/renderer/app.js linguist-generated=true
+
+# Binary assets
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.webp    binary
+*.woff    binary
+*.woff2   binary
+*.ttf     binary
+*.otf     binary
+*.fbx     binary
+*.glb     binary
+*.gltf    binary
+*.hdr     binary
+*.exe     binary
+*.dll     binary
+*.node    binary
+*.asar    binary
+*.mp4     binary
+*.zip     binary
+*.abr     binary

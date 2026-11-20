@@ -1,0 +1,1147 @@
+/* =========================================================
+   TailRef Studio — çizim modu görsel katmanı
+   ---------------------------------------------------------
+   PySide6 prototipindeki koyu düzeni web kabuğuna uygular.
+   ui-shell.css'ten sonra yüklenir; yalnızca body.mode-draw
+   altında çalışır. Referans modu bu dosyadan etkilenmez.
+   ========================================================= */
+
+/* Tokenlar :root'ta: tema değişince çizim yüzeyleri de döner. */
+:root {
+  --dp-bg: var(--bg);
+  --dp-panel: var(--panel);
+  --dp-panel-deep: color-mix(in srgb, var(--panel) 94%, #000);
+  --dp-field: color-mix(in srgb, var(--panel) 90%, var(--text) 6%);
+  --dp-field-hover: color-mix(in srgb, var(--panel) 84%, var(--text) 12%);
+  --dp-border: color-mix(in srgb, var(--text) 12%, transparent);
+  --dp-border-soft: color-mix(in srgb, var(--text) 7%, transparent);
+  --dp-text: var(--text);
+  --dp-text-soft: color-mix(in srgb, var(--text) 88%, transparent);
+  --dp-dim: var(--dim);
+  --dp-faint: color-mix(in srgb, var(--dim) 80%, transparent);
+  --dp-active: color-mix(in srgb, var(--text) 12%, transparent);
+  --dp-paper: #F7F4EC;
+  --dp-radius-card: 14px;
+  --dp-font: 'Inter', BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+body.mode-draw {
+  background: var(--dp-bg) !important;
+  overflow: hidden !important;
+}
+
+/* Çizim modunda arka plan ŞEFFAF (kullanıcı kararı): tema #backdrop'ı +
+   rain/snow canvas'ları çizim masasında da görünür. (Eskiden opacity:0
+   ile kapatılıyordu.) */
+body.mode-draw #inkEditor {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+body.mode-draw.ps-grid-on #inkEditor {
+  background-image:
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--dp-text) 3.5%, transparent) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--dp-text) 3.5%, transparent) 0 1px, transparent 1px 24px) !important;
+  background-size: 24px 24px !important;
+}
+
+/* Eski çizim kabuğunun artıkları yeni düzende görünmez. */
+body.mode-draw #barDock,
+body.mode-draw #psStatusBar,
+body.mode-draw #inkToolbox,
+body.mode-draw #inkScopeBar,
+body.mode-draw #inkDrawShell {
+  display: none !important;
+}
+body.mode-draw #projectBar,
+body.mode-draw #status,
+body.mode-draw #count,
+body.mode-draw #inspector,
+body.mode-draw #itemBar,
+body.mode-draw #hint,
+body.mode-draw #windowDragStrip {
+  display: none !important;
+}
+body.mode-draw #inkCanvasFrame {
+  border: 0.5px solid color-mix(in srgb, var(--dp-text) 20%, transparent) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 22px 60px rgba(0,0,0,.52), 0 2px 8px rgba(0,0,0,.34) !important;
+}
+
+/* =========================================================
+   SOL: gerçek referans tahtası
+   ========================================================= */
+body.mode-draw #inkLeftDock.psLeftDock {
+  position: fixed !important;
+  top: 18px !important;
+  bottom: 18px !important;
+  left: 20px !important;
+  right: auto !important;
+  width: var(--ps-left-w) !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible !important;
+  z-index: 1220;
+}
+body.mode-draw.ps-left-closed #inkLeftDock {
+  transform: translateX(calc(-100% - 32px)) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+body.mode-draw #psReferencePanel {
+  position: relative;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--dp-panel) !important;
+  border: 1px solid var(--dp-border-soft) !important;
+  border-radius: var(--dp-radius-card) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.36) !important;
+  overflow: hidden;
+}
+body.mode-draw #psReferencePanel .psPanelHead {
+  flex: none;
+  min-height: 40px !important;
+  height: 40px;
+  padding: 0 8px 0 14px !important;
+  gap: 6px;
+  background: transparent !important;
+  border: 0 !important;
+}
+body.mode-draw #psReferencePanel .psPanelIcon {
+  display: none !important;
+}
+body.mode-draw #psReferencePanel .psPanelTitle {
+  font: 600 12px/1.2 var(--dp-font) !important;
+  color: var(--dp-text) !important;
+  letter-spacing: .01em;
+}
+body.mode-draw #psReferencePanel .psPanelMeta,
+body.mode-draw #psReferencePanel #psLeftClose {
+  display: none !important;
+}
+body.mode-draw #psReferencePanel .psChevron {
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  opacity: .38;
+}
+body.mode-draw #psReferencePanel .psPanelHead:hover .psChevron {
+  opacity: .9;
+}
+body.mode-draw #psReferencePanel .psRefExpand {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  color: var(--dp-dim);
+}
+body.mode-draw #psReferencePanel .psRefExpand svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.mode-draw #psReferencePanel .psAccBody {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden !important;
+  padding: 0 10px !important;
+  border-radius: 0 !important;
+}
+body.mode-draw #psReferencePanel.is-collapsed {
+  height: auto !important;
+  flex: 0 0 auto !important;
+}
+body.mode-draw #psReferencePanel.is-collapsed .psRefFoot {
+  display: none !important;
+}
+
+.psRefSub {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 26px;
+  padding: 0 4px;
+  color: var(--dp-dim);
+  font: 10px/1 var(--dp-font);
+  letter-spacing: .01em;
+}
+.psRefSubCount {
+  color: var(--dp-dim);
+  font: 10px/1 var(--dp-font);
+  font-variant-numeric: tabular-nums;
+}
+.psRefAperture {
+  flex: 1 1 auto;
+  min-height: 90px;
+  margin: 0 0 8px;
+  border-radius: 9px;
+  pointer-events: none;
+  background: transparent;
+}
+body.mode-draw #psRefBody > .psRefHint,
+body.mode-draw #psRefBody > .psRefList,
+body.mode-draw #psRefBody > .psRefEmpty {
+  display: none !important;
+}
+
+body.mode-draw .psRefFoot {
+  flex: none;
+  height: 29px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 9px;
+  border-top: 1px solid var(--dp-border-soft);
+  background: transparent;
+}
+.psRefZoomBtn {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dp-text-soft);
+  font: 15px/1 var(--dp-font);
+  cursor: pointer;
+}
+.psRefZoomBtn:hover,
+.psRefFitBtn:hover {
+  background: var(--dp-field-hover);
+  color: var(--dp-text);
+}
+.psRefZoomValue {
+  flex: 1 1 auto;
+  text-align: center;
+  color: var(--dp-text-soft);
+  font: 10px/1 var(--dp-font);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+.psRefFitBtn {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dp-faint);
+  cursor: pointer;
+}
+.psRefFitBtn svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Tahtanın canlı kopyası: sahne yalnızca referans penceresine kırpılır.
+   Panellerin üstünde durur ama görünür alanı bu dikdörtgenle sınırlıdır. */
+body.mode-draw #stage {
+  z-index: 1230 !important;
+  background: var(--dp-panel) !important;
+  clip-path: inset(50% 50% 50% 50%);
+  -webkit-clip-path: inset(50% 50% 50% 50%);
+  pointer-events: none;
+}
+body.mode-draw.ps-ref-live #stage {
+  clip-path: inset(var(--dp-ref-top, 0px) var(--dp-ref-right, 100%) var(--dp-ref-bottom, 100%) var(--dp-ref-left, 0px) round 9px);
+  -webkit-clip-path: inset(var(--dp-ref-top, 0px) var(--dp-ref-right, 100%) var(--dp-ref-bottom, 100%) var(--dp-ref-left, 0px) round 9px);
+  pointer-events: auto;
+}
+body.mode-draw.ps-ref-live #stage .item.sel {
+  outline: none !important;
+}
+body.mode-draw.ps-ref-live #stage .item.sel .handles,
+body.mode-draw.ps-ref-live #stage .item.sel .handle,
+body.mode-draw.ps-ref-live #stage .item.sel::after {
+  display: none !important;
+}
+
+/* Tutamaç panele DIŞ tarafta (sol): çekirdek ui-shell kuralı UI-içi
+   çizim moduna da taşınır; !important dock genişlik переходini ezer. */
+body.mode-draw .psLeftDock .psResize {
+  left: -11px !important;
+}
+body.mode-draw .psLeftDock .psResize::after {
+  height: 38px;
+  background: var(--dp-border);
+}
+body.mode-draw .psLeftDock:hover .psResize::after {
+  opacity: .8;
+}
+
+/* =========================================================
+   SAĞ: renk, katmanlar, fırça kartları
+   ========================================================= */
+body.mode-draw #inkRightDock.psRightDock {
+  position: fixed !important;
+  top: 58px !important;
+  bottom: 18px !important;
+  right: 20px !important;
+  left: auto !important;
+  width: var(--ps-right-w) !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible !important;
+  z-index: 1220;
+}
+body.mode-draw.ps-right-closed #inkRightDock {
+  transform: translateX(calc(100% + 32px)) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+body.mode-draw #psDockScroll {
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+body.mode-draw #psDockScroll::-webkit-scrollbar {
+  width: 0;
+}
+body.mode-draw #psDrawPanels.psStack {
+  display: flex !important;
+  flex-direction: column;
+  gap: 12px !important;
+  padding: 0 !important;
+}
+body.mode-draw #psDrawPanels > .psAcc {
+  flex: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--dp-panel) !important;
+  border: 1px solid var(--dp-border-soft) !important;
+  border-radius: var(--dp-radius-card) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.32) !important;
+  overflow: hidden;
+}
+body.mode-draw #psDrawPanels > .psAcc[data-ps-panel="color"] { height: 176px; }
+body.mode-draw #psDrawPanels > .psAcc[data-ps-panel="layers"] { height: 210px; }
+body.mode-draw #psDrawPanels > .psAcc[data-ps-panel="brush"] { height: 244px; }
+body.mode-draw #psDrawPanels > .psAcc.is-collapsed {
+  height: auto !important;
+  min-height: 0 !important;
+}
+body.mode-draw #psDrawPanels > .psAcc.is-collapsed > .psAccBody {
+  flex: 0 0 auto;
+}
+body.mode-draw #psDrawPanels .psPanelHead {
+  flex: none;
+  min-height: 30px !important;
+  height: 30px;
+  padding: 0 9px 0 12px !important;
+  gap: 6px;
+  background: transparent !important;
+  border: 0 !important;
+}
+body.mode-draw #psDrawPanels .psPanelHead:hover {
+  background: color-mix(in srgb, var(--dp-text) 2.5%, transparent) !important;
+}
+body.mode-draw #psDrawPanels .psPanelIcon {
+  display: none !important;
+}
+body.mode-draw #psDrawPanels .psPanelTitle {
+  font: 600 12px/1.2 var(--dp-font) !important;
+  color: var(--dp-text) !important;
+  letter-spacing: .01em;
+}
+body.mode-draw #psDrawPanels .psPanelMeta {
+  margin-left: auto;
+  font: 10px/1 var(--dp-font) !important;
+  color: var(--dp-dim) !important;
+  font-variant-numeric: tabular-nums;
+}
+body.mode-draw #psDrawPanels .psChevron {
+  width: 6px;
+  height: 6px;
+  margin-left: 4px;
+  opacity: .32;
+}
+body.mode-draw #inkBrushPanel .psChevron {
+  margin-left: auto;
+}
+body.mode-draw .dpPanelAdd {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin-left: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--dp-dim);
+  cursor: pointer;
+}
+body.mode-draw .dpPanelAdd:hover {
+  background: color-mix(in srgb, var(--dp-text) 6%, transparent);
+  color: var(--dp-text);
+}
+body.mode-draw .dpPanelAdd svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+/* Başlıkta tek tık Sil düğmesi (⋯ menüsünü açmadan). */
+body.mode-draw .dpPanelDelete {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin-left: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--dp-dim);
+  cursor: pointer;
+}
+body.mode-draw .dpPanelDelete:hover {
+  background: color-mix(in srgb, #e0533f 16%, transparent);
+  color: #e0533f;
+}
+body.mode-draw .dpPanelDelete:active {
+  background: color-mix(in srgb, #e0533f 26%, transparent);
+}
+body.mode-draw .dpPanelDelete svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+body.mode-draw #psDrawPanels .psPanelHead:hover .psChevron {
+  opacity: .92;
+}
+body.mode-draw #psDrawPanels .psAccBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0 !important;
+  padding: 0 11px 10px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.16) transparent;
+}
+body.mode-draw #psDrawPanels .psAccBody::-webkit-scrollbar {
+  width: 5px;
+}
+body.mode-draw #psDrawPanels .psAccBody::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.16);
+  border-radius: 4px;
+}
+body.mode-draw #psDrawPanels .psAccBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Renk kartı: başlık neredeyse görünmez, çark kartı doldurur. */
+body.mode-draw #inkColorPanel .psPanelHead {
+  min-height: 18px !important;
+  height: 18px;
+  padding: 0 7px 0 10px !important;
+}
+body.mode-draw #inkColorPanel .psPanelIcon,
+body.mode-draw #inkColorPanel .psPanelTitle,
+body.mode-draw #inkColorPanel .psPanelMeta {
+  display: none !important;
+}
+body.mode-draw #inkColorPanel .psChevron {
+  margin-left: auto;
+}
+body.mode-draw #inkColorPanel .psAccBody {
+  padding: 0 10px 10px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden !important;
+}
+body.mode-draw #inkColorPanel .inkColorHero,
+body.mode-draw #inkColorPanel .inkColorSwatchGrid,
+body.mode-draw #inkColorPanel .inkColorPanelOpen {
+  display: none !important;
+}
+body.mode-draw #inkColorWheel.ps-inline-wheel {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: auto !important;
+}
+body.mode-draw #inkColorWheel.ps-inline-wheel #inkWheelCanvas:not([hidden]),
+body.mode-draw #inkColorWheel.ps-inline-wheel #inkCpSquareCanvas:not([hidden]),
+body.mode-draw #inkColorWheel.ps-inline-wheel #inkCpHarmonyCanvas:not([hidden]) {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 150px;
+  max-height: none;
+  aspect-ratio: 1 / 1;
+  display: block;
+}
+body.mode-draw #inkColorWheel.ps-inline-wheel #inkCpMixCanvas:not([hidden]) {
+  width: 100% !important;
+  max-width: 150px;
+  height: 90px;
+  display: block;
+}
+body.mode-draw #inkColorWheel.ps-inline-wheel .inkWheelValues,
+body.mode-draw #inkColorWheel.ps-inline-wheel .wheelFoot {
+  display: none !important;
+}
+body.mode-draw #inkColorWheel.ps-inline-wheel #inkWheelCanvas:not([hidden]) {
+  display: block !important;
+}
+
+/* Katmanlar kartı */
+body.mode-draw #inkLayersPanel .psAccBody {
+  padding-top: 2px !important;
+}
+body.mode-draw #inkLayerProps {
+  display: block !important;
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+body.mode-draw #inkLayerProps > summary {
+  display: none;
+}
+body.mode-draw #inkLayerProps .inkSliderRow,
+body.mode-draw #inkLayerProps .inkSelectRow {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 72px 30px;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+}
+body.mode-draw #inkLayerProps .inkSliderRow label,
+body.mode-draw #inkLayerProps .inkSelectRow label {
+  color: var(--dp-dim);
+  font: 10px/1 var(--dp-font);
+}
+body.mode-draw #inkLayerProps .inkSelectRow select {
+  grid-column: 2 / 3;
+  width: 100%;
+  height: 22px;
+  background: var(--dp-field);
+  border: 1px solid var(--dp-border);
+  border-radius: 6px;
+  color: var(--dp-text-soft);
+  font: 10px/1 var(--dp-font);
+  padding: 0 5px;
+}
+body.mode-draw #inkLayerProps .inkSliderRow input[type="range"] {
+  grid-column: 2 / 3;
+}
+body.mode-draw #inkLayerProps .inkSliderRow output {
+  grid-column: 3 / 4;
+  color: var(--dp-text-soft);
+  font: 10px/1 var(--dp-font);
+  text-align: right;
+}
+body.mode-draw #inkLayerProps .inkCheck {
+  display: none;
+}
+body.mode-draw #inkLayerList {
+  display: flex !important;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  max-height: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+body.mode-draw .inkLayerRow {
+  display: flex !important;
+  align-items: center;
+  gap: 7px;
+  height: 32px !important;
+  min-height: 32px !important;
+  flex: 0 0 32px !important;
+  padding: 0 4px !important;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+}
+body.mode-draw .inkLayerRow:hover {
+  background: var(--dp-field) !important;
+}
+body.mode-draw .inkLayerRow.active {
+  background: var(--dp-field) !important;
+  border-color: var(--dp-border) !important;
+}
+body.mode-draw .inkLayerRow.active::before {
+  display: none !important;
+}
+body.mode-draw .inkLayerThumb {
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 5px !important;
+  border: 1px solid var(--dp-border) !important;
+  background: var(--dp-panel-deep) !important;
+}
+body.mode-draw .inkLayerRow > .inkLayerName {
+  flex: 1 1 auto !important;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1px;
+}
+body.mode-draw .inkLayerRow > .inkLayerBtn {
+  flex: 0 0 22px !important;
+  margin-left: 0 !important;
+}
+body.mode-draw .inkLayerName b {
+  font: 500 11px/1.15 var(--dp-font);
+  color: var(--dp-text-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.mode-draw .inkLayerMeta,
+body.mode-draw .psLayerExpandBtn,
+body.mode-draw .psLayerLock,
+body.mode-draw .inkLayerSep {
+  display: none !important;
+}
+body.mode-draw .inkLayerBtn {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--dp-dim);
+  opacity: .8;
+}
+body.mode-draw .inkLayerBtn:hover {
+  background: rgba(255,255,255,.06);
+  color: var(--dp-text);
+  opacity: 1;
+}
+body.mode-draw .inkLayerBtn.inkLayerDel:hover {
+  background: rgba(224,83,63,.14);
+  color: #e0533f;
+  opacity: 1;
+}
+body.mode-draw .inkLayerBtn svg {
+  width: 13px;
+  height: 13px;
+}
+body.mode-draw .inkLayerActions {
+  display: flex;
+  gap: 2px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--dp-border-soft);
+}
+body.mode-draw .inkLayerActions button {
+  width: 24px;
+  height: 22px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--dp-dim);
+}
+body.mode-draw .inkLayerActions button:hover {
+  background: var(--dp-field);
+  color: var(--dp-text);
+}
+
+/* Fırça kartı */
+body.mode-draw #inkBrushPanel .inkBrushPreviewWrap {
+  flex: 0 0 20px;
+  height: 20px !important;
+  margin: 0 0 2px;
+  padding: 0;
+  background: transparent !important;
+  border: 0 !important;
+  overflow: hidden;
+}
+body.mode-draw #inkBrushPanel #inkBrushPreview {
+  display: none !important;
+}
+body.mode-draw #inkBrushPanel .inkBrushPreviewMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 20px;
+  color: var(--dp-text);
+}
+body.mode-draw #inkBrushPanel #inkBrushName {
+  font: 600 11.5px/1 var(--dp-font);
+  color: var(--dp-text);
+}
+body.mode-draw #inkBrushPanel .inkBrushPreviewMeta::after {
+  content: "Dokulu";
+  margin-left: auto;
+  padding: 1px 6px;
+  border: 1px solid var(--dp-border);
+  border-radius: 6px;
+  background: var(--dp-field);
+  color: var(--dp-dim);
+  font: 9px/1.3 var(--dp-font);
+}
+body.mode-draw #inkBrushPanel .inkSectionHead {
+  display: none;
+}
+body.mode-draw #inkBrushPanel .inkSliderRow {
+  display: grid;
+  grid-template-columns: 54px minmax(0,1fr) 32px;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 23px;
+  min-height: 23px;
+  height: 23px;
+  margin: 0;
+}
+body.mode-draw #inkBrushPanel .inkSliderRow label {
+  color: var(--dp-dim);
+  font: 10px/1 var(--dp-font);
+}
+body.mode-draw #inkBrushPanel .inkSliderRow output {
+  color: var(--dp-text-soft);
+  font: 10px/1 var(--dp-font);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+body.mode-draw #inkBrushPanel input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--dp-text) 22%, var(--dp-panel));
+  outline: none;
+}
+body.mode-draw #inkBrushPanel input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #F2F2F4;
+  border: 1px solid #8A8A90;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+body.mode-draw #inkBrushPanel input[type="range"]::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #F2F2F4;
+  border: 1px solid #8A8A90;
+  cursor: pointer;
+}
+body.mode-draw #inkPresetList {
+  display: flex;
+  flex: 0 0 54px;
+  height: 54px;
+  min-height: 54px;
+  gap: 6px;
+  padding: 4px 0 3px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+body.mode-draw .dpPresetHead {
+  flex: 0 0 auto;
+  margin: 4px 0 1px;
+  color: var(--dp-faint);
+  font: 9px/1.4 var(--dp-font);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+body.mode-draw #inkPresetList::-webkit-scrollbar {
+  display: none;
+}
+body.mode-draw #inkPresetList .inkPreset {
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 2px;
+  border: 1px solid var(--dp-border);
+  border-radius: 8px;
+  background: var(--dp-field);
+  color: var(--dp-dim);
+  overflow: hidden;
+}
+body.mode-draw #inkPresetList .inkPreset.active {
+  background: var(--dp-active);
+  border-color: #7C7C82;
+  color: var(--dp-text);
+}
+body.mode-draw #inkPresetList .inkPresetDot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+}
+body.mode-draw #inkPresetList .inkPreset span {
+  display: none !important;
+}
+body.mode-draw #inkBrushPanel .psCurveWrap,
+body.mode-draw #inkBrushPanel .inkPanelActions {
+  display: none !important;
+}
+body.mode-draw #inkBrushPanel .inkAdvanced {
+  display: none !important;
+}
+body.mode-draw #inkBrushPanel .inkAdvanced > summary {
+  color: var(--dp-faint);
+  font: 9px/1.4 var(--dp-font);
+  letter-spacing: .04em;
+  list-style: none;
+  cursor: pointer;
+}
+body.mode-draw #inkBrushPanel .inkAdvanced > summary::-webkit-details-marker {
+  display: none;
+}
+body.mode-draw #inkBrushPanel .inkAdvanced .inkSliderRow {
+  grid-template-columns: 54px minmax(0,1fr) 32px;
+}
+
+/* Kart boyu tutamacı */
+.psCardGrip {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 26px;
+  height: 6px;
+  margin-left: -13px;
+  border-radius: 3px;
+  cursor: ns-resize;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity .15s var(--dp-font);
+  z-index: 4;
+}
+.psCardGrip::after {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 2px;
+  margin: 2px auto;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--dp-text) 24%, transparent);
+}
+body.mode-draw #psDrawPanels > .psAcc:hover .psCardGrip {
+  opacity: 1;
+}
+body.mode-draw #psDrawPanels > .psAcc.is-collapsed .psCardGrip {
+  display: none;
+}
+body.mode-draw #psDrawPanels > .psAcc.is-resizing {
+  user-select: none;
+}
+body.mode-draw.ps-card-resizing,
+body.mode-draw.ps-card-resizing * {
+  cursor: ns-resize !important;
+  user-select: none !important;
+}
+
+/* Sağ dock tutamacı dış kenarda (sağ). */
+body.mode-draw .psRightDock .psResize {
+  right: -11px !important;
+}
+body.mode-draw .psRightDock .psResize::after {
+  height: 38px;
+  background: var(--dp-border);
+}
+body.mode-draw .psRightDock:hover .psResize::after {
+  opacity: .8;
+}
+
+/* =========================================================
+   ÜST: mod anahtarı + yüzen araç çubuğu
+   ========================================================= */
+body.mode-draw #appModeBar {
+  position: fixed !important;
+  top: 18px !important;
+  right: 20px !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 32px !important;
+  padding: 3px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 2px;
+  background: var(--dp-panel) !important;
+  border: 1px solid var(--dp-border) !important;
+  border-radius: 9px !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.34) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  z-index: 1245 !important;
+}
+body.mode-draw #appModeBar .modeSeg {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  padding: 0 !important;
+}
+body.mode-draw #appModeBar #modeRefBtn { order: 1; }
+body.mode-draw #appModeBar #modeDrawBtn { order: 2; }
+body.mode-draw #appModeBar .modeBtn {
+  flex: 0 0 auto !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  padding: 0 13px !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: var(--dp-dim) !important;
+  font: 500 10px/1 var(--dp-font) !important;
+  letter-spacing: 0 !important;
+}
+body.mode-draw #appModeBar .modeBtn:hover {
+  color: var(--dp-text-soft) !important;
+  background: color-mix(in srgb, var(--dp-text) 4%, transparent) !important;
+}
+body.mode-draw #appModeBar .modeBtn.is-active {
+  background: var(--dp-active) !important;
+  color: var(--dp-text) !important;
+}
+body.mode-draw #appModeBar .modeIcon,
+body.mode-draw #appModeBar .psDockCollapse,
+body.mode-draw #appModeBar #modeDrawName,
+body.mode-draw #appModeBar .modeBtn--icon {
+  display: none !important;
+}
+
+#drawFloatToolbar {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 40px;
+  padding: 5px 8px;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--dp-panel) 97%, transparent);
+  border: 1px solid var(--dp-border);
+  border-radius: 18px;
+  box-shadow: 0 12px 34px color-mix(in srgb, var(--dp-bg) 55%, transparent), 0 2px 8px color-mix(in srgb, var(--dp-bg) 35%, transparent);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  z-index: 1240;
+  user-select: none;
+}
+#drawFloatToolbar[hidden] {
+  display: none !important;
+}
+#drawFloatToolbar .dftBtn,
+#drawFloatToolbar .dftCaret,
+#drawFloatToolbar .dftIcon {
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--dp-dim);
+  font: 500 11px/1 var(--dp-font);
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 0 9px;
+}
+#drawFloatToolbar .dftBtn:hover,
+#drawFloatToolbar .dftCaret:hover,
+#drawFloatToolbar .dftIcon:hover:not(:disabled) {
+  background: rgba(255,255,255,.06);
+  color: var(--dp-text-soft);
+}
+#drawFloatToolbar .dftBtn.is-active {
+  background: var(--dp-active);
+  color: var(--dp-text);
+}
+#drawFloatToolbar .dftBtn svg,
+#drawFloatToolbar .dftIcon svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#drawFloatToolbar .dftSelectWrap {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 12px;
+}
+#drawFloatToolbar .dftSelectWrap.is-active {
+  background: var(--dp-active);
+}
+#drawFloatToolbar .dftSelectWrap.is-active .dftBtn,
+#drawFloatToolbar .dftSelectWrap.is-active .dftCaret {
+  background: transparent;
+  color: var(--dp-text);
+}
+#drawFloatToolbar .dftSelectWrap .dftBtn {
+  padding-right: 2px;
+}
+#drawFloatToolbar .dftCaret {
+  width: 17px;
+  padding: 0 2px 0 0;
+  font-size: 8px;
+  color: var(--dp-faint);
+}
+#drawFloatToolbar .dftSep {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: var(--dp-border);
+}
+#drawFloatToolbar .dftIcon {
+  width: 28px;
+  padding: 0;
+  border-radius: 9px;
+}
+#drawFloatToolbar .dftIcon:disabled {
+  opacity: .34;
+  cursor: default;
+}
+
+#dftSelectMenu {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 170px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--dp-panel);
+  border: 1px solid var(--dp-border);
+  border-radius: 9px;
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--dp-bg) 48%, transparent);
+  z-index: 1250;
+}
+#dftSelectMenu[hidden] {
+  display: none !important;
+}
+#dftSelectMenu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--dp-text-soft);
+  font: 11px/1 var(--dp-font);
+  text-align: left;
+  cursor: pointer;
+}
+#dftSelectMenu button:hover {
+  background: var(--dp-active);
+  color: var(--dp-text);
+}
+#dftSelectMenu button svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#dftSelectMenu .dftMenuKey {
+  margin-left: auto;
+  color: var(--dp-faint);
+  font-size: 9px;
+}
+
+/* Çizim sırasında tahta seçim çerçevesi görünmesin. */
+body.mode-draw #stage .item.is-selected {
+  outline: none !important;
+}
+
+/* Küçük pencere uyumu */
+@media (max-width: 980px) {
+  body.mode-draw #inkLeftDock.psLeftDock { left: 10px !important; top: 12px !important; bottom: 12px !important; }
+  body.mode-draw #inkRightDock.psRightDock { right: 10px !important; top: 54px !important; bottom: 12px !important; }
+  body.mode-draw #appModeBar { right: 10px !important; top: 12px !important; }
+  #drawFloatToolbar { top: 56px; }
+  #dftSelectMenu { top: 102px; }
+}

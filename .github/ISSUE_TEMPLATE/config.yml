@@ -1,0 +1,15 @@
+# TailRef issue configuration.
+#
+# The repository URL is not known at authoring time, so the contact links below
+# are left commented out instead of pointing at a broken address. After the
+# repository is published, replace OWNER/tailref with the real path and
+# uncomment the block.
+blank_issues_enabled: false
+
+# contact_links:
+#   - name: Security vulnerability
+#     url: https://github.com/OWNER/tailref/security/policy
+#     about: Please report security issues privately, not as public issues.
+#   - name: Documentation
+#     url: https://github.com/OWNER/tailref/tree/main/docs
+#     about: Installation, development, architecture and feature documentation.

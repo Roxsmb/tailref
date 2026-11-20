@@ -1,0 +1,53 @@
+# NOTICE
+
+**TailRef**
+Developed by Emre Melik Nameli
+Published as a TailRef Studio project.
+
+Copyright © 2026 Emre Melik Nameli. All Rights Reserved.
+
+Required Notice: Copyright © 2026 Emre Melik Nameli. All Rights Reserved.
+
+## Brand and legal ownership
+
+- **TailRef** is the product name.
+- **TailRef Studio** is the publishing/brand name used for TailRef.
+- **Emre Melik Nameli** is the developer, creator and copyright holder.
+
+TailRef Studio is a brand name, **not a separate company or legal entity**. Using
+it does not transfer, share or reassign copyright ownership, and it does not
+create a new rights holder. All original TailRef code, documentation and artwork
+remain the property of Emre Melik Nameli unless a file says otherwise.
+
+## License
+
+TailRef is free to download and is distributed under the **PolyForm
+Noncommercial License 1.0.0**. The complete, unmodified license text is in the
+[`LICENSE`](LICENSE) file and at
+<https://polyformproject.org/licenses/noncommercial/1.0.0>.
+
+Permitted use covers personal, educational, research, hobby and other
+noncommercial purposes as defined by the license. Commercial use, commercial
+distribution and commercial licensing require prior written permission from the
+copyright holder.
+
+TailRef is **source-available**, not unrestricted open-source software.
+
+## Third-party material
+
+TailRef bundles third-party libraries, fonts and assets that remain the property
+of their respective authors and are licensed under their own terms. See
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for the full list.
+
+The TailRef name, wordmark and logo are governed by
+[`TRADEMARK.md`](TRADEMARK.md).
+
+## Contributions
+
+Copyright in external contributions remains with the contributor unless a
+separate written agreement says otherwise. See [`CONTRIBUTING.md`](CONTRIBUTING.md)
+and [`docs/CLA.md`](docs/CLA.md).
+
+## Contact
+
+Commercial licensing and permissions: Emre Melik Nameli — tailrefstudio@gmail.com

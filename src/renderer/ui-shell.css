@@ -1,0 +1,1749 @@
+﻿/* =========================================================
+   TailRef · birleşik kabuk (ui-shell.css)
+   ---------------------------------------------------------
+   Tek pencere, iki mod. Yüzen mat araç çubuğu, sağda mod
+   segmenti + akordeon panel yığını, çizimde solda referans
+   dock'u. Tüm renkler yalnızca --ps-* değişkenlerinden gelir.
+   ========================================================= */
+
+:root{
+  /* Mat saydam yüzeyler — tek kaynak.
+     Renkler doğrudan tema değişkenlerinden (--panel/--bg/--text/--accent)
+     türetilir; böylece tema değişince araç çubuğu, dock'lar, paneller,
+     menüler ve durum çubuğu dahil tüm kabuk birlikte döner. */
+  --ps-surface:         color-mix(in srgb, var(--panel) 92%, transparent);
+  --ps-surface-raised:  color-mix(in srgb, var(--panel) 96%, var(--text) 4%);
+  --ps-surface-sunken:  color-mix(in srgb, var(--bg) 78%, transparent);
+  --ps-surface-active:  color-mix(in srgb, var(--text) 10%, transparent);
+  --ps-border:          color-mix(in srgb, var(--text) 8%, transparent);
+  --ps-border-strong:   color-mix(in srgb, var(--text) 14%, transparent);
+  --ps-text:            var(--text);
+  --ps-text-secondary:  var(--dim);
+  --ps-text-tertiary:   color-mix(in srgb, var(--dim) 76%, transparent);
+  --ps-accent:          var(--accent);
+  --ps-accent-soft:     color-mix(in srgb, var(--accent) 18%, transparent);
+  --ps-accent-hover:    color-mix(in srgb, var(--accent) 88%, var(--text) 12%);
+  --ps-accent-active:   color-mix(in srgb, var(--accent) 82%, #000);
+  --ps-on-accent:       var(--accent-ink, #06101C);
+  --ps-danger:          var(--danger, #FF453A);
+  --ps-danger-soft:     color-mix(in srgb, var(--ps-danger) 18%, transparent);
+  --ps-blur:            blur(12px) saturate(120%);
+  /* Türetilmiş yüzeyler — yeni ham renk eklememek için burada tanımlı */
+  --ps-surface-hover:   color-mix(in srgb, var(--text) 4.5%, transparent);
+  --ps-surface-subtle:  color-mix(in srgb, var(--text) 3.5%, transparent);
+  --ps-surface-press:   color-mix(in srgb, var(--text) 16%, transparent);
+  --ps-scroll-thumb:    color-mix(in srgb, var(--text) 14%, transparent);
+  --ps-grid-line:       color-mix(in srgb, var(--text) 4%, transparent);
+  --ps-shadow-soft:     rgba(0, 0, 0, 0.12);
+
+  /* Ölçü ve hareket */
+  --ps-bar-h: 48px;
+  --ps-status-h: 32px;
+  --ps-radius-bar: 22px;
+  --ps-radius-dock: 12px;
+  --ps-radius-control: 8px;
+  --ps-shadow: 0 4px 16px rgba(0, 0, 0, .40);
+  --ps-left-w: 240px;
+  --ps-right-w: 304px;
+  --ps-top: 116px;
+  --ps-ease: cubic-bezier(.2, .7, .2, 1);
+}
+
+/* Blur desteklenmeyen ortamda matlık korunur, yüzey daha opak olur. */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))){
+  :root{
+    --ps-surface:        color-mix(in srgb, var(--panel) 97%, transparent);
+    --ps-surface-raised: color-mix(in srgb, var(--panel) 99%, transparent);
+    --ps-surface-sunken: color-mix(in srgb, var(--bg) 90%, transparent);
+  }
+}
+
+html, body{max-width:100%;overflow-x:hidden}
+body{background:var(--ps-surface-sunken);color:var(--ps-text)}
+::selection{background:var(--ps-accent-soft);color:var(--ps-text)}
+
+/* Eski çizim modu, tahta kabuğunu ve taşma menüsünü tamamen gizliyordu.
+   Birleşik kabukta araç çubuğu ve menü her iki modda da aynıdır. */
+body.mode-draw #barDock{display:flex!important}
+#overflowMenu[hidden]{display:none!important}
+#overflowMenu:not([hidden]){display:flex!important;flex-direction:column}
+body.mode-draw #overflowMenu:not([hidden]){display:flex!important;flex-direction:column}
+body.mode-draw #settings:not([hidden]),
+body.mode-draw #pomodoroPanel:not([hidden]),
+body.mode-draw #youtubeMusicPanel:not([hidden]),
+body.mode-draw #pinterestPanel:not([hidden]),
+body.mode-draw #artstationPanel:not([hidden]),
+body.mode-draw #help:not([hidden]){display:block!important}
+body.mode-draw #pose3dPanel:not([hidden]){display:flex!important}
+
+/* Referans masasi saydam kalir: tema gradyani (#backdrop) ve rain/snow
+   katmanlari sahnenin arkasindan gorunur. Bu katman opak bir yuzeyle
+   boyaninca hem temalar soluyor hem de "Arka plan opakligi" kaydiricisi
+   pencereyi saydamlastirmiyordu. */
+body.mode-reference #stage{background:transparent!important}
+body.mode-draw #inkEditor{
+  background-color:var(--ps-surface-sunken)!important;
+  background-image:none!important;
+}
+body.mode-draw.ps-grid-on #inkEditor{
+  background-image:
+    repeating-linear-gradient(0deg, var(--ps-grid-line) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(90deg, var(--ps-grid-line) 0 1px, transparent 1px 24px)!important;
+  background-size:24px 24px!important;
+}
+#inkCanvasFrame{
+  border:0.5px solid var(--ps-border-strong)!important;
+  box-shadow:var(--ps-shadow)!important;
+  border-radius:2px;
+  pointer-events:none;
+}
+#inkCanvasFrame[hidden]{display:none!important}
+
+/* =========================================================
+   YÜZEN ARAÇ ÇUBUĞU
+   ========================================================= */
+#barDock{
+  position:fixed!important;
+  top:56px;
+  left:12px;
+  right:12px;
+  z-index:1300;
+  display:flex;
+  justify-content:center;
+  pointer-events:none;
+  container-type:inline-size;
+  container-name:bar;
+}
+#bar{
+  position:relative!important;
+  top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;
+  transform:none!important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  width:max-content;
+  max-width:100%;
+  height:var(--ps-bar-h);
+  box-sizing:border-box;
+  padding:5px 7px;
+  margin:0;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-bar);
+  background:var(--ps-surface);
+  color:var(--ps-text);
+  box-shadow:var(--ps-shadow);
+  backdrop-filter:var(--ps-blur);
+  -webkit-backdrop-filter:var(--ps-blur);
+  pointer-events:auto;
+  overflow:visible;
+}
+#bar::-webkit-scrollbar{width:0;height:0}
+#bar .tgroup{
+  display:flex;align-items:center;gap:2px;
+  min-width:0;height:36px;flex:0 0 auto;
+}
+#bar .tgroup.bar-group-empty{display:none}
+#bar .tsep{
+  width:1px;height:22px;flex:0 0 auto;
+  margin:0 4px;
+  background:var(--ps-border);
+}
+#bar .tsep--win{margin-left:6px;margin-right:6px}
+#bar .wgroup{gap:1px}
+
+#bar .tbtn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:36px;min-width:36px;
+  padding:0 10px;
+  border:0;border-radius:var(--ps-radius-control);
+  background:transparent;
+  color:var(--ps-text-secondary);
+  font:550 12px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  letter-spacing:.01em;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background .16s var(--ps-ease),color .16s var(--ps-ease),opacity .16s var(--ps-ease);
+}
+#bar .tbtn:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+#bar .tbtn:active{background:var(--ps-surface-press)}
+#bar .tbtn[aria-pressed="true"]{background:var(--ps-surface-active);color:var(--ps-text)}
+#bar .tbtn:disabled{opacity:.40;cursor:not-allowed;background:transparent;color:var(--ps-text-secondary)}
+#bar .tbtn:disabled:hover{background:transparent;color:var(--ps-text-secondary)}
+#bar .tbtn .toolIcon{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#bar .tlabel{display:inline-block;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+#bar .tbtn--primary{color:var(--ps-text-secondary)}
+#bar .tbtn--accent{
+  background:var(--ps-surface)!important;
+  color:var(--ps-text)!important;
+  border:1px solid var(--ps-border)!important;
+  padding:0 13px;
+  font-weight:600;
+}
+#bar .tbtn--accent:hover{background:var(--ps-surface-active)!important;color:var(--ps-text)!important}
+#bar .tbtn--accent:active{background:var(--ps-surface-press)!important}
+#bar .tbtn--accent:disabled{opacity:.40}
+
+/* Segment (Ekleme / Araçlar) */
+#bar .segment{
+  display:flex;align-items:center;gap:1px;
+  height:34px;padding:2px;
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+}
+#bar .segment .tbtn{
+  height:30px;min-width:32px;padding:0 10px;
+  border-radius:6px;background:transparent;color:var(--ps-text-secondary);
+}
+#bar .segment .tbtn:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+#bar .segment .tbtn[aria-pressed="true"]{
+  background:var(--ps-surface-active);
+  color:var(--ps-text);
+  box-shadow:none;
+}
+#bar .segment .tbtn:disabled{opacity:.40}
+#bar .psTool[aria-pressed="true"] .toolIcon{stroke-width:2}
+
+/* Zoom kapsülü — ayrı kontrol, opaklıkla yan yana değil */
+#bar .zoombox{
+  display:flex;align-items:center;
+  height:34px;padding:2px;
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+  flex:0 0 auto;
+}
+#bar .zbtn{
+  width:30px;height:30px;min-width:30px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:6px;background:transparent;
+  color:var(--ps-text-secondary);cursor:pointer;
+}
+#bar .zbtn:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+#bar .zbtn .toolIcon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+#bar .zval{
+  min-width:52px;height:30px;padding:0 6px;
+  border:0;border-radius:6px;background:transparent;
+  color:var(--ps-text);font:600 11.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;cursor:pointer;
+}
+#bar .zval:hover{background:var(--ps-surface-active)}
+
+#bar .themeSelect{
+  height:34px;
+  max-width:116px;
+  padding:0 24px 0 9px;
+  border:0;border-radius:var(--ps-radius-control);
+  background-color:var(--ps-surface-sunken);
+  color:var(--ps-text-secondary);
+  font:550 11.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' fill='none' stroke='%23A0A0A6' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position:calc(100% - 11px) center;
+  background-size:8px 5px;
+  background-repeat:no-repeat;
+  cursor:pointer;
+}
+#bar .themeSelect:hover{background-color:var(--ps-surface-active);color:var(--ps-text)}
+#bar .themeSelect option{background:var(--ps-surface-raised);color:var(--ps-text)}
+
+/* Opaklık — yuva içinde, thumb'ı izleyen değer */
+#bar .opbox{
+  display:flex;align-items:center;gap:6px;
+  height:34px;width:152px;
+  padding:0 8px;
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+  position:relative;
+  flex:0 1 auto;
+}
+#bar .opicon{width:15px;height:15px;flex:none;color:var(--ps-text-secondary);stroke:currentColor;fill:none;stroke-width:1.5}
+#bar .opTrack{position:relative;display:flex;align-items:center;flex:1 1 auto;min-width:90px;height:26px}
+#bar #bgOpacity{
+  width:100%;height:26px;margin:0;padding:0;
+  appearance:none;-webkit-appearance:none;
+  background:transparent;cursor:pointer;
+}
+#bar #bgOpacity::-webkit-slider-runnable-track{
+  height:4px;border-radius:999px;
+  background:var(--ps-surface-active);
+  border:0.5px solid var(--ps-border);
+}
+#bar #bgOpacity::-webkit-slider-thumb{
+  appearance:none;-webkit-appearance:none;
+  width:12px;height:12px;margin-top:-4.5px;
+  border-radius:50%;
+  background:var(--ps-text);
+  border:1px solid var(--ps-surface);
+  box-shadow:none;
+}
+#bar #bgOpacity:focus-visible{outline:2px solid var(--ps-accent);outline-offset:2px;border-radius:999px}
+#bar .opVal{
+  position:absolute;
+  left:clamp(0px, calc(var(--p, 1) * (100% - 26px)), calc(100% - 26px));
+  top:15px;
+  min-width:26px;
+  text-align:center;
+  font-size:9px;line-height:1;
+  color:var(--ps-text-secondary);
+  font-variant-numeric:tabular-nums;
+  pointer-events:none;
+}
+#bar .opbox:hover .opVal{color:var(--ps-text)}
+/* Opaklık üstündeki "Opaklık: %NN" balonu kaldırıldı: değer zaten
+   slider'ın altındaki yüzde etiketinde görünüyor. */
+
+#bar .overflowToggle{
+  width:36px;height:36px;min-width:36px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:var(--ps-radius-control);
+  background:transparent;color:var(--ps-text-secondary);
+  cursor:pointer;
+}
+#bar .overflowToggle:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+#bar .overflowToggle .toolIcon{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round}
+#bar .wbtn{
+  width:30px;height:32px;min-width:30px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:6px;background:transparent;
+  color:var(--ps-text-secondary);cursor:pointer;
+}
+#bar .wbtn:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+#bar .wbtn--close{margin-left:3px}
+#bar .wbtn--close:hover{background:var(--ps-danger-soft);color:var(--ps-danger)}
+#bar .wbtn .toolIcon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
+
+/* Taşmaya düşen öğeler */
+#bar .bar-overflowed{display:none!important}
+
+/* =========================================================
+   SAĞ DOCK — MOD SEGMENTİ + AKORDEON YIĞIN
+   ========================================================= */
+.psDock{
+  background:var(--ps-surface);
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-dock);
+  color:var(--ps-text);
+  box-shadow:var(--ps-shadow);
+  backdrop-filter:var(--ps-blur);
+  -webkit-backdrop-filter:var(--ps-blur);
+  box-sizing:border-box;
+}
+/* draw-mode-new.css eski dock yüzeyini sıfırlıyor; yeni mat yüzey kazanır. */
+body.mode-draw #inkRightDock.psDock,
+body.mode-draw #inkLeftDock.psDock{
+  background:var(--ps-surface)!important;
+  border:0.5px solid var(--ps-border)!important;
+  border-radius:var(--ps-radius-dock)!important;
+  box-shadow:var(--ps-shadow)!important;
+  backdrop-filter:var(--ps-blur)!important;
+  -webkit-backdrop-filter:var(--ps-blur)!important;
+  /* Boyutlandırma tutamaçları kenardan taşar; kırpılmamalı. */
+  overflow:visible!important;
+}
+#inkRightDock.psRightDock{
+  position:fixed!important;
+  top:var(--ps-top);
+  right:12px;
+  bottom:calc(var(--ps-status-h) + 12px);
+  left:auto!important;
+  width:var(--ps-right-w);
+  height:auto!important;
+  display:flex;
+  flex-direction:column;
+  padding:0!important;
+  margin:0!important;
+  overflow:visible;
+  z-index:1220;
+  pointer-events:auto;
+  transition:transform .22s var(--ps-ease),opacity .18s var(--ps-ease),width .18s var(--ps-ease);
+}
+body.ps-right-closed #inkRightDock{
+  transform:translateX(calc(100% + 24px));
+  opacity:0;
+  pointer-events:none;
+}
+body:not(.ps-ready) #inkRightDock{visibility:hidden}
+
+#inkRightDock #appModeBar{
+  position:static!important;
+  inset:auto!important;
+  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  display:flex!important;
+  align-items:center;
+  justify-content:flex-start!important;
+  gap:6px;
+  width:auto!important;
+  height:auto!important;
+  margin:0;
+  padding:8px 8px 8px 10px!important;
+  background:transparent!important;
+  border:0!important;
+  border-bottom:0.5px solid var(--ps-border)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  transform:none!important;
+  z-index:auto!important;
+}
+body.mode-draw #modeRefBtn .modeIcon{display:inline-block!important}
+#appModeBar .modeSeg{
+  flex:1 1 auto;
+  display:flex;
+  gap:2px;
+  padding:2px;
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+}
+#appModeBar .modeBtn{
+  flex:1 1 0;
+  min-width:0;
+  height:32px;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:0 8px;
+  border:0;border-radius:6px;
+  background:transparent;
+  color:var(--ps-text-secondary);
+  font:600 12px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  cursor:pointer;
+}
+#appModeBar .modeBtn:hover{color:var(--ps-text);background:var(--ps-surface-active)}
+#appModeBar .modeBtn.is-active{
+  background:var(--ps-surface-active);
+  color:var(--ps-text);
+  box-shadow:none;
+}
+#appModeBar .modeBtn:disabled{opacity:.40;cursor:not-allowed}
+#appModeBar .modeIcon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;flex:none}
+#appModeBar .modeAppLabel,
+#appModeBar .modeDrawName,
+#appModeBar #modeNewBtn,
+#appModeBar #btnInkWorkspace{display:none!important}
+.psDockCollapse{
+  width:28px;height:32px;min-width:28px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:6px;background:transparent;
+  color:var(--ps-text-tertiary);cursor:pointer;
+}
+.psDockCollapse:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+.psDockCollapse svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.psDockCollapse[aria-pressed="false"] svg{transform:rotate(180deg)}
+
+.psDockScroll{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:thin;
+  scrollbar-color:var(--ps-scroll-thumb) transparent;
+  overscroll-behavior:contain;
+  /* Kaydırılan içerik alt köşelerde dock yuvarlağını taşırmasın. */
+  border-radius:0 0 var(--ps-radius-dock) var(--ps-radius-dock);
+}
+.psDockScroll::-webkit-scrollbar{width:8px}
+.psDockScroll::-webkit-scrollbar-thumb{background:var(--ps-scroll-thumb);border-radius:4px}
+.psDockScroll::-webkit-scrollbar-track{background:transparent}
+
+.psStack{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  padding:0;
+  min-width:0;
+}
+.psStack[hidden]{display:none!important}
+.psAcc{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  border-top:0.5px solid var(--ps-border);
+  background:transparent;
+}
+.psAcc:first-child{border-top:0}
+.psPanelHead{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:40px;
+  padding:0 10px 0 12px;
+  border:0;
+  background:transparent;
+  color:var(--ps-text);
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  text-align:left;
+  width:100%;
+  box-sizing:border-box;
+  transition:background .15s var(--ps-ease);
+}
+.psPanelHead:hover{background:var(--ps-surface-subtle)}
+.psPanelHead:active{background:var(--ps-surface-active)}
+.psPanelIcon{
+  width:16px;height:16px;flex:none;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:var(--ps-text-secondary);
+}
+.psPanelIcon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.psPanelTitle{
+  flex:1 1 auto;min-width:0;
+  font:600 12.5px/1.2 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  letter-spacing:.01em;
+  color:var(--ps-text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.psPanelMeta{
+  font:500 10.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color:var(--ps-text-tertiary);
+  font-variant-numeric:tabular-nums;
+}
+.psChevron{
+  width:8px;height:8px;flex:none;
+  margin:0 2px 0 4px;
+  border-right:1.5px solid var(--ps-text-tertiary);
+  border-bottom:1.5px solid var(--ps-text-tertiary);
+  transform:rotate(45deg) translateY(-1px);
+  transition:transform .18s var(--ps-ease);
+}
+.psAcc.is-collapsed .psChevron{transform:rotate(-45deg) translateX(-1px)}
+.psIconBtn{
+  width:26px;height:26px;min-width:26px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:6px;background:transparent;
+  color:var(--ps-text-tertiary);cursor:pointer;
+}
+.psIconBtn:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+.psIconBtn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+.psAccBody{
+  overflow:hidden;
+  max-height:2000px;
+  opacity:1;
+  padding:0 12px 12px;
+  box-sizing:border-box;
+  transition:max-height .22s var(--ps-ease),opacity .16s var(--ps-ease),padding .22s var(--ps-ease);
+}
+.psAcc.is-collapsed .psAccBody{
+  max-height:0!important;
+  opacity:0;
+  padding-top:0;
+  padding-bottom:0;
+  pointer-events:none;
+}
+.psPanelHint{
+  margin:8px 2px 2px;
+  color:var(--ps-text-tertiary);
+  font:11px/1.45 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+.psRefHint{
+  margin:2px 2px 10px;
+  color:var(--ps-text-secondary);
+  font:11px/1.45 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+
+/* Akordeon sürükleme */
+.psPanelHead[draggable="true"]{cursor:grab}
+.psPanelHead[draggable="true"]:active{cursor:grabbing}
+.psAcc.is-dragging{opacity:.55}
+.psAcc.is-drop-before{box-shadow:inset 0 1px 0 var(--ps-accent)}
+.psAcc.is-drop-after{box-shadow:inset 0 -1px 0 var(--ps-accent)}
+
+/* Eski panel iskeletini sıfırla */
+#inkRightDock .inkPanel,
+#inkRightDock .inkDockPanel{
+  position:relative;
+  inset:auto;
+  width:100%;
+  height:auto;
+  max-height:none;
+  margin:0;
+  padding:0;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  overflow:visible;
+  color:var(--ps-text);
+}
+#inkRightDock .inkPanel[hidden],
+#inkRightDock #inkBrushPanel.ps-tool-hidden{display:none!important}
+#inkRightDock .inkPanelHead{display:none!important}
+#inkRightDock .inkPanelBody{padding:0;overflow:visible}
+#inkRightDock .inkColorPanelBody{padding:0}
+
+/* =========================================================
+   KATMANLAR
+   ========================================================= */
+#inkRightDock #inkLayerScope{display:none!important}
+#inkRightDock .inkLayerList{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  max-height:34vh;
+  min-height:44px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:0 2px 4px;
+  margin:0 -2px;
+  scrollbar-width:thin;
+  scrollbar-color:var(--ps-scroll-thumb) transparent;
+}
+#inkRightDock .inkLayerList::-webkit-scrollbar{width:7px}
+#inkRightDock .inkLayerList::-webkit-scrollbar-thumb{background:var(--ps-scroll-thumb);border-radius:4px}
+#inkRightDock .inkLayerRow{
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr) 16px 24px 24px;
+  align-items:center;
+  gap:6px;
+  row-gap:2px;
+  min-height:38px;
+  padding:3px 5px;
+  border-radius:var(--ps-radius-control);
+  cursor:pointer;
+  transition:background .14s var(--ps-ease);
+}
+#inkRightDock .inkLayerRow:hover{background:var(--ps-surface-hover)}
+#inkRightDock .inkLayerRow.active{background:var(--ps-accent-soft)}
+#inkRightDock .inkLayerRow.active::before{display:none}
+#inkRightDock .inkLayerThumb{
+  width:28px;height:28px;
+  border-radius:6px;
+  background:var(--ps-surface-sunken);
+  border:0.5px solid var(--ps-border);
+  object-fit:contain;
+}
+#inkRightDock .inkLayerName{min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:2px}
+#inkRightDock .inkLayerName b{
+  display:block;
+  color:var(--ps-text);
+  font:550 12px/1.15 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#inkRightDock .inkLayerMeta{
+  display:none;
+  color:var(--ps-text-tertiary);
+  font:10px/1.2 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+#inkRightDock .inkLayerRow.is-expanded .inkLayerMeta{display:block}
+#inkRightDock .inkLayerBtn{
+  width:24px;height:24px;min-width:24px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:6px;background:transparent;
+  color:var(--ps-text-tertiary);cursor:pointer;
+}
+#inkRightDock .inkLayerBtn:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+#inkRightDock .inkLayerBtn.on{color:var(--ps-text)}
+#inkRightDock .inkLayerBtn .inkIcon{width:15px;height:15px}
+#inkRightDock .psLayerLock{color:var(--ps-text-tertiary)}
+#inkRightDock .psLayerLock.is-locked{color:var(--ps-text);background:var(--ps-surface-active)}
+#inkRightDock .inkLayerSep{height:1px;background:var(--ps-border);margin:4px 6px}
+#inkRightDock .inkLayersEmpty{
+  padding:14px 8px;
+  color:var(--ps-text-tertiary);
+  font:11px/1.4 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  text-align:center;
+}
+#inkRightDock .psLayerExpandBtn{
+  width:24px;min-width:24px;height:24px;
+  color:var(--ps-text-tertiary);
+}
+#inkRightDock .psLayerExpandBtn .psChevron{
+  width:7px;height:7px;margin:0;
+  border-width:0 1.5px 1.5px 0;
+  transform:rotate(-45deg);
+  transition:transform .16s var(--ps-ease);
+}
+#inkRightDock .inkLayerRow.is-expanded .psLayerExpandBtn .psChevron{transform:rotate(45deg)}
+#inkRightDock .psLayerExpand{
+  grid-column:1 / -1;
+  display:none;
+  gap:5px;
+  padding:4px 2px 7px;
+}
+#inkRightDock .inkLayerRow.is-expanded .psLayerExpand{display:grid}
+#inkRightDock .psLayerExpandRow{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr) 40px;
+  align-items:center;
+  gap:8px;
+  min-height:24px;
+}
+#inkRightDock .psLayerExpandRow label{
+  color:var(--ps-text-secondary);
+  font:11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+#inkRightDock .psLayerExpandRow output{
+  color:var(--ps-text-secondary);
+  font:10.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+#inkRightDock .psLayerExpandRow select{
+  height:26px;
+  border:0.5px solid var(--ps-border);
+  border-radius:6px;
+  background:var(--ps-surface-sunken);
+  color:var(--ps-text);
+  font:11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  padding:0 6px;
+}
+#inkRightDock .psLayerExpandRow input[type="range"]{
+  width:100%;height:22px;margin:0;padding:0;
+  appearance:none;-webkit-appearance:none;
+  background:transparent;cursor:pointer;
+}
+#inkRightDock .psLayerExpandRow input[type="range"]::-webkit-slider-runnable-track{
+  height:4px;border-radius:999px;
+  background:var(--ps-surface-sunken);
+  border:0.5px solid var(--ps-border);
+}
+#inkRightDock .psLayerExpandRow input[type="range"]::-webkit-slider-thumb{
+  appearance:none;-webkit-appearance:none;
+  width:11px;height:11px;margin-top:-4px;
+  border-radius:50%;
+  background:var(--ps-text);
+  border:1px solid var(--ps-surface);
+}
+#inkRightDock .psLayerExpandRow input[type="range"]:focus-visible{
+  outline:2px solid var(--ps-accent);
+  outline-offset:2px;border-radius:999px;
+}
+#inkRightDock .inkLayerProps,
+#inkRightDock .inkLayerActions{display:none!important}
+
+/* =========================================================
+   FIRÇA KONTROLLERİ
+   ========================================================= */
+#inkRightDock #inkBrushPanel .inkPanelBody{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+#inkRightDock .inkBrushPreviewWrap{
+  position:relative;
+  height:58px;
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+  border:0.5px solid var(--ps-border);
+  overflow:hidden;
+  margin:0 0 2px;
+}
+#inkRightDock #inkBrushPreview{width:100%;height:100%;display:block}
+#inkRightDock .inkBrushPreviewMeta{
+  position:absolute;left:8px;bottom:5px;
+  color:var(--ps-text-secondary);
+  font:10.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+#inkRightDock .inkSectionHead{
+  margin:6px 0 0;
+  padding:0 2px;
+  border:0;
+  color:var(--ps-text-tertiary);
+  font:600 9.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+#inkRightDock .inkPresetList{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px;
+  margin:0;
+  padding:0;
+}
+#inkRightDock .inkPreset{
+  display:flex;align-items:center;gap:6px;
+  min-width:0;height:34px;
+  padding:0 7px;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+  color:var(--ps-text-secondary);
+  font:550 10.5px/1.15 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  text-align:left;
+  cursor:pointer;
+  overflow:hidden;
+}
+#inkRightDock .inkPreset:hover{border-color:var(--ps-border-strong);color:var(--ps-text)}
+#inkRightDock .inkPreset.active{
+  background:var(--ps-accent-soft);
+  border-color:var(--ps-border-strong);
+  color:var(--ps-text);
+}
+#inkRightDock .inkPreset span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#inkRightDock .inkPresetDot{width:10px;height:10px;border-radius:50%;flex:none}
+
+#inkRightDock .inkSliderRow{
+  display:grid;
+  grid-template-columns:62px minmax(0,1fr) 40px;
+  align-items:center;
+  gap:8px;
+  min-height:28px;
+  margin:0;
+}
+#inkRightDock .inkSliderRow label{
+  color:var(--ps-text-secondary);
+  font:11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#inkRightDock .inkSliderRow input[type="range"]{
+  width:100%;height:22px;
+  margin:0;padding:0;
+  appearance:none;-webkit-appearance:none;
+  background:transparent;
+  cursor:pointer;
+}
+#inkRightDock .inkSliderRow input[type="range"]::-webkit-slider-runnable-track{
+  height:4px;
+  border-radius:999px;
+  background:var(--ps-surface-sunken);
+  border:0.5px solid var(--ps-border);
+}
+#inkRightDock .inkSliderRow input[type="range"]::-webkit-slider-thumb{
+  appearance:none;-webkit-appearance:none;
+  width:12px;height:12px;margin-top:-4.5px;
+  border-radius:50%;
+  background:var(--ps-text);
+  border:1px solid var(--ps-surface);
+}
+#inkRightDock .inkSliderRow input[type="range"]:focus-visible{
+  outline:2px solid var(--ps-accent);
+  outline-offset:2px;
+  border-radius:999px;
+}
+#inkRightDock .inkSliderRow output{
+  color:var(--ps-text);
+  font:500 10.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+#inkRightDock .inkAdvanced{
+  margin:2px 0 0;
+  border:0;
+  border-top:0.5px solid var(--ps-border);
+  padding-top:6px;
+}
+#inkRightDock .inkAdvanced[hidden]{display:none!important}
+#inkRightDock .inkAdvanced summary{
+  display:flex;align-items:center;gap:6px;
+  height:28px;
+  color:var(--ps-text-tertiary);
+  font:600 10px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  cursor:pointer;
+  list-style:none;
+}
+#inkRightDock .inkAdvanced summary::-webkit-details-marker{display:none}
+#inkRightDock .inkAdvanced summary::before{
+  content:"";width:6px;height:6px;
+  border-right:1.4px solid currentColor;
+  border-bottom:1.4px solid currentColor;
+  transform:rotate(-45deg);
+  transition:transform .16s var(--ps-ease);
+}
+#inkRightDock .inkAdvanced[open] summary::before{transform:rotate(45deg)}
+#inkRightDock .inkHint{
+  margin:6px 2px 0;
+  color:var(--ps-text-tertiary);
+  font:10.5px/1.45 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+#inkRightDock .inkHint b{color:var(--ps-text-secondary);font-weight:600}
+#inkRightDock .inkPanelActions{margin:4px 0 0}
+#inkRightDock .inkPanelActions button{
+  width:100%;height:30px;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+  color:var(--ps-text-secondary);
+  font:550 11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  cursor:pointer;
+}
+#inkRightDock .inkPanelActions button:hover{border-color:var(--ps-border-strong);color:var(--ps-text)}
+
+/* Basınç eğrisi mini editörü (48 px) */
+.psCurveWrap{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:2px 0 0;
+}
+.psCurveHead{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  color:var(--ps-text-secondary);
+  font:11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+.psCurveHead span:last-child{color:var(--ps-text-tertiary);font-size:10px}
+.psCurveCanvas{
+  width:100%;
+  height:48px;
+  display:block;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+  cursor:ns-resize;
+  touch-action:none;
+}
+.psCurveCanvas:focus-visible{outline:2px solid var(--ps-accent);outline-offset:2px}
+
+/* =========================================================
+   RENK
+   ========================================================= */
+#inkRightDock .inkColorPanelBody{display:flex;flex-direction:column;gap:10px}
+#inkRightDock .inkColorHero{display:flex;align-items:center;gap:10px}
+#inkRightDock .inkColorHeroSwatch{
+  width:38px;height:38px;border-radius:9px;
+  border:0.5px solid var(--ps-border-strong);
+  background:var(--ps-surface-sunken);
+}
+#inkRightDock .inkColorHeroMeta{display:flex;flex-direction:column;gap:3px;min-width:0}
+#inkRightDock .inkColorHeroMeta b{font:600 12px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--ps-text);font-variant-numeric:tabular-nums}
+#inkRightDock .inkColorHeroMeta span{font:10.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--ps-text-tertiary)}
+#inkRightDock .inkColorSwatchGrid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:5px;
+}
+#inkRightDock .inkColorSwatchGrid button{
+  aspect-ratio:1;
+  min-height:24px;
+  border:0.5px solid var(--ps-border);
+  border-radius:6px;
+  cursor:pointer;
+  background-clip:padding-box;
+}
+#inkRightDock .inkColorSwatchGrid button:hover{border-color:var(--ps-border-strong)}
+#inkRightDock .inkColorSwatchGrid button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ps-accent-soft),0 0 0 3px var(--ps-accent)}
+#inkRightDock .inkColorPanelOpen{
+  width:100%;height:32px;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+  color:var(--ps-text-secondary);
+  font:550 11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  cursor:pointer;
+}
+#inkRightDock .inkColorPanelOpen:hover{border-color:var(--ps-border-strong);color:var(--ps-text)}
+#inkRightDock .inkPanelCount{display:none!important}
+
+/* =========================================================
+   SOL DOCK â€” REFERANS PANOSU
+   ========================================================= */
+#inkLeftDock.psLeftDock{
+  position:fixed!important;
+  top:var(--ps-top);
+  left:12px;
+  bottom:calc(var(--ps-status-h) + 12px);
+  width:var(--ps-left-w);
+  height:auto!important;
+  display:flex!important;
+  flex-direction:column;
+  padding:0!important;
+  margin:0!important;
+  overflow:visible;
+  z-index:1220;
+  pointer-events:auto;
+  transition:transform .22s var(--ps-ease),opacity .18s var(--ps-ease),width .18s var(--ps-ease);
+}
+body:not(.mode-draw) #inkLeftDock{display:none!important}
+body.ps-left-closed #inkLeftDock{
+  transform:translateX(calc(-100% - 24px));
+  opacity:0;
+  pointer-events:none;
+}
+#psReferencePanel{flex:1 1 auto;min-height:0;border-top:0!important}
+#psReferencePanel .psAccBody{
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:var(--ps-scroll-thumb) transparent;
+  border-radius:0 0 var(--ps-radius-dock) var(--ps-radius-dock);
+}
+#psReferencePanel .psAccBody::-webkit-scrollbar{width:7px}
+#psReferencePanel .psAccBody::-webkit-scrollbar-thumb{background:var(--ps-scroll-thumb);border-radius:4px}
+.psRefList{display:flex;flex-direction:column;gap:4px;padding:0 0 4px}
+.psRefItem{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) 24px;
+  align-items:center;
+  gap:8px;
+  min-height:52px;
+  padding:4px;
+  border:0.5px solid transparent;
+  border-radius:var(--ps-radius-control);
+  background:transparent;
+  cursor:grab;
+  text-align:left;
+  color:var(--ps-text-secondary);
+}
+.psRefItem:hover{background:var(--ps-surface-active);border-color:var(--ps-border)}
+.psRefItem:active{cursor:grabbing}
+.psRefThumb{
+  width:44px;height:44px;
+  border-radius:6px;
+  object-fit:cover;
+  background:var(--ps-surface-sunken);
+  border:0.5px solid var(--ps-border);
+}
+.psRefMeta{min-width:0;display:flex;flex-direction:column;gap:2px}
+.psRefMeta b{font:550 11.5px/1.2 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--ps-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.psRefMeta span{font:10px/1.2 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--ps-text-tertiary);font-variant-numeric:tabular-nums}
+.psRefOpen{
+  width:24px;height:24px;min-width:24px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:5px;background:transparent;color:var(--ps-text-tertiary);
+  cursor:pointer;
+}
+.psRefOpen:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+.psRefOpen svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8}
+.psRefEmpty{
+  margin:10px 2px;
+  color:var(--ps-text-tertiary);
+  font:11px/1.5 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  text-align:center;
+}
+.psRefEmpty[hidden]{display:none}
+
+/* =========================================================
+   REFERANS MODU PANELLERİ
+   ========================================================= */
+.psProjectMount{display:flex;flex-direction:column;gap:3px}
+.psProjectMount .projTab{
+  display:flex;align-items:center;gap:4px;
+  min-height:34px;
+  padding:2px 3px 2px 9px;
+  border-radius:var(--ps-radius-control);
+  background:transparent;
+  color:var(--ps-text-secondary);
+}
+.psProjectMount .projTab:hover{background:var(--ps-surface-active)}
+.psProjectMount .projTab.is-active{background:var(--ps-accent-soft)}
+.psProjectMount .projTabLabel{
+  flex:1 1 auto;min-width:0;
+  border:0;background:transparent;
+  color:inherit;
+  font:550 12px/1.2 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  text-align:left;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  cursor:pointer;
+  padding:0;
+}
+.psProjectMount .projTab.is-active .projTabLabel{color:var(--ps-text)}
+.psProjectMount .projTabClose{
+  width:24px;height:24px;min-width:24px;
+  border:0;border-radius:5px;background:transparent;
+  color:var(--ps-text-tertiary);
+  font-size:14px;line-height:1;
+  cursor:pointer;
+  opacity:0;
+  transition:opacity .14s var(--ps-ease),background .14s var(--ps-ease);
+}
+.psProjectMount .projTab:hover .projTabClose,
+.psProjectMount .projTab:focus-within .projTabClose{opacity:1}
+.psProjectMount .projTabClose:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+.psProjectMount #btnNewProject{
+  width:100%;height:32px;
+  margin-top:3px;
+  border:0.5px dashed var(--ps-border-strong);
+  border-radius:var(--ps-radius-control);
+  background:transparent;
+  color:var(--ps-text-secondary);
+  font:550 11.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  cursor:pointer;
+}
+.psProjectMount #btnNewProject:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+.psProjectMount #btnNewProject:disabled{opacity:.40;cursor:not-allowed}
+/* Sekmeler artık üstteki #projectBar içinde; bu sıfırlama yalnızca
+   panele taşınmış kopyalar için geçerli. */
+#projectTabs{position:static!important;inset:auto!important;height:auto!important;width:auto!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
+
+.psAddGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.psAddBtn{
+  display:flex;align-items:center;gap:7px;
+  height:36px;
+  padding:0 8px;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);
+  color:var(--ps-text-secondary);
+  font:550 11.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  cursor:pointer;
+  min-width:0;
+}
+.psAddBtn:hover{border-color:var(--ps-border-strong);color:var(--ps-text);background:var(--ps-surface-active)}
+.psAddBtn svg{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.psAddBtn span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.psAddBtn kbd{color:var(--ps-text-tertiary);font:10px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.psAddBtn--wide{grid-column:1 / -1}
+.psInfoList{display:flex;flex-direction:column;gap:6px;margin:0}
+.psInfoList > div{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:24px}
+.psInfoList dt{color:var(--ps-text-secondary);font:11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.psInfoList dd{margin:0;color:var(--ps-text);font:550 11px/1.2 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;text-align:right;font-variant-numeric:tabular-nums}
+.psQuietBtn{
+  width:100%;height:30px;margin-top:10px;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-control);
+  background:var(--ps-surface-sunken);color:var(--ps-text-secondary);
+  font:550 11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  cursor:pointer;
+}
+.psQuietBtn:hover{border-color:var(--ps-border-strong);color:var(--ps-text)}
+
+/* =========================================================
+   SOL ARAÃ‡ RAYI
+   ========================================================= */
+#inkToolbox{
+  position:fixed!important;
+  left:calc(var(--ps-left-w) + 24px);
+  top:50%;
+  transform:translateY(-50%);
+  width:52px;
+  max-height:calc(100vh - var(--ps-top) - var(--ps-status-h) - 32px);
+  display:flex!important;
+  flex-direction:column;
+  align-items:stretch;
+  gap:3px;
+  padding:7px 5px;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-dock);
+  background:var(--ps-surface);
+  color:var(--ps-text);
+  box-shadow:var(--ps-shadow);
+  backdrop-filter:var(--ps-blur);
+  -webkit-backdrop-filter:var(--ps-blur);
+  overflow-y:auto;
+  overflow-x:hidden;
+  z-index:1218;
+  pointer-events:auto;
+  scrollbar-width:none;
+}
+#inkToolbox::-webkit-scrollbar{width:0;height:0}
+body:not(.mode-draw) #inkToolbox{display:none!important}
+body.ps-left-closed #inkToolbox{left:24px}
+#inkToolbox .inkToolboxHead{display:none!important}
+#inkToolbox .inkGroup{display:flex;flex-direction:column;gap:2px;padding:2px 0}
+#inkToolbox .inkGroup + .inkGroup,
+#inkToolbox .inkTool + .inkGroup,
+#inkToolbox .inkGroup + .inkTool{border-top:0.5px solid var(--ps-border);padding-top:4px;margin-top:2px}
+#inkToolbox .inkTool{
+  position:relative;
+  width:42px;height:42px;min-height:42px;
+  display:flex;align-items:center;justify-content:center;
+  border:0;border-radius:var(--ps-radius-control);
+  background:transparent;color:var(--ps-text-secondary);
+  cursor:pointer;
+}
+#inkToolbox .inkTool:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+#inkToolbox .inkTool.active{background:var(--ps-surface-active);color:var(--ps-text)}
+#inkToolbox .inkTool.active::before{display:none}
+#inkToolbox .inkTool .inkIcon{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.65}
+#inkToolbox .inkToolLabel{display:none}
+#inkToolbox .inkToolKey{display:none}
+#inkToolbox .inkFly{
+  position:absolute;right:3px;bottom:3px;
+  width:10px;height:10px;
+  padding:0;border:0;border-radius:3px;
+  background:transparent;color:var(--ps-text-tertiary);
+  cursor:pointer;
+}
+#inkToolbox .inkFly::after{
+  content:"";display:block;width:4px;height:4px;margin:auto;
+  border-right:1px solid currentColor;border-bottom:1px solid currentColor;
+  transform:rotate(45deg);
+}
+#inkToolbox .inkTool:hover .inkFly{color:var(--ps-text-secondary)}
+#inkToolbox .inkColorRow{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  margin-top:auto;padding-top:6px;border-top:0.5px solid var(--ps-border);
+}
+#inkToolbox .inkColorWell{
+  width:34px;height:34px;min-width:34px;
+  padding:2px;border:0.5px solid var(--ps-border-strong);
+  border-radius:8px;background:transparent;cursor:pointer;
+}
+#inkToolbox .inkColorWell:hover{border-color:var(--ps-text-tertiary)}
+#inkToolbox .inkColorSwatch{display:block;width:100%;height:100%;border-radius:5px}
+#inkToolbox .inkColorLabel{display:none}
+
+/* draw-mode-new.css araç rayını tam yükseklikte, etiketli bir sütun
+   olarak kuruyor. Yeni ray tek mat yüzey ve kare düğmeler kullanır. */
+body.mode-draw #inkToolbox{
+  position:fixed!important;
+  left:calc(var(--ps-left-w) + 24px)!important;
+  right:auto!important;
+  top:50%!important;
+  bottom:auto!important;
+  transform:translateY(-50%)!important;
+  width:52px!important;
+  height:auto!important;
+  max-height:calc(100vh - var(--ps-top) - var(--ps-status-h) - 32px)!important;
+  padding:7px 5px!important;
+  gap:3px!important;
+  border:0.5px solid var(--ps-border)!important;
+  border-right:0.5px solid var(--ps-border)!important;
+  border-radius:var(--ps-radius-dock)!important;
+  background:var(--ps-surface)!important;
+  box-shadow:var(--ps-shadow)!important;
+  backdrop-filter:var(--ps-blur)!important;
+  -webkit-backdrop-filter:var(--ps-blur)!important;
+  z-index:1218!important;
+}
+body.ps-left-closed #inkToolbox{left:24px!important}
+body.mode-draw #inkToolbox .inkTool{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  border:0!important;
+  border-radius:var(--ps-radius-control)!important;
+  background:transparent!important;
+}
+body.mode-draw #inkToolbox .inkTool:hover{background:var(--ps-surface-active)!important}
+body.mode-draw #inkToolbox .inkTool.active{
+  background:var(--ps-surface-active)!important;
+  color:var(--ps-text)!important;
+}
+body.mode-draw #inkToolbox .inkTool.active::before{display:none!important}
+body.mode-draw #inkToolbox .inkToolLabel{display:none!important}
+body.mode-draw #inkToolbox .inkToolKey{display:none!important}
+body.mode-draw #inkToolbox .inkGroup{
+  width:42px!important;
+  height:auto!important;
+  gap:2px!important;
+}
+body.mode-draw #inkToolbox .inkGroup .inkTool{width:42px!important;height:42px!important}
+body.mode-draw #inkToolbox .inkFly{
+  right:2px!important;
+  bottom:2px!important;
+  width:10px!important;
+  height:10px!important;
+  border:0!important;
+  border-radius:3px!important;
+  background:transparent!important;
+  clip-path:none!important;
+}
+body.mode-draw #inkToolbox .inkFly::after{
+  content:""!important;
+  position:static!important;
+  display:block!important;
+  width:4px!important;
+  height:4px!important;
+  margin:auto!important;
+  border-right:1px solid currentColor!important;
+  border-bottom:1px solid currentColor!important;
+  border-left:0!important;
+  transform:rotate(45deg);
+}
+body.mode-draw .inkColorRow{
+  position:static!important;
+  background:transparent!important;
+  border-top:0.5px solid var(--ps-border)!important;
+}
+body.mode-draw .inkColorWell{
+  width:34px!important;
+  height:34px!important;
+  padding:2px!important;
+  border:0.5px solid var(--ps-border-strong)!important;
+  border-radius:8px!important;
+  background:transparent!important;
+}
+
+/* Renk çarkı popover'i */
+#inkColorWheel{
+  background:var(--ps-surface-raised)!important;
+  border:0.5px solid var(--ps-border)!important;
+  border-radius:var(--ps-radius-dock)!important;
+  box-shadow:var(--ps-shadow)!important;
+  color:var(--ps-text)!important;
+  backdrop-filter:var(--ps-blur)!important;
+  -webkit-backdrop-filter:var(--ps-blur)!important;
+}
+
+/* Eski alt kenar panelleri yeni durum çubuğunun üstünde kalsın. */
+#inspector{bottom:calc(var(--ps-status-h) + 12px)!important}
+#trashDock{bottom:calc(var(--ps-status-h) + 12px)!important}
+body:not(.ps-right-closed) #trashDock{right:calc(var(--ps-right-w) + 24px)!important}
+/* Sağ dock yalnızca çizim modunda görünür; tahta modunda dock yokken çöp
+   kutusu ekranın sağ alt köşesinde kalmalı. (Eskiden dock gizliyken bile
+   kaymış, ortaya yakın duruyordu.) */
+body.mode-reference #trashDock{right:16px!important}
+
+/* =========================================================
+   DURUM ÇUBUĞU
+   ========================================================= */
+#psStatusBar{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  height:var(--ps-status-h);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;
+  padding:0 12px;
+  box-sizing:border-box;
+  border-top:0.5px solid var(--ps-border);
+  background:var(--ps-surface);
+  color:var(--ps-text-secondary);
+  box-shadow:0 -1px 0 var(--ps-shadow-soft);
+  backdrop-filter:var(--ps-blur);
+  -webkit-backdrop-filter:var(--ps-blur);
+  z-index:1302;
+  font:11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+/* KULLANICI KARARI (2026-11-04): alt durum çubuğu gereksiz — gizli.
+   DOM yerinde kalır (48-shell değer yazmaya devam eder, kırpmaz);
+   yüzen dock'ların alt payı --ps-status-h 0 ile zemine oturur. */
+#psStatusBar{display:none!important}
+body{--ps-status-h:0px}
+#status,#inkScopeBar{display:none!important}
+.psStatusLeft,.psStatusRight{display:flex;align-items:center;gap:8px;min-width:0}
+.psStatusBtn{
+  display:inline-flex;align-items:center;gap:6px;
+  height:26px;padding:0 7px;
+  border:0;border-radius:6px;
+  background:transparent;color:var(--ps-text-secondary);
+  font:500 11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.psStatusBtn:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+.psStatusBtn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.7;flex:none}
+.psStatusBtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+.psStatusSep{width:1px;height:14px;background:var(--ps-border);flex:none}
+.psStatusMeta{color:var(--ps-text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.psStatusColor{
+  width:24px;height:24px;min-width:24px;
+  padding:2px;border:0.5px solid var(--ps-border-strong);
+  border-radius:7px;background:transparent;cursor:pointer;
+}
+.psStatusColor:hover{border-color:var(--ps-text-tertiary)}
+#psStatusColorSwatch{display:block;width:100%;height:100%;border-radius:4px;background:var(--ps-accent)}
+/* Fırça rengi yalnızca çizim modunda anlamlı; referansta gizlenir. */
+body:not(.mode-draw) #psStatusColor,
+body:not(.mode-draw) #psStatusColorSep{display:none}
+
+/* =========================================================
+   TAŞMA MENÜSÜ
+   ========================================================= */
+#overflowMenu{
+  background:var(--ps-surface-raised)!important;
+  border:0.5px solid var(--ps-border)!important;
+  border-radius:var(--ps-radius-dock)!important;
+  box-shadow:var(--ps-shadow)!important;
+  backdrop-filter:var(--ps-blur)!important;
+  -webkit-backdrop-filter:var(--ps-blur)!important;
+  color:var(--ps-text)!important;
+  padding:6px!important;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:thin;
+}
+#overflowMenu .menuPanelHead{
+  display:flex;align-items:center;
+  min-height:28px;
+  padding:2px 8px 6px;
+  color:var(--ps-text-tertiary);
+  font:600 9.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+#overflowMenu button{
+  display:flex!important;
+  align-items:center;
+  width:100%;
+  min-height:30px;
+  margin:1px 0;
+  padding:0 8px;
+  border:0;
+  border-radius:6px;
+  background:transparent!important;
+  color:var(--ps-text-secondary)!important;
+  font:500 11.5px/1.2 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important;
+  text-align:left;
+  cursor:pointer;
+}
+#overflowMenu button:hover,
+#overflowMenu button:focus-visible{background:var(--ps-surface-active)!important;color:var(--ps-text)!important}
+#overflowMenu button[disabled]{opacity:.40;cursor:not-allowed}
+#overflowMenu button kbd{
+  margin-left:auto;
+  color:var(--ps-text-tertiary);
+  font:10px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+#overflowMenu .overflowDivider{
+  height:0.5px!important;
+  margin:5px 4px!important;
+  background:var(--ps-border)!important;
+}
+
+/* =========================================================
+   TOOLTIP
+   ========================================================= */
+button[data-tooltip]::after{
+  border:0.5px solid var(--ps-border)!important;
+  border-radius:8px!important;
+  background:var(--ps-surface-raised)!important;
+  color:var(--ps-text)!important;
+  box-shadow:var(--ps-shadow)!important;
+  font:11px/1.35 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif!important;
+  padding:6px 9px!important;
+  max-width:260px!important;
+  backdrop-filter:var(--ps-blur);
+  -webkit-backdrop-filter:var(--ps-blur);
+}
+
+/* =========================================================
+   KENAR TUTAMAÃ‡LARI + BOYUTLANDIRMA
+   ========================================================= */
+.psResize{
+  position:absolute;
+  top:50%;
+  width:24px;
+  height:72px;
+  margin-top:-36px;
+  border:0;
+  background:transparent;
+  cursor:ew-resize;
+  z-index:5;
+  touch-action:none;
+  outline:none;
+}
+.psResize::after{
+  content:"";
+  display:block;
+  width:2px;
+  height:34px;
+  margin:19px auto;
+  border-radius:2px;
+  background:var(--ps-border-strong);
+  opacity:0;
+  transition:opacity .16s var(--ps-ease),background .16s var(--ps-ease);
+}
+.psDock:hover .psResize::after{opacity:.75}
+.psResize:hover::after,.psResize:focus-visible::after{opacity:1;background:var(--ps-accent)}
+/* Tutamaç panelin DIŞ kenarında: sol dock'ununki soluna, sağ
+   dock'ununki sağına (kullanıcı talebi — iç kenardaki tutamaç
+   tuval yanında "slider" gibi duruyordu). Dock ekran kenar
+   12px içeride; 24px tutamaç yarısı taşarak tıklanır kalır. */
+.psLeftDock .psResize{left:-12px}
+.psRightDock .psResize{right:-12px}
+
+.psEdgeHandle{
+  position:fixed;
+  top:50%;
+  transform:translateY(-50%);
+  width:24px;
+  height:72px;
+  display:none;
+  align-items:center;justify-content:center;
+  padding:0;
+  border:0.5px solid var(--ps-border);
+  border-radius:8px;
+  background:var(--ps-surface);
+  color:var(--ps-text-secondary);
+  box-shadow:var(--ps-shadow);
+  backdrop-filter:var(--ps-blur);
+  z-index:1225;
+  cursor:pointer;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s var(--ps-ease),background .18s var(--ps-ease);
+}
+.psEdgeHandle svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.psEdgeHandle--right{right:4px}
+.psEdgeHandle--left{left:4px}
+body.ps-right-closed #psRightHandle{display:flex;pointer-events:auto;opacity:.72}
+body.ps-right-closed #psRightHandle:hover,
+body.ps-right-closed #psRightHandle:focus-visible{opacity:1;background:var(--ps-surface-raised)}
+body.ps-left-closed.mode-draw #psLeftHandle{display:flex;pointer-events:auto;opacity:.72}
+body.ps-left-closed.mode-draw #psLeftHandle:hover,
+body.ps-left-closed.mode-draw #psLeftHandle:focus-visible{opacity:1;background:var(--ps-surface-raised)}
+
+/* =========================================================
+   REFERANS ÖN İZLEME KATMANI
+   ========================================================= */
+#psRefOverlay{
+  position:fixed;
+  z-index:1240;
+  width:min(420px,42vw);
+  max-height:70vh;
+  display:flex;
+  flex-direction:column;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-dock);
+  background:var(--ps-surface);
+  color:var(--ps-text);
+  box-shadow:var(--ps-shadow);
+  backdrop-filter:var(--ps-blur);
+  -webkit-backdrop-filter:var(--ps-blur);
+  overflow:hidden;
+}
+#psRefOverlay[hidden]{display:none!important}
+#psRefOverlayHead{
+  display:flex;align-items:center;gap:8px;
+  min-height:34px;
+  padding:0 6px 0 10px;
+  border-bottom:0.5px solid var(--ps-border);
+  cursor:grab;
+  user-select:none;
+}
+#psRefOverlayHead:active{cursor:grabbing}
+#psRefOverlayTitle{
+  flex:1 1 auto;min-width:0;
+  font:600 11.5px/1.2 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#psRefOverlayClose{
+  width:24px;height:24px;min-width:24px;
+  border:0;border-radius:6px;background:transparent;color:var(--ps-text-tertiary);
+  cursor:pointer;
+}
+#psRefOverlayClose:hover{background:var(--ps-surface-active);color:var(--ps-text)}
+#psRefOverlayClose svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;margin:auto}
+#psRefOverlayBody{
+  padding:8px;
+  overflow:auto;
+  background:var(--ps-surface-sunken);
+  pointer-events:none;
+}
+#psRefOverlayImg{display:block;max-width:100%;max-height:calc(70vh - 52px);margin:auto;border-radius:6px}
+
+/* =========================================================
+   GEÇMİŞ POPOVER'İ
+   ========================================================= */
+#psHistoryPopover{
+  position:fixed;
+  right:calc(var(--ps-right-w) + 24px);
+  bottom:calc(var(--ps-status-h) + 12px);
+  width:266px;
+  max-height:52vh;
+  display:flex;
+  flex-direction:column;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-dock);
+  background:var(--ps-surface-raised);
+  color:var(--ps-text);
+  box-shadow:var(--ps-shadow);
+  backdrop-filter:var(--ps-blur);
+  -webkit-backdrop-filter:var(--ps-blur);
+  z-index:1245;
+  overflow:hidden;
+}
+#psHistoryPopover[hidden]{display:none!important}
+#psHistoryPopover .psPanelHead{cursor:default}
+#psHistoryPopover #inkHistoryPanel{display:flex!important;flex-direction:column;min-height:0}
+#psHistoryPopover #inkHistoryPanel .inkPanelHead{display:none!important}
+#psHistoryPopover .inkHistoryList{
+  flex:1 1 auto;min-height:80px;max-height:34vh;
+  overflow-y:auto;
+  padding:2px 8px;
+}
+#psHistoryPopover .inkHistoryActions{
+  display:flex;gap:6px;padding:6px 8px 8px;border-top:0.5px solid var(--ps-border);
+}
+#psHistoryPopover .inkHistoryActions button{
+  flex:1;height:28px;display:flex;align-items:center;justify-content:center;gap:5px;
+  border:0.5px solid var(--ps-border);border-radius:6px;background:var(--ps-surface-sunken);
+  color:var(--ps-text-secondary);font:550 11px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;cursor:pointer;
+}
+#psHistoryPopover .inkHistoryActions button:hover{color:var(--ps-text);border-color:var(--ps-border-strong)}
+
+/* =========================================================
+   KIRILIMLAR — araç çubuğu kapsayıcısına göre
+   ≥1000   : ikon + etiket (tümü)
+   700–999 : ikincil etiketler gizlenir, birincil etiketler kalır
+   500–699 : yalnızca ikon; opaklık yuvası en az 90 px
+   <500    : çekirdek öğeler (aktif araç, zoom, opaklık, PNG);
+             diğerleri ••• menüsüne taşınır (JS)
+   <360    : tek satıra sığmazsa iki satıra sarılır
+   ========================================================= */
+@container bar (max-width:999px){
+  #bar .tlabel--secondary{display:none}
+  #bar .tbtn{padding:0 8px}
+  #bar .tbtn--accent{padding:0 11px}
+  #bar .opbox{width:140px}
+  #bar .themeSelect{max-width:96px}
+}
+@container bar (max-width:699px){
+  #bar .tlabel{display:none}
+  #bar .tbtn{width:36px;min-width:36px;padding:0}
+  #bar .tbtn--accent{width:auto;min-width:36px;padding:0 12px}
+  #bar .segment .tbtn{width:34px;min-width:34px;padding:0 8px}
+  #bar .segment .tbtn .tlabel{display:none}
+  #bar .opbox{width:118px}
+  #bar .opTrack{min-width:90px}
+  #bar .themeSelect{width:36px;padding:0;color:transparent;background-position:center}
+  #bar .themeSelect option{color:var(--ps-text)}
+  #bar .zoombox{height:32px}
+}
+@container bar (max-width:499px){
+  #bar{gap:1px;padding:4px}
+  #bar .tbtn{width:32px;min-width:32px}
+  #bar .tbtn--accent{width:auto;min-width:32px;padding:0 11px}
+  #bar .segment .tbtn{width:32px;min-width:32px}
+  #bar .opbox{width:96px;padding:0 6px}
+  #bar .opTrack{min-width:74px}
+  #bar .zval{min-width:38px}
+  #bar .overflowToggle{width:32px;min-width:32px}
+  #bar .tsep{display:none}
+}
+@container bar (max-width:359px){
+  #bar{flex-wrap:wrap;height:auto;min-height:44px;justify-content:center;border-radius:16px;row-gap:3px}
+  #bar .tsep{display:none}
+  #bar .opbox{width:94px}
+}
+
+/* Ekran kırılımları — dock genişlikleri */
+@media (max-width: 1180px){
+  :root{--ps-right-w:284px}
+}
+@media (max-width: 980px){
+  :root{--ps-right-w:264px;--ps-left-w:220px}
+  #psStatusBar{font-size:10.5px}
+}
+@media (max-width: 780px){
+  :root{--ps-right-w:248px;--ps-left-w:200px}
+  #psStatusSizeValue{max-width:120px}
+  #inkToolbox{width:48px}
+}
+@media (max-width: 620px){
+  :root{--ps-right-w:224px;--ps-left-w:180px}
+  #barDock{left:8px;right:8px}
+  #inkRightDock.psRightDock{right:8px}
+  #inkLeftDock.psLeftDock{left:8px}
+  .psStatusMeta{display:none}
+}
+@media (max-width: 480px){
+  :root{--ps-right-w:200px;--ps-left-w:160px}
+  #psStatusSizeValue{max-width:86px}
+  #inkToolbox{width:44px;padding:5px 3px}
+}
+
+/* ⋯ menüsü içindeki tema seçici */
+#overflowMenu .overflowThemeRow{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:36px;
+  padding:4px 10px 4px 12px;
+  color:var(--ps-text-secondary);
+  font:550 12px/1.2 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+#overflowMenu .overflowThemeRow[hidden]{display:none!important}
+#overflowMenu .overflowThemeRow select{
+  height:30px;max-width:150px;
+  padding:0 22px 0 8px;
+  border:0.5px solid var(--ps-border);
+  border-radius:var(--ps-radius-control);
+  background-color:var(--ps-surface-sunken);
+  color:var(--ps-text);
+  font:550 11.5px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  cursor:pointer;
+}
+#overflowMenu .overflowThemeRow select option{background:var(--ps-surface-raised);color:var(--ps-text)}
+
+/* Odak halkası — her yeni bileşende görünür */
+#bar button:focus-visible,
+#appModeBar button:focus-visible,
+.psPanelHead:focus-visible,
+.psAcc button:focus-visible,
+.psAddBtn:focus-visible,
+.psRefItem:focus-visible,
+.psStatusBtn:focus-visible,
+.psStatusColor:focus-visible,
+.psDockCollapse:focus-visible,
+.psEdgeHandle:focus-visible,
+.psResize:focus-visible,
+#overflowMenu .overflowThemeRow select:focus-visible,
+#inkRightDock .inkLayerRow:focus-visible,
+#inkRightDock .inkPreset:focus-visible{
+  outline:2px solid var(--ps-accent);
+  outline-offset:2px;
+}
+.psPanelHead:focus-visible{outline-offset:-2px;border-radius:6px}
+
+/* Hareket azaltma */
+@media (prefers-reduced-motion: reduce){
+  #barDock,#bar,#inkRightDock,#inkLeftDock,.psAccBody,.psChevron,.psEdgeHandle{
+    transition:none!important;
+  }
+}
+/* =========================================================
+   REFERANS MODU - SAG PANO PANELI KALDIRILDI
+   Panolar / Ekle / Tahta listesi yok. Panolar ustteki sekme
+   cubugundan yonetilir; mod anahtari (Cizim / Referans) ust
+   arac cubugunda, pencere dugmelerinin solunda durur.
+   ========================================================= */
+body.mode-reference #inkRightDock.psRightDock{display:none!important}
+body.mode-reference #psRightHandle,
+body.mode-reference #psLeftHandle{display:none!important}
+body.mode-reference #inkRightDock{display:none!important}
+body.mode-reference #btnPanels{display:none!important}
+body.mode-reference #overflowMenu [data-overflow-target="btnPanels"],
+body.mode-reference #overflowMenu [data-ps-action="panels"]{display:none!important}
+
+/* Pano sekmeleri + yeni pano (+): referansta üstte, araç çubuğunun üstünde.
+   Sağ panel referansta kapalı olduğundan bu çubuk tek erişim noktasıdır. */
+body.mode-reference #projectBar{
+  display:flex!important;
+  top:24px;
+  max-width:min(780px,clamp(150px,calc(100vw - 480px),780px));
+}
+
+body.mode-reference #bar #appModeBar{
+  position:static!important;
+  inset:auto!important;
+  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  display:flex!important;
+  align-items:center;
+  gap:6px;
+  width:auto!important;
+  height:auto!important;
+  margin:0 2px;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  transform:none!important;
+}
+body.mode-reference #bar #appModeBar .modeSeg{
+  display:flex;
+  gap:2px;
+  padding:2px;
+  border-radius:999px;
+  background:var(--ps-surface-sunken);
+}
+body.mode-reference #bar #appModeBar .modeBtn{
+  flex:0 0 auto;
+  height:30px;
+  min-width:0;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:0 12px;
+  border:0;border-radius:999px;
+  background:transparent;
+  color:var(--ps-text-secondary);
+  font:600 12px/1 'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  cursor:pointer;
+}
+body.mode-reference #bar #appModeBar .modeBtn:hover{color:var(--ps-text);background:var(--ps-surface-active)}
+body.mode-reference #bar #appModeBar .modeBtn.is-active{background:var(--ps-surface-active);color:var(--ps-text)}
+body.mode-reference #bar #appModeBar .modeIcon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;flex:none}
+body.mode-reference #bar #appModeBar #psDockCollapse{display:none!important}
+
+/* =========================================================
+   SEÇİM ÖZELLİKLERİ — üst panel sadeleştirme
+   Grup / Bağla / Özellikler üst panelden kaldırıldı. Grup ve
+   Bağla artık seçim özellikleri panelinde (#itemBar) yer alır.
+   ========================================================= */
+/* Yalnızca düğmeler gizlenir; içinde arka plan opaklığı (#opacityCtl)
+   bulunan tgroup ayakta kalır, aksi hâlde opaklık kaydırıcısı da kaybolur. */
+#btnGroup,#btnLink,#btnInspector{display:none!important}
+#overflowMenu [data-overflow-target="btnGroup"],
+#overflowMenu [data-overflow-target="btnLink"],
+#overflowMenu [data-overflow-target="btnInspector"]{display:none!important}
+
+/* Seçim özellikleri paneli her zaman görünür. Seçim yokken içerik
+   soluklaşır ama panel yerinde kalır. */
+#itemBar.is-empty .itemBarContent{opacity:.42;pointer-events:none}
+#itemBar.is-empty .itemBarEyebrow{opacity:.6}
+#itemBar.is-empty .ibTitle{color:var(--ps-text-secondary)}

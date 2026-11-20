@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiremit Motoru — Kullanım Demosu</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body {
+    display: flex; flex-direction: column;
+    font: 13px/1.4 system-ui, "Segoe UI", sans-serif;
+    background: #14161b; color: #d6d9e0;
+  }
+
+  /* araç çubuğu */
+  #bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 8px 12px; background: #1b1e26; border-bottom: 1px solid #2a2e38;
+  }
+  #bar b { color: #fff; font-size: 13px; margin-right: 4px; }
+  .lbl { font-size: 12px; color: #9aa1ad; }
+  input[type="range"] { width: 110px; accent-color: #3b82f6; }
+  input[type="color"] {
+    width: 34px; height: 24px; padding: 0; border: 1px solid #2a2e38;
+    border-radius: 4px; background: none; cursor: pointer;
+  }
+  button {
+    padding: 5px 12px; border: 1px solid #343a46; border-radius: 6px;
+    background: #232733; color: #e8eaf0; font: inherit; cursor: pointer;
+  }
+  button:hover { background: #2c3140; }
+  button:active { background: #343a46; }
+
+  /* tuval alanı */
+  #stage { position: relative; flex: 1; min-height: 0; }
+  #view {
+    position: absolute; inset: 0; display: block;
+    background: #21242d;        /* kağıt dışı alan */
+    cursor: crosshair; touch-action: none;
+  }
+  #cursor {
+    position: absolute; pointer-events: none;
+    border: 1px solid rgba(255,255,255,.85); border-radius: 50%;
+    mix-blend-mode: difference; transform: translateZ(0);
+  }
+  #hint {
+    position: absolute; left: 12px; bottom: 10px; right: 210px;
+    font-size: 12px; color: #7f8796;
+  }
+  #stats {
+    position: absolute; top: 10px; right: 12px; padding: 6px 10px;
+    background: rgba(20,22,27,.82); border: 1px solid #2a2e38;
+    border-radius: 6px; font-size: 12px; color: #a8aebe;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <b>Kiremit Motoru</b>
+  <span><span class="lbl">renk</span> <input id="color" type="color" value="#1d4ed8"></span>
+  <span><span class="lbl">boyut <span id="sizeVal">48</span></span>
+        <input id="size" type="range" min="2" max="120" value="48"></span>
+  <span><span class="lbl">sertlik <span id="hardVal">70</span></span>
+        <input id="hardness" type="range" min="0" max="100" value="70"></span>
+  <button id="undoBtn" title="Ctrl+Z">↩ Geri</button>
+  <button id="redoBtn" title="Ctrl+Y">↪ İleri</button>
+  <button id="clearBtn">Temizle</button>
+  <button id="resetBtn">Görünümü sıfırla</button>
+</div>
+
+<div id="stage">
+  <canvas id="view"></canvas>
+  <div id="cursor"></div>
+  <div id="hint"></div>
+  <div id="stats">karo: 0</div>
+</div>
+
+<script type="module" src="./demo.js"></script>
+<script>/* slider yanındaki saniye değerleri */
+  const sv = document.getElementById('sizeVal'), hv = document.getElementById('hardVal');
+  document.getElementById('size').addEventListener('input', e => sv.textContent = e.target.value);
+  document.getElementById('hardness').addEventListener('input', e => hv.textContent = e.target.value);
+</script>
+</body>
+</html>

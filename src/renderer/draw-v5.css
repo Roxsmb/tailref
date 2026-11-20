@@ -1,0 +1,4994 @@
+/* =========================================================
+   TailRef Studio · çizim modu arayüzü v5
+   Referans ölçü, boşluk, tipografi ve tek ikon dili.
+   ========================================================= */
+
+/* Tokenlar :root'ta tanımlı: referans modundaki mod çubuğu da temayı izler.
+   Tüm değerler tema paletinden (--bg/--panel/--text/--accent) türetilir. */
+:root {
+  --v5-bg: var(--bg);
+  --v5-panel: color-mix(in srgb, var(--panel) 97%, transparent);
+  --v5-panel-float: color-mix(in srgb, var(--panel) 92%, transparent);
+  --v5-border: color-mix(in srgb, var(--text) 8%, transparent);
+  --v5-text: var(--text);
+  --v5-text-secondary: var(--dim);
+  --v5-text-tertiary: color-mix(in srgb, var(--dim) 76%, transparent);
+  --v5-accent: var(--accent);
+  --v5-accent-soft: color-mix(in srgb, var(--accent) 18%, transparent);
+  --v5-hover: color-mix(in srgb, var(--text) 6%, transparent);
+  --v5-active: color-mix(in srgb, var(--text) 10%, transparent);
+  --v5-selected: color-mix(in srgb, var(--text) 8%, transparent);
+  --v5-slot: color-mix(in srgb, var(--bg) 62%, transparent);
+  --v5-slot-line: color-mix(in srgb, var(--text) 12%, transparent);
+  --v5-badge: color-mix(in srgb, var(--text) 8%, transparent);
+  --v5-danger: var(--danger, #ff6b6b);
+  --v5-thumb: color-mix(in srgb, var(--text) 24%, var(--panel));
+  --v5-thumb-border: color-mix(in srgb, var(--text) 8%, transparent);
+  --v5-shadow: 0 8px 24px color-mix(in srgb, var(--bg) 70%, transparent);
+  --v5-canvas-shadow: 0 12px 40px color-mix(in srgb, var(--bg) 78%, transparent);
+  --v5-r-panel: 16px;
+  --v5-r-card: 8px;
+  --v5-r-pill: 24px;
+  --v5-r-badge: 6px;
+  --v5-edge: 20px;
+  --v5-gap: 12px;
+  --v5-top: 80px;
+  --v5-left-w: 280px;
+  --v5-right-w: 340px;
+  --v5-font: Inter, BlinkMacSystemFont,
+    "Segoe UI", system-ui, sans-serif;
+  --v5-mono: "SFMono-Regular", "JetBrains Mono", Consolas, "Liberation Mono",
+    monospace;
+}
+
+body.mode-draw {
+  background: var(--v5-bg) !important;
+  background-image: none !important;
+  color: var(--v5-text);
+  font-family: var(--v5-font);
+  font-size: 12px;
+  line-height: 1.4;
+  overflow: hidden !important;
+}
+
+/* ---------- eski iskeleti gizle ---------- */
+body.mode-draw #barDock,
+body.mode-draw #psStatusBar,
+body.mode-draw #inkToolbox,
+body.mode-draw #inkScopeBar,
+body.mode-draw #inkDrawShell,
+body.mode-draw #projectBar,
+body.mode-draw #status,
+body.mode-draw #count,
+body.mode-draw #hint,
+body.mode-draw #itemBar,
+body.mode-draw #windowDragStrip,
+body.mode-draw #psRightResize,
+body.mode-draw #psLeftResize,
+body.mode-draw #inkResizeLeft,
+body.mode-draw #inkResizeRight,
+body.mode-draw #psRightHandle,
+body.mode-draw #psLeftHandle,
+body.mode-draw #inkHistoryPanel,
+body.mode-draw #psHistoryPopover,
+body.mode-draw #psRefAperture,
+body.mode-draw .psRefHint,
+body.mode-draw #psRefEmpty,
+body.mode-draw #inkHud,
+body.mode-draw #drawFloatToolbar,
+body.mode-draw #inkRightDock,
+body.mode-draw #inkLeftDock,
+body.mode-draw #inkColorPanel,
+body.mode-draw #inkLayersPanel,
+body.mode-draw #inkBrushPanel,
+body.mode-draw #psReferencePanel,
+body.mode-draw #psDockScroll {
+  display: none !important;
+}
+
+/* Çizim modunda arka plan ŞEFFAF (kullanıcı kararı, 16 Kasım 2026):
+   seçili temanın #backdrop'ı + rain/snow canvas'ları çizim masasında da
+   görünür — rain seçilirse çizim modunda yağmur yağar. (Eskiden bu
+   üçü opacity:0 ile kapatılıyordu; sadece desk rengi isteniyordu.) */
+
+body.mode-draw #inkEditor {
+  position: fixed !important;
+  inset: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  z-index: 1100 !important;
+}
+
+/* Marka üç modda da sol üstte kalır: v5 kanvas kaplaması (z-index 1100,
+   opak --v5-bg) #brand'i (1001) örterdi. 3D kuralıyla aynı seviyeye
+   çivilenmiş mod çubuğu (9500) tavanı kullanılır. */
+body.mode-draw #brand {
+  z-index: 9500;
+}
+
+body.mode-draw #inkEditorCanvas {
+  display: block !important;
+}
+
+body.mode-draw #inkCanvasFrame {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: var(--v5-canvas-shadow) !important;
+}
+
+/* =========================================================
+   KÖK
+   ========================================================= */
+#v5DrawUI {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  pointer-events: none;
+  font-family: var(--v5-font);
+  color: var(--v5-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#v5DrawUI *,
+#v5DrawUI *::before,
+#v5DrawUI *::after {
+  box-sizing: border-box;
+}
+
+#v5DrawUI button:not(.inkCpSwatch):not(.inkCpSquare) {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+/* renk swatch'ları muaf: inline hex bg + style.css çerçevesi (dock'a
+   yerleşince de kaybolmasın) kullanıcının gördüğü chip görünümü */
+
+#v5DrawUI button:focus-visible,
+#v5DrawUI [tabindex]:focus-visible {
+  outline: 2px solid var(--v5-accent);
+  outline-offset: 2px;
+}
+
+#v5DrawUI .v5-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+#v5DrawUI .v5-dot-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex: none;
+}
+
+/* =========================================================
+   ÜST ARAÇ ÇUBUĞU
+   ========================================================= */
+#v5Toolbar {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  margin: 0;
+  background: var(--v5-panel);
+  border: 1px solid var(--v5-border);
+  border-radius: var(--v5-r-pill);
+  box-shadow: var(--v5-shadow);
+  /* Kök tıklamayı geçirmez: tıklanabilir alan çocuklarda (.v5-tb-body,
+     #v5ToolbarToggle) — daraltıldığında saydam kabuk canvas'ı
+     engellemesin. */
+  pointer-events: none;
+  z-index: 2100;
+  white-space: nowrap;
+  user-select: none;
+  transition: height .34s cubic-bezier(.34,1.4,.42,1),
+    background .22s ease, border-color .22s ease,
+    box-shadow .22s ease, opacity .2s ease;
+}
+
+/* FAZ 6: araç çubuğu daraltma — alt ok gövdeyi (v5-tb-body) katlar,
+   kök kabuk yarı saydam küçük hap'a iner. Kabuk pointer-events:none;
+   tıklanabilir alanlar çocuklarda (katsız saydam kabuk canvas'ı
+   engellemesin). */
+#v5Toolbar.is-collapsed {
+  height: 14px;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  transition: height .34s cubic-bezier(.34,1.4,.42,1),
+    background .22s ease .05s, border-color .22s ease .05s,
+    box-shadow .22s ease .05s, opacity .2s ease;
+}
+
+#v5Toolbar .v5-tb-body {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+  overflow: hidden;
+  transition: transform .38s cubic-bezier(.34,1.56,.55,1), opacity .22s ease,
+    filter .3s ease;
+  will-change: transform, opacity;
+}
+
+#v5Toolbar.is-collapsed .v5-tb-body {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-16px) scale(.72);
+  filter: blur(2px);
+}
+
+#v5Toolbar #v5ToolbarToggle {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 17px;
+  padding: 0;
+  border: 1px solid var(--v5-border);
+  border-radius: 9px;
+  background: var(--v5-panel);
+  color: var(--v5-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: var(--v5-shadow);
+  /* top dahil geçsin: gizlenirken hap yukarı tırmanır (kullanıcı
+     talebi: gizlendiğinde hap daha yukarıda dursun). */
+  transition: top .34s cubic-bezier(.34,1.5,.42,1), color 150ms ease,
+    border-color 150ms ease, background 150ms ease;
+}
+
+#v5Toolbar.is-collapsed #v5ToolbarToggle {
+  top: 1px;
+}
+
+#v5Toolbar #v5ToolbarToggle:hover,
+#v5Toolbar #v5ToolbarToggle:focus-visible {
+  color: var(--v5-text);
+  border-color: var(--v5-text-secondary);
+  background: var(--v5-surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+#v5Toolbar #v5ToolbarToggle svg {
+  width: 13px;
+  height: 13px;
+  /* Yay deseni: açıkken yukarı bakan chevron daralt der; kapalıyken
+     180° dönüp aşağı bakar (içerik aşağıdan geri gelir). */
+  transition: transform .42s cubic-bezier(.3,1.62,.44,.98);
+}
+
+#v5Toolbar.is-collapsed #v5ToolbarToggle svg {
+  transform: rotate(180deg);
+}
+
+/* Tık dokunuşu: chevron mikro zıplaması (mavi halka parlaması kaldırıldı —
+   kullanıcı "niye böyle parlıyor" demişti; odak halkası ayrıca
+   blur() ile kalıcı olmadığından görüntü sabit). */
+#v5Toolbar #v5ToolbarToggle:active svg {
+  transform: rotate(180deg) scale(.8);
+}
+
+#v5Toolbar:not(.is-collapsed) #v5ToolbarToggle:active svg {
+  transform: scale(.8);
+}
+
+#v5Toolbar .v5-grip {
+  width: 26px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  cursor: grab;
+  color: var(--v5-text-tertiary);
+  touch-action: none;
+  border-radius: var(--v5-r-card);
+  transition: color 140ms ease, background 140ms ease;
+}
+
+#v5Toolbar .v5-grip:hover,
+#v5Toolbar .v5-grip:focus-visible {
+  color: var(--v5-text);
+  background: var(--v5-surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+#v5Toolbar .v5-grip:active { cursor: grabbing; }
+
+#v5Toolbar .v5-grip svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+#v5Toolbar .v5-tool {
+  height: 32px;
+  min-width: 32px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: var(--v5-r-card);
+  color: var(--v5-text);
+  font: 500 12px/1.4 var(--v5-font);
+  white-space: nowrap;
+}
+
+#v5Toolbar .v5-tool:hover,
+#v5Toolbar .v5-icon-btn:hover,
+#v5Toolbar .v5-caret:hover {
+  background: var(--v5-hover);
+}
+
+/* FAZ 6 A7 (basılı = hover'ın koyusu; üç durum asla karışmaz) */
+#v5Toolbar .v5-tool:active,
+#v5Toolbar .v5-icon-btn:active,
+#v5Toolbar .v5-caret:active {
+  background: var(--v5-active);
+}
+
+#v5Toolbar .v5-tool.is-active {
+  background: var(--v5-accent-soft);
+  color: var(--v5-accent);
+  /* Aktif = accent çerçeve; hover/basılı dolgusundan kesin ayrışır */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--v5-accent) 55%, transparent);
+}
+
+#v5Toolbar .v5-group.is-active .v5-tool {
+  background: transparent;
+  color: var(--v5-accent);
+  /* Işık grup düzeyinde: grup çocuğuna çerçeve basılmaz (tek-ışık) */
+  box-shadow: none;
+}
+
+#v5Toolbar .v5-group.is-active .v5-caret {
+  color: var(--v5-accent);
+}
+
+#v5Toolbar .v5-group {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--v5-r-card);
+}
+
+#v5Toolbar .v5-group.is-active {
+  background: var(--v5-active);
+}
+
+#v5Toolbar .v5-group .v5-tool { padding-right: 4px; }
+
+#v5Toolbar .v5-caret {
+  width: 18px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--v5-r-card);
+  color: var(--v5-text-secondary);
+}
+
+#v5Toolbar .v5-caret .v5-icon {
+  width: 12px;
+  height: 12px;
+}
+
+#v5Toolbar .v5-count {
+  color: var(--v5-text-secondary);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+#v5Toolbar .v5-kbd {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: var(--v5-badge);
+  color: var(--v5-text-secondary);
+  font: 500 10px/1 var(--v5-font);
+}
+
+#v5Toolbar .v5-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--v5-r-card);
+  color: var(--v5-text);
+}
+
+#v5Toolbar .v5-icon-btn[disabled] {
+  color: var(--v5-text-tertiary);
+  cursor: default;
+  background: transparent;
+}
+
+/* FAZ 6 A7: devre dışı = %40 sönük (tıklanamaz hissi) */
+#v5Toolbar .v5-tool[disabled] {
+  color: var(--v5-text-tertiary);
+  opacity: .4;
+  cursor: default;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* FAZ 6 A1: alfa kilidi gibi toggle'layan ikon düğmelerin aktif ışığı
+   — araçlarla aynı dil (accent çerçeve + %18 dolgu) */
+#v5Toolbar .v5-icon-btn.is-active {
+  background: var(--v5-accent-soft);
+  color: var(--v5-accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--v5-accent) 55%, transparent);
+}
+
+#v5Toolbar .v5-sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: var(--v5-border);
+  flex: none;
+}
+
+#v5Toolbar .v5-only-narrow { display: none; }
+
+/* =========================================================
+   OPTIONS BAR · FAZ 5 · manifest sürüklenen seçenek hapı
+   ========================================================= */
+#v5OptionsBar {
+  position: fixed;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  margin: 0;
+  background: var(--v5-panel);
+  border: 1px solid var(--v5-border);
+  border-radius: var(--v5-r-pill);
+  box-shadow: var(--v5-shadow);
+  pointer-events: auto;
+  z-index: 2090;
+  /* FAZ 6 A9 (kompakt hap): çubuk pencereyi baştan sona dolduran bir
+     şerit değil, araç çubuğuna kenetli bağlamsal bir hapdır. İçerik
+     bu tavandan fazlası `⋯` menüsüne devredilir (progressive
+     disclosure); pencere sağında her zaman nefes payı kalır.
+     K11 düzeltmesi: 900 tavanı geniş pencerede 5 widget'ı (Yumuşatma
+     dahil) gereksiz yere ⋯'e guruptu — tavan 1220. */ 
+  max-width: min(calc(100vw - 32px), 1220px);
+  white-space: nowrap;
+  user-select: none;
+  overflow: hidden;
+}
+
+/* FAZ 6 B9: options bar grip — iki sütun nokta; sürükle → ayrı sabit,
+   çift tık → kenetlen (v5-opt-floating accent çerçevesiyle belli olur). */
+#v5OptionsBar .v5-opt-grip {
+  width: 18px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  cursor: grab;
+  color: var(--v5-text-tertiary);
+  touch-action: none;
+  border-radius: var(--v5-r-card);
+  transition: color 140ms ease, background 140ms ease;
+}
+
+#v5OptionsBar .v5-opt-grip:hover,
+#v5OptionsBar .v5-opt-grip:focus-visible {
+  color: var(--v5-text);
+  background: var(--v5-surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+#v5OptionsBar .v5-opt-grip:active { cursor: grabbing; }
+
+#v5OptionsBar .v5-opt-grip svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+
+#v5OptionsBar.v5-opt-floating {
+  border-color: color-mix(in srgb, var(--v5-accent, #ff5a5f) 55%, var(--v5-border));
+}
+
+#v5OptionsBar .v5-opt-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 4px;
+  color: var(--v5-text-secondary);
+  font-size: 12px;
+  flex: none;
+}
+
+#v5OptionsBar .v5-opt-tool .v5-icon {
+  color: var(--v5-accent);
+}
+
+#v5OptionsBar .v5-opt-tool-name {
+  font-weight: 600;
+  color: var(--v5-text);
+}
+
+#v5OptionsBar .v5-opt-key {
+  font: 10px/1 var(--v5-font-mono, ui-monospace, monospace);
+  padding: 3px 5px;
+  border: 1px solid var(--v5-border);
+  border-radius: 4px;
+  color: var(--v5-text-tertiary);
+}
+
+.v5-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 4px;
+  flex: none;
+}
+
+.v5-opt-label {
+  font-size: 11px;
+  color: var(--v5-text-tertiary);
+}
+
+.v5-opt-val {
+  font: 10px/1 var(--v5-font-mono, ui-monospace, monospace);
+  color: var(--v5-text);
+  min-width: 42px;
+  text-align: right;
+}
+
+/* K12 · çift tıkla elle değer: kompakt koyu kutu — satırı dolduran
+   varsayılan input genişliği yerine çıktı etiketinin boyu kadar. */
+.v5-opt-typed {
+  width: 6ch;
+  max-width: 88px;
+  height: 18px;
+  padding: 0 5px;
+  border: 1px solid color-mix(in srgb, var(--v5-accent) 55%, transparent);
+  border-radius: 4px;
+  background: rgba(10, 17, 24, 0.82);
+  color: var(--v5-text);
+  font: 600 10.5px/16px var(--v5-font-mono, ui-monospace, monospace);
+  text-align: right;
+  outline: none;
+}
+.v5-opt-typed:focus {
+  border-color: var(--v5-accent);
+}
+
+.v5-opt .v5-opt-range {
+  width: 84px;
+  flex: none;
+}
+
+.v5-opt .v5-opt-select,
+.v5-opt-toggle {
+  height: 24px;
+  background: var(--v5-slot);
+  border: 1px solid var(--v5-border);
+  border-radius: 6px;
+  color: var(--v5-text);
+  font-size: 11px;
+  padding: 0 6px;
+  cursor: pointer;
+}
+
+.v5-opt-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  padding: 0;
+}
+
+/* K11 · anahtar cevheri: topuz görünür — boş kutu "boş widget" sanılıyordu
+   (kullanıcı raporu: "fare basıncı diye bir şey var ama boş"). Açık =
+   topuz sağa + accent dolgun; kapalı = topuz loş solda. */
+.v5-opt-toggle::after {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--v5-text) 30%, transparent);
+  transform: translateX(-9px);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.v5-opt-toggle.is-on::after {
+  background: var(--v5-accent);
+  transform: translateX(9px);
+}
+
+.v5-opt-toggle.is-on {
+  background: color-mix(in srgb, var(--v5-accent) 35%, transparent);
+  border-color: var(--v5-accent);
+}
+
+.v5-opt-brush,
+.v5-opt-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  background: var(--v5-slot);
+  border: 1px solid var(--v5-border);
+  border-radius: 6px;
+  color: var(--v5-text);
+  font-size: 11px;
+  padding: 0 6px;
+  cursor: pointer;
+}
+
+.v5-opt-brush .v5-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--v5-accent);
+  flex: none;
+}
+
+.v5-opt-brush-name {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.v5-opt-color {
+  width: 30px;
+  padding: 2px;
+}
+
+.v5-opt-color::after { content: ''; }
+
+.v5-opt-color:hover,
+.v5-opt-brush:hover,
+.v5-opt-select:hover,
+.v5-opt-toggle:hover {
+  border-color: var(--v5-accent);
+}
+
+.v5-opt-sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: var(--v5-border);
+  flex: none;
+}
+
+.v5-opt-empty {
+  font-size: 11px;
+  color: var(--v5-text-tertiary);
+  padding: 0 6px;
+}
+
+/* FAZ 6 A2: renk geçmişi şeridi (options bar) — panel kardeşinin
+   kompakt hâli; tüm araçlarda el altında, `⋯` taşmasına katılmaz. */
+#v5OptionsBar .v5-opt-recents {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 2px;
+  flex: none;
+}
+
+#v5OptionsBar .v5-opt-recents button {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  flex: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--v5-thumb-border);
+}
+
+#v5OptionsBar .v5-opt-recents button:hover {
+  box-shadow: inset 0 0 0 1px var(--v5-text-secondary);
+}
+
+#v5OptionsBar .v5-opt-recents button.is-current {
+  box-shadow:
+    inset 0 0 0 1px var(--v5-thumb-border),
+    0 0 0 1px var(--v5-accent);
+}
+
+/* Çok dar pencerede şerit elden çıkar; recents renk paneline dever eder. */
+body.v5-w-narrow #v5OptionsBar .v5-opt-recents { display: none; }
+
+/* [hidden] özniteliği UA'da display:none verir; aşağıdaki
+   display:inline-flex onu ezer — rozet gizlenmeyecekti. */
+
+/* FAZ 6 A5: maske düzenleme rozeti — maskEditId açıkken hedef katmanı
+   adlandırır; tıkla → düzenlemeyi bırak. Sözleşme madde 2 (kalıcı
+   durum ışığı): "maske düzeni" araç değil genel mod olduğundan
+   accent dilinde yanar; tıkla-çıkış affordance'ı x ikonudur. */
+#v5OptionsBar .v5-opt-mask[hidden] { display: none; }
+
+/* FAZ 6 A4: satır düzeyinde gizlilik (action "Seçimi bırak" — seçim
+   yokken). .v5-opt display:flex'i [hidden] talimatını ezermiş. */
+#v5OptionsBar .v5-opt[hidden] { display: none; }
+
+#v5OptionsBar .v5-opt-action-btn {
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--v5-border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--v5-text);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#v5OptionsBar .v5-opt-action-btn:hover {
+  border-color: var(--v5-text-secondary);
+  background: var(--v5-hover);
+}
+
+#v5OptionsBar .v5-opt-info-val {
+  font: 10px/1 var(--v5-font-mono, ui-monospace, monospace);
+  color: var(--v5-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* FAZ 6 A11: "Görünüm" açı oku + hassas döndürme — her zaman görünür;
+   Reset düğmesi rezerve: yeri her zaman çubukta kalır (visibility
+   ile gizlenir, hidden ile değil) — rot ≠ 0'da aniden yer işgal
+   edip son widget'ı ⋯'e itmesin (options bar bütçesi sabit). */
+#v5OptionsBar .v5-opt-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#v5OptionsBar .v5-opt-view-deg {
+  font: 10px/1 var(--v5-font-mono, ui-monospace, monospace);
+  color: var(--v5-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+#v5OptionsBar .v5-opt-view-reset {
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--v5-border);
+  border-radius: 11px;
+  background: transparent;
+  color: var(--v5-text);
+  font-size: 10px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#v5OptionsBar .v5-opt-view-reset:hover {
+  border-color: var(--v5-text-secondary);
+  background: var(--v5-hover);
+}
+
+/* FAZ 6 A11 → v2: rot'ta masa fonu DEĞİŞMEZ (kullanıcı: "arkaplan siyah
+   ya, bir anda gri oluyordu") — .ink-rotated arka plan override'ı hem
+   style.css hem buradan kaldırıldı; kağıt kenarı çizimde var. */
+
+#v5OptionsBar .v5-opt-mask {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  flex: none;
+  border: 1px solid var(--v5-accent);
+  border-radius: 11px;
+  background: var(--v5-accent-soft);
+  color: var(--v5-accent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#v5OptionsBar .v5-opt-mask .v5-icon {
+  width: 10px;
+  height: 10px;
+  flex: none;
+}
+
+#v5OptionsBar .v5-opt-mask .v5-opt-mask-label {
+  color: var(--v5-accent);
+}
+
+#v5OptionsBar .v5-opt-mask .v5-opt-mask-name {
+  color: var(--v5-text);
+  font-weight: 500;
+}
+
+#v5OptionsBar .v5-opt-mask:hover {
+  background: var(--v5-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--v5-accent);
+}
+
+body.v5-w-compact #v5OptionsBar .v5-opt-mask .v5-opt-mask-name { display: none; }
+
+#v5OptionsBar .v5-opt-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 28px;
+  border-radius: var(--v5-r-card);
+  color: var(--v5-text-secondary);
+  flex: none;
+  cursor: pointer;
+}
+
+#v5OptionsBar .v5-opt-more:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+/* FAZ 6 B6: seçim modu segmenti (Yeni/Ekle/Çıkar/Kesişim) — kalıcı
+   mod 4'lü hap; is-active: accent çerçeve + %18 dolgu (A7 standardı,
+   tek ışık). Geçici Shift/Alt davranışı tooltip'te anlatılır. */
+#v5OptionsBar .v5-opt-selmode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+#v5OptionsBar .v5-opt-selmode-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: var(--v5-slot);
+  border: 1px solid var(--v5-border);
+  border-radius: 8px;
+}
+
+#v5OptionsBar .v5-selmode-btn {
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--v5-text-secondary);
+  font-size: 10px;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#v5OptionsBar .v5-selmode-btn:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+#v5OptionsBar .v5-selmode-btn:active {
+  background: color-mix(in srgb, var(--v5-hover) 70%, transparent);
+}
+
+#v5OptionsBar .v5-selmode-btn.is-active {
+  border-color: var(--v5-accent);
+  background: color-mix(in srgb, var(--v5-accent) 18%, transparent);
+  color: var(--v5-text);
+}
+
+body.v5-w-compact #v5OptionsBar .v5-selmode-btn { padding: 0 4px; }
+
+/* FAZ 6 B7: Transform HUD — X/Y/W/H/R sayısal alanları (px);
+   gizmo drag değerleri otomatik tazeler, yazan alana sync dokunmaz */
+#v5OptionsBar .v5-opt-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+}
+
+#v5OptionsBar .v5-opt-hud-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+  padding: 0 4px;
+  background: var(--v5-slot);
+  border: 1px solid var(--v5-border);
+  border-radius: 6px;
+}
+
+#v5OptionsBar .v5-opt-hud-field:focus-within {
+  border-color: var(--v5-accent);
+}
+
+#v5OptionsBar .v5-opt-hud-cap {
+  font: 10px/1 var(--v5-font-mono, ui-monospace, monospace);
+  color: var(--v5-text-secondary);
+  cursor: default;
+}
+
+#v5OptionsBar .v5-opt-hud-num {
+  width: 46px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--v5-text);
+  font: 10px/1 var(--v5-font-mono, ui-monospace, monospace);
+  text-align: right;
+  padding: 0;
+}
+
+/* number spin düğmeleri şeritte yer ister — gizli (oklar ve şift
+   tekerleği imleçte zaten çalışır) */
+#v5OptionsBar .v5-opt-hud-num::-webkit-outer-spin-button,
+#v5OptionsBar .v5-opt-hud-num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#v5OptionsBar .v5-opt-hud-num {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+body.v5-w-compact #v5OptionsBar .v5-opt-hud-num { width: 38px; }
+
+/* Taşan widget'lar çubukta gizlenir; `⋯` açıkken menüde görünür.
+   Menü kabuğu aynı .v5-opt örneklerini taşır (değer/dinleyici korunur). */
+#v5OptionsBar .v5-opt.is-overflowed { display: none; }
+
+.v5-options-overflow {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 10px 12px;
+  min-width: 240px;
+}
+
+.v5-options-overflow .v5-opt {
+  height: 32px;
+  padding: 0;
+}
+
+.v5-options-overflow .v5-opt .v5-opt-range { width: 130px; }
+.v5-options-overflow .v5-sep,
+.v5-options-overflow .v5-opt-sep { display: none; }
+
+body.v5-w-compact #v5OptionsBar .v5-opt-label,
+body.v5-w-compact #v5OptionsBar .v5-opt-val { display: none; }
+body.v5-w-compact #v5OptionsBar .v5-opt-tool-name { display: none; }
+body.v5-w-compact #v5OptionsBar .v5-opt .v5-opt-range { width: 72px; }
+
+body.v5-w-narrow #v5OptionsBar .v5-opt,
+body.v5-w-narrow #v5OptionsBar .v5-opt-tool {
+  height: 32px;
+}
+
+/* =========================================================
+   MOD HAPI · her iki modda aynı nokta
+   ========================================================= */
+#appModeBar {
+  position: fixed !important;
+  top: 18px !important;
+  right: 18px !important;
+  left: auto !important;
+  bottom: auto !important;
+  height: 40px !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  background: var(--v5-panel, #1c1c1e) !important;
+  border: 1px solid var(--v5-border, rgba(255, 255, 255, 0.06)) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  /* Çivilenmiş bar: 3D tam ekran (9000) ve yüzen panellerin (2200)
+     üstünde kalır; browser-panel tam ekranı (10000) altında. */
+  z-index: 9500 !important;
+}
+
+/* Eski çizim prototipi <=980 px'de konumu değiştiriyor; sabit konumu koru. */
+body.mode-draw #appModeBar,
+body.mode-reference #appModeBar {
+  top: 18px !important;
+  right: 18px !important;
+  left: auto !important;
+  bottom: auto !important;
+  /* Eski çizim prototipi (draw-proto.css) yüksekliği 32px'e, kapsülü
+     griye, yazıyı 10px'e çekiyordu; iki modda da aynı kapsül kalsın. */
+  height: 40px !important;
+  padding: 4px !important;
+  gap: 0 !important;
+  background: var(--v5-panel, #1c1c1e) !important;
+  border: 1px solid var(--v5-border, rgba(255, 255, 255, 0.06)) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  z-index: 9500 !important;
+}
+
+/* Üst şeritten tutup pencereyi sürükle (referans modundaki davranışın
+   aynısı). Düğmeler no-drag kalır; mod anahtarının boşluğu sürüklenir. */
+html.desktop #appModeBar {
+  -webkit-app-region: drag;
+}
+html.desktop #appModeBar button,
+html.desktop #appModeBar input,
+html.desktop #appModeBar select {
+  -webkit-app-region: no-drag;
+}
+
+/* =========================================================
+   ÜST ŞERİT DARALTMA OKU (#appModeCollapse) — SLIDER WIPE
+   Ok şeridin sol kenarına çapalı tutamaçtır. Kapanınca şerit
+   sağa doğru kırpılır (soldan sağa wipe): ok kenarla birlikte
+   sağa kayar, üzerinden geçtiği menüler kırpılarak kaybolur;
+   geride yalnız pencere düğmeleri kalır, ok sola döner.
+   Açılışta aynı wipe geri doğru oynar.
+   ========================================================= */
+body.mode-draw #appModeBar,
+body.mode-reference #appModeBar {
+  /* Ok için sol tarafta kalıcı tutamak boşluğu */
+  padding-left: 38px !important;
+}
+body.mode-draw #appModeBar .appModeCollapse,
+body.mode-reference #appModeBar .appModeCollapse {
+  position: absolute !important;
+  left: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  z-index: 2;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: rgba(240, 243, 250, .62) !important;
+  cursor: pointer;
+}
+#appModeBar .appModeCollapse:hover {
+  background: rgba(255, 255, 255, .08) !important;
+  color: rgba(240, 243, 250, .92) !important;
+}
+#appModeBar .appModeCollapse svg {
+  width: 14px !important;
+  height: 14px !important;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform .24s ease;
+}
+#appModeBar.appMode-collapsed .appModeCollapse svg {
+  transform: rotate(180deg) !important;
+}
+/* Wipe sırasında: içerik sağa yaslanır, taşan sol kısım kırpılır,
+   genişlik transition ile akar. */
+body.mode-draw #appModeBar.appMode-anim,
+body.mode-reference #appModeBar.appMode-anim {
+  overflow: hidden !important;
+  justify-content: flex-end !important;
+  transition: width .32s cubic-bezier(.25, .7, .25, 1);
+}
+/* Wipe bitti: katlı durumda yalnız pencere düğmeleri kalır. */
+body.mode-draw #appModeBar.appMode-collapsed .appModeFoldable,
+body.mode-reference #appModeBar.appMode-collapsed .appModeFoldable {
+  display: none !important;
+}
+/* Üst şerit tam sönükken tıklanamaz kalmasın: fare bölgeye yaklaşınca
+   window pointermove şeridi geri getirir. (Şerit TEK birimde söner;
+   parça parça soldurma "problemli fade" görünümü veriyordu.) */
+body.topright-idle #appModeBar {
+  pointer-events: none !important;
+}
+
+/* Çizim modunda üst araç çubuğunun boş alanından pencere sürüklenebilsin.
+   Düğme ve giriş alanları no-drag kalır; tutamaç çubuğu taşımaya devam eder.
+   Panel başlıkları ve dock'lar no-drag: panelleri tutup taşımak için. */
+html.desktop body.mode-draw #v5Toolbar {
+  -webkit-app-region: drag;
+}
+html.desktop body.mode-draw #v5Toolbar button,
+html.desktop body.mode-draw #v5Toolbar input,
+html.desktop body.mode-draw #v5Toolbar select,
+html.desktop body.mode-draw #v5Toolbar .v5-grip {
+  -webkit-app-region: no-drag;
+}
+/* Çizim modundaki tüm dock'lar, paneller ve başlıklar no-drag:
+   panel taşıma + referans tahtası scroll/zoom çalışsın. */
+html.desktop body.mode-draw #v5LeftDock,
+html.desktop body.mode-draw #v5RightDock,
+html.desktop body.mode-draw #v5FloatLayer,
+html.desktop body.mode-draw .v5-panel,
+html.desktop body.mode-draw .v5-panel-head,
+html.desktop body.mode-draw .v5-panel-body,
+html.desktop body.mode-draw .v5-ref-stage,
+html.desktop body.mode-draw .v5-ref-body-wrap,
+html.desktop body.mode-draw #v5RefStage,
+html.desktop body.mode-draw #v5DrawUI,
+html.desktop body.mode-draw #inkLeftDock,
+html.desktop body.mode-draw #inkLeftDock .psPanelHead {
+  -webkit-app-region: no-drag;
+}
+/* Üst şeridin boş alanı (appModeBar) pencereyi sürükler; çizim modundaki
+   panel/dock alanları asla sürükleme moduna girmez. */
+html.desktop body.mode-draw #windowDragStrip {
+  display: block !important;
+}
+
+/* Mod sırası her iki modda da "Çizim | Referans". */
+body.mode-draw #appModeBar #modeDrawBtn,
+body.mode-reference #appModeBar #modeDrawBtn {
+  order: 0 !important;
+}
+
+body.mode-draw #appModeBar #modeRefBtn,
+body.mode-reference #appModeBar #modeRefBtn {
+  order: 1 !important;
+}
+
+#appModeBar .modeSeg,
+body.mode-draw #appModeBar .modeSeg,
+body.mode-reference #appModeBar .modeSeg {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  gap: 0 !important;
+  height: 32px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+}
+
+/* Mod düğmeleri iki modda da birebir aynı: aynı yükseklik, yazı tipi,
+   harf aralığı ve renk. draw-proto.css'in çizim modu için yazdığı
+   değerler (10px yazı, 26px yükseklik, gri kapsül)
+   burada bilinçli olarak eşitleniyor. */
+#appModeBar .modeBtn,
+body.mode-draw #appModeBar .modeBtn,
+body.mode-reference #appModeBar .modeBtn {
+  height: 32px !important;
+  min-height: 32px !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  padding: 0 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  color: var(--v5-text-secondary, #a0a0a6) !important;
+  font: 500 11px/1.4 Inter, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif !important;
+  letter-spacing: 0.02em !important;
+  white-space: nowrap !important;
+}
+
+#appModeBar .modeBtn:hover,
+body.mode-draw #appModeBar .modeBtn:hover,
+body.mode-reference #appModeBar .modeBtn:hover {
+  background: var(--v5-hover, rgba(255, 255, 255, 0.06)) !important;
+  color: var(--v5-text, #fff) !important;
+}
+
+#appModeBar .modeBtn.is-active,
+body.mode-draw #appModeBar .modeBtn.is-active,
+body.mode-reference #appModeBar .modeBtn.is-active {
+  background: var(--v5-active, rgba(255, 255, 255, 0.1)) !important;
+  color: var(--v5-text, #fff) !important;
+}
+
+#appModeBar .modeIcon,
+#appModeBar .psDockCollapse,
+#appModeBar #modeNewBtn,
+#appModeBar #modeDrawName,
+#appModeBar #btnInkWorkspace,
+#appModeBar .modeAppLabel {
+  display: none !important;
+}
+
+#appModeBar .v5-mode-divider {
+  width: 1px;
+  height: 14px;
+  margin: 0 4px;
+  background: var(--v5-border, rgba(255, 255, 255, 0.06));
+  display: inline-block;
+  flex: none;
+}
+
+/* Pencere kontrolleri tek yerde: mod çubuğu. Küçült · tam ekran · kapat
+   iki modda da aynı çubukta durur; referans araç çubuğundaki kopya
+   gizlenir ki panel hiç değişmesin. */
+#appModeBar .modeWinGroup {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 1px;
+  margin-left: 4px;
+  padding-left: 4px;
+  border-left: 1px solid var(--v5-border, rgba(255, 255, 255, 0.06));
+}
+body.mode-reference #bar .wgroup,
+body.mode-reference #bar #sepWin {
+  display: none !important;
+}
+#appModeBar .modeWinGroup .wbtn {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  color: var(--v5-text-secondary, #a0a0a6) !important;
+  cursor: pointer;
+}
+#appModeBar .modeWinGroup .wbtn:hover {
+  background: var(--v5-hover, rgba(255, 255, 255, 0.06)) !important;
+  color: var(--v5-text, #fff) !important;
+}
+#appModeBar .modeWinGroup .wbtn--close:hover {
+  background: color-mix(in srgb, var(--v5-danger) 22%, transparent) !important;
+  color: color-mix(in srgb, var(--v5-danger) 80%, var(--v5-text)) !important;
+}
+#appModeBar .modeWinGroup .wbtn .toolIcon {
+  width: 15px !important;
+  height: 15px !important;
+  flex: 0 0 15px !important;
+}
+
+body.mode-draw #appModeBar .modeSeg,
+body.mode-reference #appModeBar .modeSeg {
+  height: 32px !important;
+}
+
+/* draw-proto.css çizim modunda düğmeleri 26px'e indiriyordu; referansla
+   aynı boyutu koru. */
+body.mode-draw #appModeBar .modeBtn,
+body.mode-reference #appModeBar .modeBtn {
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 14px !important;
+  font-size: 11px !important;
+}
+
+/* =========================================================
+   PANELLER
+   ========================================================= */
+#v5LeftDock,
+#v5RightDock,
+#v5FloatLayer {
+  position: fixed;
+  top: var(--v5-top);
+  z-index: 1500;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--v5-gap);
+}
+
+#v5LeftDock {
+  left: var(--v5-edge);
+  width: var(--v5-left-w);
+}
+
+#v5RightDock {
+  right: var(--v5-edge);
+  width: var(--v5-right-w);
+}
+
+#v5LeftDock,
+#v5RightDock {
+  /* Boş dock da tam yükseklikte bir bırakma alanı olarak kalsın; aksi
+     halde yüzen bir panel geri yerleştirilemiyordu (dock 4px'e düşüyor). */
+  min-height: calc(100vh - var(--v5-top) - 20px);
+  max-height: calc(100vh - var(--v5-top) - 20px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Taşan paneller görünür bir kaydırma çubuğuyla fark edilsin; gizli
+     çubuk yüzünden altta kalan panel "kaybolmuş" gibi görünüyordu.
+     Çubuk ::-webkit-scrollbar ile çizilir; düğmeleri yoktur. */
+  padding-bottom: 4px;
+}
+
+#v5LeftDock::-webkit-scrollbar,
+#v5RightDock::-webkit-scrollbar {
+  width: 8px;
+  height: 0;
+}
+
+#v5LeftDock::-webkit-scrollbar-thumb,
+#v5RightDock::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--v5-text) 18%, transparent);
+  border-radius: 4px;
+}
+
+#v5LeftDock::-webkit-scrollbar-thumb:hover,
+#v5RightDock::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--v5-text) 30%, transparent);
+}
+
+#v5LeftDock::-webkit-scrollbar-button,
+#v5RightDock::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+#v5LeftDock::-webkit-scrollbar-track,
+#v5RightDock::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#v5FloatLayer {
+  inset: 0;
+  width: auto;
+  height: auto;
+}
+
+/* Dock kenarı: tutamak yok; kenarın HERHANGİ bir yerinden tutulup
+   sürüklenebilir. Görünmez geniş bir isabet alanı + ince kenar çizgisi. */
+.v5-dock-resize {
+  position: fixed;
+  width: 12px;
+  height: 0; /* layoutPanels dock yüksekliğini verir */
+  z-index: 2500;
+  pointer-events: auto;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.v5-dock-resize::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 5px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--v5-accent);
+  /* Varsayılan olarak görünmez; yalnızca üzerine gelince ince bir
+     boyutlandırma ipucu belirir. Sürekli duran çizgi kaldırıldı. */
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.v5-dock-resize:hover::after,
+.v5-dock-resize:focus-visible::after,
+body.v5-dock-resizing .v5-dock-resize::after {
+  opacity: 0.55;
+}
+
+/* Sol tutamak dock'un dışında başladığı için çizgi kenara taşınır. */
+.v5-dock-resize--left::after {
+  left: -1px;
+}
+
+body.v5-dock-resizing {
+  cursor: ew-resize;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.v5-panel {
+  width: 100%;
+  flex: none;
+  background: var(--v5-panel);
+  border: 1px solid var(--v5-border);
+  border-radius: var(--v5-r-panel);
+  box-shadow: var(--v5-shadow);
+  overflow: hidden;
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 160ms ease;
+}
+
+.v5-panel.is-floating {
+  position: fixed;
+  background: var(--v5-panel-float);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  z-index: 1700;
+}
+
+.v5-panel.is-dragging {
+  opacity: 0.9;
+  cursor: grabbing;
+}
+
+.v5-panel.is-resizing {
+  cursor: nwse-resize;
+}
+
+.v5-panel.is-vertical-resizing {
+  cursor: ns-resize;
+}
+
+.v5-panel.has-docked-height {
+  min-height: 0 !important;
+}
+
+.v5-panel:not(.is-floating) .v5-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Panel sürükleme/boyutlandırma sırasında metin seçimi ve imleç
+   değişimini sabitle; tahta görünümü bu sırada değişmez. */
+body.v5-panel-busy {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.v5-panel-busy #stage {
+  cursor: default;
+}
+
+.v5-panel-head {
+  height: 44px;
+  min-height: 44px;
+  padding: 0 10px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--v5-border);
+  background: transparent;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  position: relative;
+}
+
+.v5-panel-head:active { cursor: grabbing; }
+
+.v5-panel-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--v5-text);
+  font: 600 13px/1.4 var(--v5-font);
+}
+
+.v5-panel-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.v5-head-btn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--v5-text-secondary);
+}
+
+.v5-head-btn:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-head-btn .v5-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.v5-head-extra {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--v5-text-secondary);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.v5-head-extra:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-panel-head:hover .v5-head-extra,
+.v5-panel-head:focus-within .v5-head-extra {
+  opacity: 1;
+}
+
+.v5-head-extra .v5-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.v5-collapse-chevron {
+  transition: transform 160ms ease;
+}
+
+.v5-panel.is-collapsed .v5-collapse-chevron {
+  transform: rotate(-90deg);
+}
+
+.v5-panel-body {
+  padding: 16px;
+  overflow: hidden;
+  max-height: 1400px;
+  opacity: 1;
+  transition: max-height 200ms ease, opacity 160ms ease, padding 200ms ease;
+}
+
+.v5-panel.is-collapsed .v5-panel-body {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+}
+
+.v5-panel.is-collapsed .v5-panel-head {
+  border-bottom-color: transparent;
+}
+
+/* Katlanan panel gerçekten küçülür: referans (min-height 360) ve katmanlar
+   (min-height 320) panelleri de başlık yüksekliğine iner. */
+.v5-panel.is-collapsed,
+.v5-panel--reference.is-collapsed,
+#v5LeftDock .v5-panel--reference.is-collapsed {
+  min-height: 0 !important;
+  height: auto !important;
+  flex: 0 0 auto;
+}
+
+.v5-panel.is-collapsed .v5-panel-body,
+.v5-panel--reference.is-collapsed .v5-panel-body {
+  max-height: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  opacity: 0 !important;
+  flex: 0 0 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Renk paneli başlığı mutlak konumda; katlanınca 34 px başlık kalsın. */
+.v5-panel--color.is-collapsed {
+  min-height: 34px !important;
+}
+
+/* Renk paneli: referanstaki gibi başlıksız; başlık yalnızca hover'da. */
+.v5-panel--color .v5-panel-head {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 8px 0 16px;
+  border-bottom: 0;
+  background: linear-gradient(var(--v5-panel) 40%, transparent);
+  opacity: 0;
+  transition: opacity 140ms ease;
+  z-index: 2;
+}
+
+.v5-panel--color:hover .v5-panel-head,
+.v5-panel--color:focus-within .v5-panel-head {
+  opacity: 1;
+}
+
+.v5-panel--color .v5-panel-title {
+  font-size: 12px;
+  color: var(--v5-text-secondary);
+}
+
+.v5-panel--color .v5-panel-body {
+  padding-top: 16px;
+}
+
+.v5-panel--color.is-collapsed .v5-panel-head {
+  position: relative;
+  opacity: 1;
+  background: transparent;
+}
+
+.v5-panel--color.is-collapsed .v5-panel-body {
+  padding: 0;
+}
+
+/* =========================================================
+   RENK PANELİ
+   ========================================================= */
+.v5-color-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+#v5ColorWheelHost {
+  width: min(220px, 100%);
+  max-width: 220px;
+  /* Pro seçici (başlık şeridi + tuval + değer satırı + geçmiş/paletler)
+     dikey akış yapıyor; kare sabiti kaldırıldı. */
+  aspect-ratio: auto;
+  height: auto;
+  margin: 0 auto;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+#v5ColorWheelHost #inkColorWheel {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  overflow: visible !important;
+  z-index: auto !important;
+}
+
+/* draw-proto.css çizim modunda tuvali 150 px ile sınırlıyor; ölçü paneli izler.
+   :not([hidden]) — [hidden] tuvalleri (aktif olmayan mod) gizli kalır. */
+body.mode-draw #v5ColorWheelHost #inkWheelCanvas:not([hidden]),
+body.mode-draw #v5ColorWheelHost #inkCpSquareCanvas:not([hidden]),
+body.mode-draw #v5ColorWheelHost #inkCpHarmonyCanvas:not([hidden]) {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  aspect-ratio: 1 / 1 !important;
+  display: block !important;
+  margin: 0 !important;
+  cursor: crosshair;
+}
+
+body.mode-draw #v5ColorWheelHost #inkCpMixCanvas:not([hidden]) {
+  width: 100% !important;
+  height: 116px !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+
+#v5ColorWheelHost .inkWheelValues,
+#v5ColorWheelHost .wheelFoot,
+#v5ColorWheelHost .inkWheelRgb {
+  display: none !important;
+}
+
+/* v5'in kendi hex satırı + son renkler şeridi: pro seçicinin ValueRow
+   (aktif renk + hex + damlalık) ve COLOR HISTORY bölümleri aynı işi
+   üstlendiği için renk kartında gizlenir. */
+.v5-color-body .v5-hex-row,
+.v5-color-body .v5-recents,
+.v5-color-body .v5-recents-grid {
+  display: none !important;
+}
+
+.v5-hex-row {
+  height: 40px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v5-color-swatch {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: var(--v5-r-badge);
+  background: var(--v5-text);
+  box-shadow: inset 0 0 0 1px var(--v5-thumb-border);
+}
+
+.v5-hex-box {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  background: var(--v5-slot);
+  border-radius: var(--v5-r-card);
+}
+
+.v5-hex-box input,
+.v5-hex-box .inkWheelHexField input {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--v5-text);
+  font: 500 12px/1 var(--v5-mono);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.v5-hex-box .inkWheelHexField {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: 0;
+}
+
+.v5-hex-box .inkWheelHexField > span {
+  display: none;
+}
+
+.v5-color-dropper {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--v5-r-badge);
+  color: var(--v5-text-secondary);
+}
+
+.v5-color-dropper:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-color-dropper .v5-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.v5-recents {
+  height: 24px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.v5-recents-strip {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.v5-recents-strip button {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: var(--v5-r-badge);
+  box-shadow: inset 0 0 0 1px var(--v5-thumb-border);
+}
+
+.v5-recents-strip button:hover {
+  box-shadow: inset 0 0 0 1px var(--v5-text-secondary);
+}
+
+.v5-recents-strip button.is-current {
+  box-shadow:
+    inset 0 0 0 1px var(--v5-thumb-border),
+    0 0 0 1px var(--v5-accent);
+}
+
+/* Sağ uç aşağı ok: son kullanılanlar ızgarasını aç/kapatır. */
+.v5-recents-toggle {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--v5-r-badge);
+  color: var(--v5-text-secondary);
+  cursor: pointer;
+  transition: transform .18s ease, color .14s ease;
+}
+
+.v5-recents-toggle .v5-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.v5-recents-toggle:hover {
+  color: var(--v5-text);
+}
+
+.v5-recents-toggle.is-open {
+  transform: rotate(180deg);
+}
+
+.v5-recents-toggle:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+/* Açılır ızgara: şeridin altında, şeritle AYNI boyutta (24px) chip'ler;
+   çok sayıda renk olduğunda ızgara kendi içinde kayar. */
+.v5-recents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 24px);
+  justify-content: start;
+  gap: 6px;
+  margin-top: 8px;
+  max-height: 174px;   /* ~6 sıra; fazlası ızgara içinde kayar */
+  overflow-y: auto;
+}
+
+.v5-recents-grid[hidden] {
+  display: none;
+}
+
+.v5-recents-grid button {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: var(--v5-r-badge);
+  box-shadow: inset 0 0 0 1px var(--v5-thumb-border);
+  cursor: pointer;
+}
+
+.v5-recents-grid button:hover {
+  box-shadow: inset 0 0 0 1px var(--v5-text-secondary);
+}
+
+.v5-recents-grid button.is-current {
+  box-shadow:
+    inset 0 0 0 1px var(--v5-thumb-border),
+    0 0 0 2px var(--v5-accent);
+}
+
+/* =========================================================
+   KATMANLAR PANELİ
+   ========================================================= */
+.v5-layers-body {
+  padding: 0 8px 8px;
+}
+
+/* Referanstaki gibi liste alanı birkaç satırlık boş yüksekliği korur;
+   panel 12 satırdan sonra büyümez, liste kendi içinde kaydırılır. */
+.v5-panel--layers {
+  min-height: 320px;
+}
+
+.v5-blend-row {
+  height: 32px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v5-blend-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--v5-slot);
+  border-radius: var(--v5-r-card);
+}
+
+.v5-blend-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 100%;
+  padding: 0 28px 0 10px;
+  margin: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--v5-text);
+  font: 500 12px/1.4 var(--v5-font);
+  cursor: pointer;
+}
+
+.v5-blend-select .v5-icon {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--v5-text-secondary);
+  pointer-events: none;
+}
+
+.v5-layer-opacity {
+  flex: 1 1 52%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.v5-layer-opacity-range {
+  height: 14px;
+}
+
+.v5-layer-opacity-val {
+  flex: none;
+  min-width: 34px;
+  text-align: right;
+  color: var(--v5-text);
+  font: 600 11px/1.4 var(--v5-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.v5-layer-opacity-range:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.v5-layer-scroll {
+  margin-top: 4px;
+  max-height: 504px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--v5-slot-line) transparent;
+}
+
+.v5-layer-scroll::-webkit-scrollbar { width: 6px; }
+.v5-layer-scroll::-webkit-scrollbar-thumb {
+  background: var(--v5-slot-line);
+  border-radius: 3px;
+}
+.v5-layer-scroll::-webkit-scrollbar-track { background: transparent; }
+
+#v5DrawUI #inkLayerList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow {
+  height: 40px;
+  min-height: 40px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--v5-r-card);
+  background: transparent;
+  border: 0;
+  position: relative;
+  cursor: default;
+  user-select: none;
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow:hover {
+  background: var(--v5-hover);
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.active {
+  background: var(--v5-selected);
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--v5-accent);
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.is-dragging { opacity: 0.55; }
+
+#v5DrawUI #inkLayerList .inkLayerRow.is-drop-above::after,
+#v5DrawUI #inkLayerList .inkLayerRow.is-drop-below::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--v5-accent);
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.is-drop-above::after { top: -2px; }
+#v5DrawUI #inkLayerList .inkLayerRow.is-drop-below::after { bottom: -2px; }
+
+#v5DrawUI #inkLayerList .inkLayerBtn {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--v5-text-secondary);
+  flex: none;
+}
+
+#v5DrawUI #inkLayerList .inkLayerBtn { color: var(--v5-text-secondary); opacity: .4; transition: opacity .12s ease, color .12s ease; }
+#v5DrawUI #inkLayerList .inkLayerRow:hover .inkLayerBtn { opacity: .68; }
+#v5DrawUI #inkLayerList .inkLayerBtn:hover { color: var(--v5-text); opacity: 1; background: transparent; }
+#v5DrawUI #inkLayerList .inkLayerBtn.on { color: var(--v5-accent); opacity: 1; }
+#v5DrawUI #inkLayerList .inkLayerBtn.is-locked { color: var(--v5-danger); opacity: 1; }
+#v5DrawUI #inkLayerList .inkLayerBtn:not(.on):not(.is-locked) { color: var(--v5-text-tertiary); }
+#v5DrawUI #inkLayerList .inkLayerDel:hover { color: var(--v5-danger); opacity: 1; }
+
+#v5DrawUI #inkLayerList .inkLayerBtn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#v5DrawUI #inkLayerList .inkLayerBtn.on { color: var(--v5-text-secondary); }
+#v5DrawUI #inkLayerList .inkLayerBtn:not(.on) { color: var(--v5-text-tertiary); }
+
+#v5DrawUI #inkLayerList .inkLayerThumb {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: var(--v5-r-badge);
+  background: var(--v5-thumb);
+  box-shadow: inset 0 0 0 1px var(--v5-thumb-border);
+  object-fit: cover;
+}
+
+#v5DrawUI #inkLayerList .inkLayerName {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--v5-text);
+  font: 500 13px/1.4 var(--v5-font);
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.is-hidden .inkLayerName {
+  color: var(--v5-text-secondary);
+}
+
+#v5DrawUI #inkLayerList .inkLayerLock {
+  width: 18px;
+  height: 18px;
+  color: var(--v5-text-secondary);
+}
+
+#v5DrawUI #inkLayerList .inkLayerLock:not(.is-locked) {
+  visibility: hidden;
+}
+
+#v5DrawUI #inkLayerList .inkLayerLock.is-locked {
+  visibility: visible;
+}
+
+#v5DrawUI #inkLayerList .dpLayerRename {
+  width: 100%;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--v5-accent);
+  border-radius: 4px;
+  background: var(--v5-slot);
+  color: var(--v5-text);
+  font: 500 13px/1.4 var(--v5-font);
+  outline: 0;
+}
+
+#v5DrawUI #inkLayerList .inkLayersEmpty {
+  padding: 12px 8px;
+  color: var(--v5-text-secondary);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.is-new {
+  animation: v5-layer-flash 180ms ease;
+}
+
+@keyframes v5-layer-flash {
+  0% { background: var(--v5-active); }
+  100% { background: var(--v5-selected); }
+}
+
+/* ---------- Layers / FX sekmeleri ----------
+   Aynı panel iki görünüm taşır: katman listesi ve efekt yığını.
+   Sekme düğmeleri panel gövdesinin en üstünde durur. */
+.v5-layer-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 -8px 6px;
+  padding: 8px 8px 6px;
+  border-bottom: 1px solid var(--v5-border);
+}
+
+.v5-layer-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--v5-r-card);
+  background: transparent;
+  color: var(--v5-text-secondary);
+  font: 600 12px/1 var(--v5-font);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.v5-layer-tab:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-layer-tab.is-active {
+  background: var(--v5-active);
+  color: var(--v5-text);
+  box-shadow: inset 0 0 0 1px var(--v5-border);
+}
+
+.v5-layer-view[hidden] { display: none; }
+
+.v5-layer-view--fx {
+  padding-top: 2px;
+}
+
+.v5-fx-host { min-height: 96px; }
+
+.v5-fx-empty {
+  padding: 22px 6px;
+  color: var(--v5-text-secondary);
+  font: 500 12px/1.5 var(--v5-font);
+  text-align: center;
+}
+
+.v5-fx-empty[hidden] { display: none; }
+
+/* FX (Efektler) bölümü · FX sekmesi görünümü.
+   Bölüm düğümü 69-ink-fx-ui.js içinde yaşar; sekme açılınca buraya
+   taşınır. Kapalı/açık durumu sekme yönetir (özet satırı gizli). */
+.v5-layer-view--fx .inkFxSection {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--v5-text);
+}
+
+.v5-layer-view--fx .inkFxSection > summary {
+  display: none;
+}
+
+.v5-layer-view--fx .inkFxStack {
+  max-height: 220px;
+  gap: 2px;
+  margin-top: 0;
+  padding: 0;
+}
+
+.v5-layer-view--fx .inkFxStack .inkLayerRow {
+  min-height: 28px;
+  border-radius: var(--v5-r-card);
+}
+
+.v5-layer-view--fx .inkFxStack .inkLayerRow:hover {
+  background: var(--v5-hover);
+}
+
+.v5-layer-view--fx .inkFxStack .inkLayerRow.active {
+  background: var(--v5-selected);
+  box-shadow: inset 0 0 0 1px var(--v5-accent);
+}
+
+/* Klavye: satır Tab ile odaklanır, Enter/Space seçer. */
+.v5-layer-view--fx .inkFxStack .inkLayerRow:focus-visible {
+  outline: 2px solid var(--v5-accent);
+  outline-offset: -2px;
+}
+
+.v5-layer-view--fx .inkFxStack .inkLayerName,
+.v5-layer-view--fx .inkFxStack .inkLayerName b {
+  color: var(--v5-text);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+.v5-layer-view--fx .inkFxStack .inkLayerRow span {
+  color: var(--v5-text-tertiary);
+}
+
+.v5-layer-view--fx .inkFxBrowser {
+  margin-top: 8px;
+  border-color: var(--v5-border);
+  background: var(--v5-slot);
+}
+
+.v5-layer-view--fx .inkFxBrowser input[type=search],
+.v5-layer-view--fx .inkFxPresetName,
+.v5-layer-view--fx .inkFxNum,
+.v5-layer-view--fx .inkFxBtn {
+  background: var(--v5-slot);
+  color: var(--v5-text);
+  border-color: var(--v5-border);
+  font-family: var(--v5-font);
+}
+
+.v5-layer-view--fx .inkFxInspector {
+  padding-bottom: 8px;
+}
+
+/* Koşullu parametre satırları `hidden` ile gizlenir; satırların kendi
+   display (grid/flex) kuralı UA'nın [hidden]{display:none} talimatını
+   eziyordu → "Dot Shape = circle" iken Dot Rotation gibi uygulanmayan
+   parametreler görünür kalıyordu. */
+#inkFxInspector [hidden],
+#inkFxInspector details[hidden] {
+  display: none !important;
+}
+
+/* =========================================================
+   FIRÇA PANELİ
+   ========================================================= */
+.v5-brush-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.v5-brush-top {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v5-brush-name {
+  color: var(--v5-text);
+  font: 600 13px/1.4 var(--v5-font);
+}
+
+.v5-badge {
+  height: 18px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--v5-r-badge);
+  background: var(--v5-badge);
+  color: var(--v5-text-secondary);
+  font: 500 10px/1 var(--v5-font);
+}
+
+.v5-brush-preview {
+  width: 100%;
+  height: 88px;
+  border-radius: 10px;
+  background: var(--v5-slot);
+  overflow: hidden;
+  position: relative;
+}
+
+.v5-brush-preview canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.v5-section-label {
+  margin: 12px 0 6px;
+  color: var(--v5-text-secondary);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+.v5-seg {
+  height: 32px;
+  padding: 3px;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border-radius: var(--v5-r-card);
+  background: var(--v5-slot);
+}
+
+.v5-seg button {
+  flex: 1 1 0;
+  height: 26px;
+  border-radius: 6px;
+  color: var(--v5-text-secondary);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+.v5-seg button:hover { color: var(--v5-text); }
+
+.v5-seg button.is-active {
+  background: var(--v5-active);
+  color: var(--v5-text);
+}
+
+.v5-slider-row {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.v5-slider-row label {
+  width: 72px;
+  flex: none;
+  color: var(--v5-text-secondary);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+.v5-slider-row output {
+  width: 38px;
+  flex: none;
+  text-align: right;
+  color: var(--v5-text);
+  font: 600 12px/1.4 var(--v5-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.v5-range {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 14px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  outline: 0;
+  cursor: pointer;
+}
+
+.v5-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--v5-accent) 0,
+    var(--v5-accent) var(--v5-p, 50%),
+    var(--v5-slot-line) var(--v5-p, 50%),
+    var(--v5-slot-line) 100%
+  );
+}
+
+.v5-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--v5-text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.v5-range::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--v5-slot-line);
+}
+
+.v5-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--v5-accent);
+}
+
+.v5-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--v5-text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.v5-tips-head {
+  height: 28px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v5-tips-head > span {
+  flex: 1 1 auto;
+  color: var(--v5-text-secondary);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+.v5-tips-more {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--v5-text-secondary);
+  font: 600 16px/1 var(--v5-font);
+}
+
+.v5-tips-more:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-tips-scroll {
+  width: 100%;
+  height: 74px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.v5-tips-scroll::-webkit-scrollbar { height: 0; }
+
+/* .abr içe aktarma: fırça panelinin altındaki ince eylem satırı. */
+.v5-brush-actions {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v5-brush-action {
+  height: 30px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--v5-r-card);
+  background: var(--v5-slot);
+  color: var(--v5-text-secondary);
+  font: 500 11px/1 var(--v5-font);
+  cursor: pointer;
+}
+
+.v5-brush-action:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-brush-action .v5-icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* Motorun fırça ucu listesi: 72×72 kutucuklar. */
+#v5DrawUI #inkPresetList {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: max-content;
+  height: 72px;
+  min-height: 72px;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+}
+
+#v5DrawUI #inkPresetList .inkPreset {
+  width: 72px;
+  height: 72px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--v5-slot);
+  border: 1.5px solid transparent;
+  color: var(--v5-text-secondary);
+  font: 500 10px/1.2 var(--v5-font);
+  overflow: hidden;
+  transition: border-color 120ms ease;
+}
+
+#v5DrawUI #inkPresetList .inkPreset .inkPresetDot {
+  width: 46px;
+  height: 24px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--v5-text);
+}
+
+#v5DrawUI #inkPresetList .inkPreset .inkPresetDot svg {
+  width: 46px;
+  height: 24px;
+  display: block;
+}
+
+/* draw-proto.css etiketleri !important ile gizliyor; referans için geri aç. */
+#v5DrawUI #inkPresetList .inkPreset span {
+  display: block !important;
+  max-width: 64px;
+  color: var(--v5-text-secondary);
+  font: 500 11px/1.2 var(--v5-font);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#v5DrawUI #inkPresetList .inkPreset.active span {
+  color: var(--v5-text);
+}
+
+#v5DrawUI #inkPresetList .inkPreset:hover {
+  border-color: var(--v5-slot-line);
+  background: var(--v5-slot);
+}
+
+#v5DrawUI #inkPresetList .inkPreset.active {
+  border-color: var(--v5-accent);
+  background: var(--v5-slot);
+  color: var(--v5-text);
+}
+
+.v5-tips {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: max-content;
+}
+
+.v5-tip {
+  width: 72px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.v5-tip-box {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  background: var(--v5-slot);
+  border: 1.5px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 120ms ease;
+}
+
+.v5-tip:hover .v5-tip-box {
+  border-color: var(--v5-slot-line);
+}
+
+.v5-tip.is-active .v5-tip-box {
+  border-color: var(--v5-accent);
+}
+
+.v5-tip-box svg {
+  width: 52px;
+  height: 36px;
+  display: block;
+  fill: none;
+  stroke: var(--v5-text);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+
+.v5-tip-label {
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--v5-text-secondary);
+  font: 500 11px/1.4 var(--v5-font);
+}
+
+.v5-tip.is-active .v5-tip-label { color: var(--v5-text); }
+
+/* =========================================================
+   REFERANS PANELİ · ana tahtanın canlı minyatürü
+   ========================================================= */
+.v5-panel--reference {
+  min-height: 360px;
+  /* Gövde saydam kalır: kırpılan #stage tahtası panelin içinden görünür. */
+  background: transparent;
+}
+
+/* Sol sütun paylaşılabilir: referans panosu tek başınayken sütunu doldurur,
+   başka bir panel sol tarafa taşındığında küçülüp ona yer açar. Sabit
+   yükseklikte kaldığı için sonradan eklenen paneller ekranın altına taşıp
+   görünmez oluyordu ("sola koyulan panel bozuluyor"). */
+#v5LeftDock .v5-panel--reference {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 240px;
+}
+
+/* Yüzen panelde backdrop-filter tahtayı bulanıklaştırırdı. */
+.v5-panel--reference.is-floating {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.v5-panel--reference .v5-panel-body {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  position: relative;
+}
+
+/* Tahta kırpılmadığı anlarda (mod geçişi) panel opak kalsın. */
+.v5-panel--reference .v5-panel-body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--v5-panel);
+  pointer-events: none;
+}
+
+body.ps-ref-live .v5-panel--reference .v5-panel-body::before {
+  opacity: 0;
+}
+
+.v5-panel--reference .v5-panel-head {
+  height: 48px;
+  min-height: 48px;
+  padding: 0 10px 0 16px;
+  background: var(--v5-panel);
+  border-radius: var(--v5-r-panel) var(--v5-r-panel) 0 0;
+}
+
+.v5-panel--reference.is-floating .v5-panel-head {
+  background: var(--v5-panel-float);
+}
+
+.v5-ref-sub {
+  height: 36px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--v5-border);
+  background: var(--v5-panel);
+}
+
+.v5-panel--reference.is-floating .v5-ref-sub {
+  background: var(--v5-panel-float);
+}
+
+.v5-ref-sub-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--v5-text);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+.v5-ref-sub-count {
+  flex: none;
+  color: var(--v5-text-secondary);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+/* Kırpma dikdörtgeni: tahta tam bu alanda görünür. Öğe yalnızca alanı
+   ölçer ve gezinme girdisini yakalar; tahtaya tıklama geçmez. */
+.v5-ref-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+.v5-ref-stage.is-panning {
+  cursor: grabbing;
+}
+
+.v5-ref-empty {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  text-align: center;
+  color: var(--v5-text-tertiary);
+  font: 500 11px/1.5 var(--v5-font);
+  pointer-events: none;
+}
+
+.v5-ref-empty[hidden] {
+  display: none;
+}
+
+.v5-ref-foot {
+  height: 40px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-top: 1px solid var(--v5-border);
+  background: var(--v5-panel);
+  border-radius: 0 0 var(--v5-r-panel) var(--v5-r-panel);
+}
+
+.v5-panel--reference.is-floating .v5-ref-foot {
+  background: var(--v5-panel-float);
+}
+
+.v5-ref-zoom {
+  height: 28px;
+  padding: 0 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: var(--v5-slot);
+  border-radius: var(--v5-r-card);
+}
+
+.v5-ref-zoom button {
+  width: 26px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  color: var(--v5-text-secondary);
+}
+
+.v5-ref-zoom button:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-ref-zoom .v5-icon { width: 14px; height: 14px; }
+
+.v5-ref-zoom-value {
+  min-width: 46px;
+  text-align: center;
+  color: var(--v5-text);
+  font: 600 12px/1.4 var(--v5-font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  user-select: none;
+}
+
+.v5-ref-fit {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  color: var(--v5-text-secondary);
+}
+
+.v5-ref-fit:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-ref-fit .v5-icon { width: 14px; height: 14px; }
+
+/* Minyatür tahta: sahne yalnızca referans panelinin gövdesine kırpılır.
+   Tahta panelin altında kalır; panel gövdesi tıklamaları geçirdiği için
+   görseller burada seçilip taşınabilir. Başlık, alt şerit ve boyutlandırma
+   tutamakları kendi girdilerini almaya devam eder. */
+body.mode-draw.ps-ref-live #stage {
+  clip-path: inset(var(--dp-ref-top, 0px) var(--dp-ref-right, 100%) var(--dp-ref-bottom, 100%) var(--dp-ref-left, 0px));
+  -webkit-clip-path: inset(var(--dp-ref-top, 0px) var(--dp-ref-right, 100%) var(--dp-ref-bottom, 100%) var(--dp-ref-left, 0px));
+  pointer-events: auto !important;
+  cursor: grab;
+}
+
+body.mode-draw.ps-ref-live .v5-panel--reference,
+body.mode-draw.ps-ref-live .v5-panel--reference .v5-panel-body,
+body.mode-draw.ps-ref-live .v5-panel--reference .v5-ref-stage {
+  pointer-events: none;
+}
+
+body.mode-draw.ps-ref-live .v5-panel--reference .v5-panel-head,
+body.mode-draw.ps-ref-live .v5-panel--reference .v5-ref-sub,
+body.mode-draw.ps-ref-live .v5-panel--reference .v5-ref-foot,
+body.mode-draw.ps-ref-live .v5-panel--reference .v5-resize-edge {
+  pointer-events: auto;
+}
+
+/* Çizim aracının fırça imleci minyatür tahtada görünmesin: burada
+   görselleri taşıyoruz, çizmiyoruz. */
+body.mode-draw.ps-ref-live #stage {
+  cursor: grab;
+}
+
+body.mode-draw.ps-ref-live #stage .item {
+  cursor: move;
+}
+
+body.mode-draw.ps-ref-live #stage .item .text {
+  cursor: text;
+}
+
+body.mode-draw.ps-ref-live #stage.is-panning,
+body.mode-draw.ps-ref-live #stage.panning,
+body.mode-draw.ps-ref-live #stage .item.dragging {
+  cursor: grabbing;
+}
+
+/* Tahta etkileşimli: seçili öğe çerçeve alsın. */
+body.mode-draw.ps-ref-live #stage .item.sel:not(.grouped) {
+  outline: calc(2px * var(--inv)) solid var(--accent) !important;
+  outline-offset: calc(1px * var(--inv)) !important;
+}
+
+/* Seçili görselin boyutlandırma tutamaçları minyatürde de çalışır. */
+body.mode-draw.ps-ref-live #stage:hover .item.sel:not(.grouped) .handles,
+body.mode-draw.ps-ref-live #stage:hover .item.sel:not(.grouped) .handle {
+  display: block !important;
+}
+
+@media (hover: none) {
+  body.mode-draw.ps-ref-live #stage .item.sel:not(.grouped) .handles,
+  body.mode-draw.ps-ref-live #stage .item.sel:not(.grouped) .handle {
+    display: block !important;
+  }
+}
+
+/* =========================================================
+   YÜZEN PANEL BOYUTLANDIRMA
+   Dört kenar + dört köşe; görünmez tutamaklar. Yalnızca yüzen
+   panellerde etkindir, kenara gelince imleç değişir.
+   ========================================================= */
+.v5-resize-edge {
+  position: absolute;
+  z-index: 6;
+  opacity: 0;
+  touch-action: none;
+}
+
+/* Dock'taki panellerde tutamaklar devre dışı. */
+.v5-panel:not(.is-floating) .v5-resize-edge {
+  display: none;
+}
+
+.v5-panel:not(.is-floating) .v5-resize-s {
+  display: block;
+  left: 18px;
+  right: 18px;
+  bottom: 0;
+  height: 10px;
+  opacity: 1;
+  cursor: ns-resize;
+  z-index: 12;
+}
+
+.v5-panel:not(.is-floating) .v5-resize-s::after {
+  content: "";
+  position: absolute;
+  left: calc(50% - 18px);
+  bottom: 3px;
+  width: 36px;
+  height: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--v5-text) 22%, transparent);
+  transition: background 120ms ease, width 120ms ease;
+}
+
+.v5-panel:not(.is-floating) .v5-resize-s:hover::after,
+.v5-panel.is-vertical-resizing .v5-resize-s::after {
+  left: calc(50% - 24px);
+  width: 48px;
+  background: var(--v5-accent);
+}
+
+.v5-resize-n {
+  top: 0;
+  left: 10px;
+  right: 10px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.v5-resize-s {
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.v5-resize-e {
+  right: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.v5-resize-w {
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.v5-resize-ne {
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+.v5-resize-nw {
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+.v5-resize-se {
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+.v5-resize-sw {
+  bottom: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+/* =========================================================
+   YERLEŞTİRME ÇİZGİSİ
+   ========================================================= */
+#v5InsertLine {
+  position: fixed;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--v5-accent);
+  box-shadow: 0 0 8px var(--v5-accent);
+  z-index: 2400;
+  pointer-events: none;
+}
+
+/* =========================================================
+   MENÜLER
+   ========================================================= */
+.v5-menu {
+  position: fixed;
+  min-width: 200px;
+  padding: 6px;
+  background: var(--v5-panel);
+  border: 1px solid var(--v5-border);
+  border-radius: 10px;
+  box-shadow: var(--v5-shadow);
+  z-index: 2600;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* #v5DrawUI pointer-events:none devralındığı için menü tıklanamıyordu;
+     menünün kendisi olayları almalı. */
+  pointer-events: auto;
+}
+
+.v5-menu button {
+  height: 30px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  color: var(--v5-text);
+  font: 500 12px/1.4 var(--v5-font);
+  text-align: left;
+}
+
+.v5-menu button:hover {
+  background: var(--v5-hover);
+}
+
+.v5-menu button[disabled] {
+  color: var(--v5-text-tertiary);
+  cursor: default;
+  background: transparent;
+}
+
+.v5-menu button.is-danger {
+  color: var(--v5-danger);
+}
+
+.v5-menu button.is-danger[disabled] {
+  color: var(--v5-text-tertiary);
+}
+
+.v5-menu button .v5-menu-state {
+  margin-left: auto;
+  color: var(--v5-text-secondary);
+  font: 500 11px/1.4 var(--v5-font);
+}
+
+.v5-menu button .v5-menu-key {
+  margin-left: auto;
+  color: var(--v5-text-tertiary);
+  font: 500 10px/1.4 var(--v5-font);
+}
+
+.v5-menu .v5-menu-sep {
+  height: 1px;
+  margin: 4px 2px;
+  background: var(--v5-border);
+}
+
+.v5-menu .v5-menu-check {
+  width: 16px;
+  display: inline-flex;
+  justify-content: center;
+  color: var(--v5-accent);
+}
+
+/* Motorun katman menüsü aynı görsel dili kullanır. */
+#dpLayerMenu {
+  position: fixed;
+  min-width: 200px;
+  padding: 6px;
+  background: var(--v5-panel);
+  border: 1px solid var(--v5-border);
+  border-radius: 10px;
+  box-shadow: var(--v5-shadow);
+  z-index: 2600;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#dpLayerMenu[hidden] {
+  display: none;
+}
+
+#dpLayerMenu button {
+  height: 30px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--v5-text);
+  font: 500 12px/1.4 var(--v5-font);
+  text-align: left;
+}
+
+#dpLayerMenu button:hover {
+  background: var(--v5-hover);
+}
+
+#dpLayerMenu button[disabled] {
+  color: var(--v5-text-tertiary);
+  cursor: default;
+  background: transparent;
+}
+
+#dpLayerMenu button.is-danger {
+  color: var(--v5-danger);
+}
+
+#dpLayerMenu button.is-danger[disabled] {
+  color: var(--v5-text-tertiary);
+}
+
+#dpLayerMenu button .dpLayerMenuKey {
+  margin-left: auto;
+  color: var(--v5-text-tertiary);
+  font: 500 10px/1.4 var(--v5-font);
+}
+
+/* =========================================================
+   ALT SEKMELER · <700
+   ========================================================= */
+#v5PanelTabs {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  height: 40px;
+  padding: 4px;
+  display: none;
+  align-items: center;
+  gap: 2px;
+  background: var(--v5-panel);
+  border: 1px solid var(--v5-border);
+  border-radius: 10px;
+  box-shadow: var(--v5-shadow);
+  z-index: 2200;
+  pointer-events: auto;
+}
+
+#v5PanelTabs button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+  color: var(--v5-text-secondary);
+  font: 500 12px/1.4 var(--v5-font);
+}
+
+#v5PanelTabs button.is-active {
+  background: var(--v5-active);
+  color: var(--v5-text);
+}
+
+/* =========================================================
+   KIRILIMLAR
+   ========================================================= */
+body.v5-w-mid {
+  --v5-left-w: 240px;
+  --v5-right-w: 300px;
+}
+
+body.v5-w-compact {
+  --v5-right-w: 280px;
+  --v5-left-w: 220px;
+}
+
+body.v5-w-compact #v5Toolbar .v5-label,
+body.v5-w-compact #v5Toolbar .v5-count,
+body.v5-w-compact #v5Toolbar .v5-kbd {
+  display: none;
+}
+
+body.v5-w-compact #v5Toolbar .v5-tool {
+  padding: 0;
+  width: 32px;
+}
+
+body.v5-w-compact #v5Toolbar .v5-caret {
+  display: none;
+}
+
+body.v5-w-compact #v5LeftDock {
+  left: 12px;
+  top: 72px;
+}
+
+body.v5-w-compact #v5RightDock {
+  right: 12px;
+  top: 72px;
+}
+
+body.v5-w-narrow #v5Toolbar {
+  max-width: calc(100vw - 24px);
+}
+
+/* Dar ekranda çubuk yalnızca etkin aracı, yakınlaştırmayı ve PNG'yi tutar. */
+body.v5-w-narrow #v5Toolbar .v5-group:not(.is-active),
+body.v5-w-narrow #v5Toolbar .v5-tool:not(.is-active):not([data-action="zoom"]),
+body.v5-w-narrow #v5Toolbar .v5-sep,
+body.v5-w-narrow #v5Toolbar .v5-icon-btn:not(.v5-only-narrow) {
+  display: none;
+}
+
+body.v5-w-narrow #v5Toolbar .v5-label,
+body.v5-w-narrow #v5Toolbar .v5-count,
+body.v5-w-narrow #v5Toolbar .v5-kbd,
+body.v5-w-narrow #v5Toolbar .v5-caret,
+body.v5-w-narrow #v5Toolbar .v5-hide-narrow {
+  display: none;
+}
+
+body.v5-w-narrow #v5Toolbar .v5-tool {
+  padding: 0;
+  width: 32px;
+}
+
+body.v5-w-narrow #v5Toolbar .v5-only-narrow {
+  display: inline-flex;
+}
+
+body.v5-w-narrow #v5LeftDock,
+body.v5-w-narrow #v5RightDock {
+  display: none;
+}
+
+body.v5-w-narrow #v5PanelTabs {
+  display: flex;
+}
+
+body.v5-w-narrow .v5-panel.is-narrow-active {
+  position: fixed !important;
+  left: 12px !important;
+  right: 12px !important;
+  top: 72px !important;
+  bottom: 64px !important;
+  width: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  z-index: 1800;
+  display: flex !important;
+}
+
+/* Çok dar ekranda çubuk mod düğmesinin altına inerse panel de onun
+   altından başlar; hiçbir öğe üst üste binmez. */
+body.v5-w-narrow.v5-toolbar-lowered .v5-panel.is-narrow-active {
+  top: 116px !important;
+}
+
+body.v5-w-narrow .v5-panel:not(.is-narrow-active) {
+  display: none !important;
+}
+
+body.v5-w-narrow .v5-layer-scroll {
+  max-height: none;
+  flex: 1 1 auto;
+}
+
+body.v5-w-narrow .v5-panel--reference .v5-ref-stage {
+  flex: 1 1 auto;
+}
+
+body.v5-w-compact .v5-panel.is-compact-float,
+body.v5-w-narrow .v5-panel.is-narrow-active {
+  position: fixed;
+  z-index: 1800;
+}
+
+body.v5-w-compact .v5-panel.is-compact-float {
+  display: flex;
+}
+
+body.v5-panels-hidden #v5LeftDock,
+body.v5-panels-hidden #v5RightDock,
+body.v5-panels-hidden #v5FloatLayer,
+body.v5-panels-hidden #v5PanelTabs {
+  display: none !important;
+}
+
+/* Paneller gizliyken geri açma düğmesi.
+   Mod çubuğu sağ üstte (top:18, right:18, 40px yüksek) duruyor; düğme onun
+   altında kalırsa tıklanamıyordu. Bu yüzden mod çubuğunun hemen altına,
+   sağ kenara hizalı yerleştirilir. */
+#v5RestorePanels {
+  position: fixed;
+  top: 68px;
+  right: 18px;
+  height: 32px;
+  padding: 0 10px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: var(--v5-panel);
+  border: 1px solid var(--v5-border);
+  border-radius: 8px;
+  color: var(--v5-text);
+  font: 500 12px/1.4 var(--v5-font);
+  box-shadow: var(--v5-shadow);
+  z-index: 2200;
+  pointer-events: auto;
+}
+
+#v5RestorePanels .v5-icon { width: 16px; height: 16px; }
+
+body.v5-panels-hidden #v5RestorePanels { display: inline-flex; }
+
+body.v5-w-narrow #v5RestorePanels { right: 18px; }
+
+/* =========================================================
+   KÜÇÜK DÜZELTMELER
+   ========================================================= */
+#v5DrawUI .v5-scroll-hidden {
+  scrollbar-width: none;
+}
+
+#v5DrawUI .v5-scroll-hidden::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #v5DrawUI *,
+  #v5DrawUI *::before,
+  #v5DrawUI *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================
+   KATMAN SATIRLARI · motor stillerini geçersiz kılma
+   draw-proto.css satırı 32 px'e ve küçük resmi 22 px'e
+   !important ile sabitliyor; panel ölçüleri 40/28.
+   ========================================================= */
+#v5DrawUI #inkLayerList .inkLayerRow {
+  display: flex !important;
+  align-items: center !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  flex: 0 0 40px !important;
+  padding: 0 8px !important;
+  gap: 8px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: var(--v5-r-card) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow:hover {
+  background: var(--v5-hover) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.active {
+  background: var(--v5-selected) !important;
+  border-color: transparent !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.active::before {
+  display: block !important;
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 2px !important;
+  border-radius: 2px !important;
+  background: var(--v5-accent) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerThumb {
+  width: 28px !important;
+  height: 28px !important;
+  flex: none !important;
+  border: 0 !important;
+  border-radius: var(--v5-r-badge) !important;
+  background: var(--v5-thumb) !important;
+  box-shadow: inset 0 0 0 1px var(--v5-thumb-border) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerName {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  color: var(--v5-text) !important;
+  font: 500 13px/1.4 var(--v5-font) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerName b {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: inherit !important;
+  font: inherit !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerMeta {
+  display: none !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.is-hidden .inkLayerName {
+  color: var(--v5-text-secondary) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerBtn {
+  flex: 0 0 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  margin-left: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerBtn svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerEye {
+  color: var(--v5-text-secondary) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerEye:not(.on) {
+  color: var(--v5-text-tertiary) !important;
+}
+
+/* FAZ 1B: katman maske düğmesi — maske varken 'on', düzenleme hedefiyken
+   vurgulu (yiyecek-içi çelişkiyi engelle). */
+#v5DrawUI #inkLayerList .inkLayerMask {
+  color: var(--v5-text-secondary) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerMask:not(.on):not(.is-editing) {
+  color: var(--v5-text-tertiary) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerMask.on {
+  color: var(--v5-accent) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerMask.is-editing {
+  color: var(--v5-accent) !important;
+  box-shadow: inset 0 0 0 1px var(--v5-accent) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerLock {
+  color: var(--v5-text-secondary) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerLock:not(.is-locked) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerLock.is-locked {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* =========================================================
+   FAZ 7 · K4 · etkin satır yüksek kontrastı + odak/kırpma göstergeleri
+   Bu blok motor stillerini geçersiz kılma bölümünden SONRA geldiği
+   için aynı !important kuralında son gelen kazanır.
+   ========================================================= */
+#v5DrawUI #inkLayerList .inkLayerRow.active {
+  background: color-mix(in srgb, var(--v5-accent) 17%, var(--v5-selected)) !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.active::before {
+  width: 3px !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow:focus-visible {
+  outline: 2px solid var(--v5-accent);
+  outline-offset: 2px;
+}
+
+#v5DrawUI #inkLayerList .inkLayerRow.is-dragging { opacity: .5 !important; }
+
+#v5DrawUI #inkLayerList .inkLayerRow.is-drop-above::after,
+#v5DrawUI #inkLayerList .inkLayerRow.is-drop-below::after {
+  height: 3px !important;
+}
+
+/* FAZ 8.F · Klasör katlama oku (chevron): bırakılmışta aşağı bakar,
+   katlanınca sağa döner. */
+#v5DrawUI #inkLayerList .inkLayerFold svg {
+  transition: transform 140ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+#v5DrawUI #inkLayerList .inkLayerFold.is-folded svg {
+  transform: rotate(-90deg);
+}
+
+/* =========================================================
+   K6 · Anlaşılırlık · grup hiyerarşisi, maske rozetleri,
+   durum dolguları. Satır hâlâ 40px tek bant; ad üstte,
+   rozet/çip ince ikinci satırdadır.
+   ========================================================= */
+#v5DrawUI #inkLayerList .inkLayerName {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  /* sütun flex + taban kuralın align-items:center'ı çocuğu içerik
+     genişliğinde ortalar, iki yandan kırpılıyordu ("Layer 1" → "ayer 1") */
+  align-items: stretch !important;
+  gap: 1px !important;
+  overflow: hidden !important;
+}
+
+#v5DrawUI #inkLayerList .inkLayerName b {
+  display: block !important;
+}
+
+/* '└ ' metin ön-eki yerini CSS girintisi + ray çizgisine bırakır. */
+#v5DrawUI #inkLayerList .inkLayerRow {
+  position: relative !important;
+}
+#v5DrawUI #inkLayerList .inkLayerRow.is-group {
+  background: color-mix(in srgb, var(--v5-accent) 7%, var(--v5-panel)) !important;
+}
+#v5DrawUI #inkLayerList .inkLayerRow.is-group-member {
+  padding-left: 30px !important;
+  border-left: 2px solid
+    color-mix(in srgb, var(--v5-text-tertiary) 45%, transparent) !important;
+  border-radius: 0 var(--v5-r-card) var(--v5-r-card) 0 !important;
+}
+#v5DrawUI #inkLayerList .inkLayerRow.is-group-member.active {
+  border-left-color: var(--v5-accent) !important;
+}
+#v5DrawUI #inkLayerList .inkLayerGroupBadge {
+  display: none !important;
+}
+
+/* K8 · kırpma maskesi işareti: klip açıkken satırın tabana bağlantısı
+   bükük ok rozetiyle okunur; ok alt sıradaki taban üzerine taşar. */
+#v5DrawUI #inkLayerList .inkLayerRow.is-clip-member {
+  position: relative !important;
+}
+#v5DrawUI #inkLayerList .inkLayerClipArrow {
+  position: absolute !important;
+  left: 12px !important;
+  bottom: -8px !important;
+  z-index: 3 !important;
+  width: 17px !important;
+  height: 17px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--v5-accent) !important;
+  background: var(--v5-panel) !important;
+  border: 1px solid color-mix(in srgb, var(--v5-accent) 40%, transparent) !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+}
+#v5DrawUI #inkLayerList .inkLayerClipArrow:hover {
+  background: color-mix(in srgb, var(--v5-accent) 18%, var(--v5-panel)) !important;
+}
+#v5DrawUI #inkLayerList .inkLayerClipArrow svg {
+  width: 12px !important;
+  height: 13px !important;
+  display: block !important;
+}
+#v5DrawUI #inkLayerList .inkLayerRow.is-clip-member .inkLayerName b {
+  color: color-mix(in srgb, var(--v5-accent) 74%, var(--v5-text)) !important;
+}
+
+/* K8 · maske kanca + mini görsel çifti (draw modu ölçüleri). */
+#v5DrawUI #inkLayerList .inkLayerMaskPair {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  flex: 0 0 auto !important;
+  height: 26px !important;
+  padding: 0 3px !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+}
+#v5DrawUI #inkLayerList .inkLayerMaskPair:hover {
+  background: color-mix(in srgb, var(--v5-accent) 12%, transparent) !important;
+}
+#v5DrawUI #inkLayerList .inkLayerMaskChain {
+  color: var(--v5-text-tertiary) !important;
+  display: inline-flex !important;
+}
+#v5DrawUI #inkLayerList .inkLayerMaskChain svg {
+  width: 9px !important;
+  height: 13px !important;
+  display: block !important;
+}
+#v5DrawUI #inkLayerList .inkLayerMaskThumb {
+  width: 20px !important;
+  height: 20px !important;
+  display: block !important;
+  border-radius: 4px !important;
+  border: 1px solid var(--v5-border) !important;
+  background: #fff !important;
+}
+#v5DrawUI #inkLayerList .inkLayerMaskPair.is-editing .inkLayerMaskThumb {
+  border-color: var(--v5-accent) !important;
+  outline: 1px solid color-mix(in srgb, var(--v5-accent) 55%, transparent) !important;
+}
+#v5DrawUI #inkLayerList .inkLayerMaskPair.is-editing .inkLayerMaskChain {
+  color: var(--v5-accent) !important;
+}
+
+/* K10 · ad satırı durulanması: hap/çip kalabalığı gitti. Grup sayısı sade
+   soluk sayı; maske durumu K8 zincir+mini görsel çiftiyle okunur. */
+#v5DrawUI #inkLayerList .inkLayerGroupCount {
+  color: var(--v5-text-tertiary) !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  font: 500 10px/1 var(--v5-font) !important;
+}
+
+/* K11 · durum ikonları tek bakışta: açık dolgulu hap, kapalı açık çizgi.
+   16% soluk dolgu 18px tuşta okunmuyordu (kullanıcı raporu: "hangi açık
+   hangi kapalı anlamıyorum"). Pasif ikon loş (kendi opakitätlerinde),
+   AKTİF DOLGU beyaz simgeyle yıldız kontrast — açık=dolu kuralı. */
+#v5DrawUI #inkLayerList .inkLayerEye.on,
+#v5DrawUI #inkLayerList .inkLayerMask.on,
+#v5DrawUI #inkLayerList .inkLayerClip.on,
+#v5DrawUI #inkLayerList .inkLayerAlphaLock.on {
+  background: var(--v5-accent) !important;
+  color: #0a1118 !important;
+  opacity: 1 !important;
+  border-radius: 5px !important;
+}
+#v5DrawUI #inkLayerList .inkLayerEye.on svg,
+#v5DrawUI #inkLayerList .inkLayerMask.on svg,
+#v5DrawUI #inkLayerList .inkLayerClip.on svg,
+#v5DrawUI #inkLayerList .inkLayerAlphaLock.on svg {
+  stroke-width: 2.2 !important;
+}
+#v5DrawUI #inkLayerList .inkLayerMask.is-editing {
+  background: color-mix(in srgb, var(--v5-accent) 30%, var(--v5-panel)) !important;
+  box-shadow: inset 0 0 0 1.5px var(--v5-accent) !important;
+  color: var(--v5-accent) !important;
+  opacity: 1 !important;
+}
+#v5DrawUI #inkLayerList .inkLayerLock.is-locked {
+  background: #ff5a5f !important;
+  color: #1a0505 !important;
+  opacity: 1 !important;
+}
+#v5DrawUI #inkLayerList .inkLayerLock.is-locked svg {
+  stroke-width: 2.2 !important;
+}
+#v5DrawUI #inkLayerList .inkLayerBtn:not(.on):not(.is-locked) {
+  color: rgba(233, 240, 248, 0.34) !important;
+}
+#v5DrawUI #inkLayerList .inkLayerRow:hover .inkLayerBtn:not(.on):not(.is-locked) {
+  color: rgba(233, 240, 248, 0.6) !important;
+}
+
+/* =========================================================
+   K6 · Maske ipucu şeridi
+   ========================================================= */
+#v5DrawUI #inkLayerMaskHint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 10px 8px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--v5-accent) 40%, transparent);
+  border-radius: var(--v5-r-card);
+  background: color-mix(in srgb, var(--v5-accent) 10%, var(--v5-panel));
+  color: var(--v5-text);
+  font: 500 11px/1.35 var(--v5-font);
+  box-sizing: border-box;
+}
+#v5DrawUI #inkLayerMaskHint[hidden] {
+  display: none !important;
+}
+#v5DrawUI #inkLayerMaskHint .inkIcon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--v5-accent);
+}
+#v5DrawUI .inkLayerMaskHintText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+#v5DrawUI .inkLayerMaskHintText b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 11px;
+}
+#v5DrawUI .inkLayerMaskHintText i {
+  color: var(--v5-text-secondary);
+  font-style: normal;
+  white-space: nowrap;
+  font-size: 10px;
+}
+#v5DrawUI #inkLayerMaskHintExit {
+  margin-left: auto;
+  flex: none;
+  padding: 4px 9px;
+  border: 1px solid color-mix(in srgb, var(--v5-accent) 45%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--v5-accent);
+  font: 600 10.5px/1 var(--v5-font);
+  cursor: pointer;
+}
+#v5DrawUI #inkLayerMaskHintExit:hover {
+  background: color-mix(in srgb, var(--v5-accent) 16%, transparent);
+}
+
+/* Footer metin etiketleri: ikon yanında ince etiket. */
+#v5DrawUI .inkLayerActions button {
+  flex: 1 1 auto !important;
+  min-width: 46px;
+  gap: 4px;
+  padding: 0 5px !important;
+}
+#v5DrawUI .inkActionLabel {
+  font: 500 9px/1.2 var(--v5-font);
+  letter-spacing: .06em;
+  opacity: .85;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* =========================================================
+   FAZ 7 · K3 · Katman Özellikleri diyaloğu
+   ========================================================= */
+#inkLayerPropsDialog {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .45);
+  border: 0;
+  padding: 20px;
+}
+#inkLayerPropsDialog[hidden] { display: none; }
+
+#inkLayerPropsDialog .lpCard {
+  width: min(360px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  background: var(--v5-panel-float, #22262c);
+  border: 1px solid var(--v5-border, #3a4149);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, .58);
+  color: var(--v5-text, #e8eaee);
+  font: 500 13px/1.45 var(--v5-font, system-ui);
+}
+
+#inkLayerPropsDialog .lpHead {
+  padding: 14px 16px 0;
+}
+#inkLayerPropsDialog .lpHead b { font-size: 14px; }
+
+#inkLayerPropsDialog .lpBody {
+  padding: 12px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#inkLayerPropsDialog .lpField > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--v5-text-secondary, #a9b0b8);
+  font-size: 11px;
+  letter-spacing: .4px;
+}
+
+#inkLayerPropsDialog .lpField input[type="text"],
+#inkLayerPropsDialog .lpField select {
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--v5-border, #3a4149);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--v5-text) 5%, transparent);
+  color: inherit;
+  font: inherit;
+  outline: 0;
+}
+#inkLayerPropsDialog .lpField input[type="text"]:focus,
+#inkLayerPropsDialog .lpField select:focus {
+  border-color: var(--v5-accent);
+}
+
+#inkLayerPropsDialog .lpOpacity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#inkLayerPropsDialog .lpOpacity input[type="range"] { flex: 1; accent-color: var(--v5-accent); }
+#inkLayerPropsDialog .lpOpacity output {
+  min-width: 40px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#inkLayerPropsDialog .lpChecks {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+#inkLayerPropsDialog .lpCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+#inkLayerPropsDialog .lpCheck input { accent-color: var(--v5-accent); }
+#inkLayerPropsDialog .lpCheck[hidden] { display: none; }
+
+#inkLayerPropsDialog .lpActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--v5-border, #3a4149);
+}
+#inkLayerPropsDialog .lpActions button {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 7px;
+  border: 1px solid var(--v5-border, #3a4149);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+#inkLayerPropsDialog .lpActions button:hover {
+  background: var(--v5-hover);
+}
+#inkLayerPropsDialog .lpActions button:focus-visible {
+  outline: 2px solid var(--v5-accent);
+  outline-offset: 2px;
+}
+#inkLayerPropsDialog .lpActions button[type="submit"] {
+  background: var(--v5-accent-soft);
+  border-color: var(--v5-accent);
+  color: var(--v5-accent);
+}
+
+
+/* =========================================================
+   Sağ tık · dairesel hızlı panel (Apple tarzı cam disk)
+   Tek cam disk + altına ayrı yuva (sürgüler). Merkez renk diski
+   hover'da büyüyüp ton yaprakları gösterir; üst yuva fırçanın
+   son kullanılanlar kapsülünü açar.
+   ========================================================= */
+body.mode-draw .inkRadial {
+  position: fixed;
+  z-index: 3000;
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  color: var(--v5-text);
+  font-family: var(--v5-font);
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(.86);
+  transform-origin: 50% 30%;
+  transition:
+    opacity .18s cubic-bezier(.16, 1, .3, 1),
+    transform .24s cubic-bezier(.34, 1.42, .64, 1);
+}
+body.mode-draw .inkRadial[hidden] { display: none; }
+body.mode-draw .inkRadial.is-open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+/* Taşıyıcıdan disk/dock tıklamaları alır */
+body.mode-draw .inkRadialDisk,
+body.mode-draw .inkRadialDock { pointer-events: auto; }
+
+/* ---- cam disk ---- */
+body.mode-draw .inkRadialDisk {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: rgba(28, 29, 32, .58);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, .09);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, .45),
+    0 6px 18px rgba(0, 0, 0, .3),
+    inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+/* ---- araç yuvaları: pusula düzeni +88px ---- */
+body.mode-draw .inkRadialSlot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .05);
+  background: rgba(255, 255, 255, .06);
+  overflow: hidden;
+  cursor: pointer;
+  color: rgba(255, 255, 255, .82);
+  transition:
+    background .16s ease,
+    box-shadow .16s ease,
+    transform .22s cubic-bezier(.16, 1, .3, 1),
+    opacity .2s ease,
+    filter .2s ease;
+  z-index: 6;
+}
+body.mode-draw .inkRadialSlot.pos-n { transform: translateY(-88px); }
+body.mode-draw .inkRadialSlot.pos-e { transform: translateX(88px); }
+body.mode-draw .inkRadialSlot.pos-s { transform: translateY(88px); }
+body.mode-draw .inkRadialSlot.pos-w { transform: translateX(-88px); }
+body.mode-draw .inkRadialSlot:hover {
+  background: rgba(255, 255, 255, .16);
+  box-shadow: 0 0 14px rgba(255, 255, 255, .12);
+}
+body.mode-draw .inkRadialSlot.pos-n:hover { transform: translateY(-88px) scale(1.14); }
+body.mode-draw .inkRadialSlot.pos-e:hover { transform: translateX(88px) scale(1.14); }
+body.mode-draw .inkRadialSlot.pos-s:hover { transform: translateY(88px) scale(1.14); }
+body.mode-draw .inkRadialSlot.pos-w:hover { transform: translateX(-88px) scale(1.14); }
+body.mode-draw .inkRadialSlot:focus-visible {
+  outline: 2px solid var(--v5-accent);
+  outline-offset: 2px;
+}
+body.mode-draw .inkRadialSlot.is-active {
+  background: var(--v5-accent-soft);
+  border-color: var(--v5-accent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--v5-accent) 30%, transparent),
+    0 6px 18px color-mix(in srgb, var(--v5-accent) 26%, transparent);
+}
+body.mode-draw .inkRadialSlot .inkIcon {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+body.mode-draw .inkRadialSlot canvas {
+  display: block;
+  width: 20px;
+  height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  pointer-events: none;
+}
+
+/* Renk merkezine dokununca araçlar sönükleşir (disk:has desteği) */
+/* ---- merkez renk diski: düz swatch; hover'da klasik çark açılır ---- */
+body.mode-draw .inkRadial:has(.inkRadialDisk.is-color) .inkRadialSlot,
+body.mode-draw .inkRadial:has(.inkRadialDisk.is-color) .inkRadialCapsule,
+body.mode-draw .inkRadial:has(.inkRadialDisk.is-color) .inkRadialBridge {
+  opacity: .14;
+  filter: blur(1.5px);
+}
+
+/* ---- merkez renk diski ---- */
+body.mode-draw .inkRadialColor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 64px;
+  height: 64px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: width .3s cubic-bezier(.34, 1.35, .64, 1), height .3s cubic-bezier(.34, 1.35, .64, 1);
+  /* kapalı: düz swatch (geçerli renk çekirdekte görünür) */
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, .92);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+  z-index: 6;
+}
+body.mode-draw .inkRadialDisk.is-color .inkRadialColor {
+  width: 148px;
+  height: 148px;
+  background: color-mix(in srgb, var(--v5-panel) 88%, var(--v5-bg));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+}
+/* içte geçerli renk çekirdeği (tık: tam renk çarkı) */
+body.mode-draw .inkRadialColorDisc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .45);
+  padding: 0;
+  cursor: pointer;
+  transition: opacity .2s ease;
+}
+body.mode-draw .inkRadialDisk.is-color .inkRadialColorDisc {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* klasik çark: ton halkası + OKLCH üçgeni (panel çarkıyla aynı çizim) */
+body.mode-draw .inkRadialWheel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 148px;
+  height: 148px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+  touch-action: none;
+}
+body.mode-draw .inkRadialDisk.is-color .inkRadialWheel {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+/* ---- fırça kapsülü: üst yuvanın üstünde açılan taş ---- */
+body.mode-draw .inkRadialBridge {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 190px;
+  height: 90px;
+  transform: translateX(-50%);
+  z-index: 5; /* yuva (6) ve disk sırası arasında: geçiş örtüşmez */
+}
+body.mode-draw .inkRadialCapsule {
+  position: absolute;
+  left: 50%;
+  top: -14px;
+  transform: translateX(-50%) translateY(14px);
+  display: flex;
+  gap: 4px;
+  padding: 7px 9px;
+  border-radius: 24px;
+  background: rgba(34, 35, 38, .82);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, .14);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .26s cubic-bezier(.16, 1, .3, 1);
+  z-index: 8;
+}
+body.mode-draw .inkRadial:not(.is-open) .inkRadialCapsule { opacity: 0; }
+/* Üst fırça yuvasına ya da kapsüle gelince açılır (bridge geçişi tutar) */
+body.mode-draw .inkRadial:has(.inkRadialSlot.pos-n:hover) .inkRadialCapsule,
+body.mode-draw .inkRadial:has(.inkRadialBridge:hover) .inkRadialCapsule,
+body.mode-draw .inkRadial:has(.inkRadialCapsule:hover) .inkRadialCapsule {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+body.mode-draw .inkRadialSub {
+  width: 56px;
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 2px;
+  cursor: pointer;
+  transition: background .14s ease, transform .16s ease, border-color .14s ease;
+}
+body.mode-draw .inkRadialSub:hover {
+  background: rgba(255, 255, 255, .16);
+  transform: scale(1.06);
+}
+body.mode-draw .inkRadialSub.is-active {
+  border-color: var(--v5-accent);
+  background: var(--v5-accent-soft);
+}
+body.mode-draw .inkRadialSub canvas {
+  display: block;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+body.mode-draw .inkRadialSubName {
+  width: 52px;
+  font-size: 9px;
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: .01em;
+  color: color-mix(in srgb, var(--v5-text) 78%, transparent);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+/* ---- disk altı yuva: önizleme + ad + sürgüler ---- */
+body.mode-draw .inkRadialDock {
+  width: 240px;
+  box-sizing: border-box;
+  border-radius: 18px;
+  padding: 10px 14px 12px;
+  background: rgba(28, 29, 32, .72);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, .09);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, .42),
+    inset 0 1px 0 rgba(255, 255, 255, .05);
+}
+body.mode-draw .inkRadialHead { text-align: center; }
+body.mode-draw .inkRadialPreview { display: block; margin: 0 auto 2px; }
+body.mode-draw .inkRadialName {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.mode-draw .inkRadialSliders {
+  margin-top: 8px;
+  display: grid;
+  gap: 9px;
+}
+body.mode-draw .inkRadialRow {
+  display: grid;
+  grid-template-columns: 64px 1fr 40px;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--v5-text-secondary);
+}
+/* Tüm kaydırıcı etiketleri aynı görünür; soluk/disabled stil yok. */
+body.mode-draw .inkRadialRow span {
+  color: var(--v5-text-secondary);
+  opacity: 1;
+  font-weight: 400;
+}
+body.mode-draw .inkRadialRow:hover span,
+body.mode-draw .inkRadialRow:focus-within span,
+body.mode-draw .inkRadialRow:disabled span {
+  color: var(--v5-text-secondary);
+  opacity: 1;
+}
+body.mode-draw .inkRadialRow output {
+  text-align: right;
+  font-size: 11px;
+  color: var(--v5-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+body.mode-draw .inkRadialRow input[type="range"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 16px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+body.mode-draw .inkRadialRow input[type="range"]::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--v5-accent) 0,
+    var(--v5-accent) var(--fill, 0%),
+    color-mix(in srgb, var(--v5-text) 16%, transparent) var(--fill, 0%),
+    color-mix(in srgb, var(--v5-text) 16%, transparent) 100%
+  );
+}
+body.mode-draw .inkRadialRow input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--v5-text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .55);
+}
+body.mode-draw .inkRadialRow input[type="range"]:focus-visible {
+  outline: 2px solid var(--v5-accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+body.mode-draw .inkRadialPreview {
+  width: 90px;
+  height: 24px;
+  max-width: 90px;
+}
+
+
+/* =========================================================
+   FIRÇA KÜTÜPHANESİ · iki sütunlu panel (eski ayar paneli)
+   ---------------------------------------------------------
+   Solda sabit kategori rayı, sağda S eğrisi önizlemeli fırça
+   kartları. Katlanır ayar bölümü panelin altındadır.
+   ========================================================= */
+.v5-panel--brush .v5-panel-body {
+  padding: 0;
+}
+
+.v5-panel--brush .v5-panel-title {
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-size: 13px;
+}
+
+.v5-panel--brush .v5-panel-head {
+  height: 42px;
+  min-height: 42px;
+  padding: 0 8px 0 14px;
+}
+
+.v5-brush-lib {
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  background: var(--v5-panel);
+}
+
+/* Sol sütun: kategoriler. Satırlar tam genişlikte ve en az 38 px
+   yüksekliğinde; küçük yazıya nişan almak gerekmiyor. */
+.v5-brush-cats {
+  flex: 0 0 128px;
+  width: 128px;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px 14px;
+  border-right: 1px solid var(--v5-border);
+  background: transparent;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.v5-brush-cats::-webkit-scrollbar { width: 0; }
+
+.v5-brush-cats__head {
+  padding: 0 10px 10px;
+  color: var(--v5-text-secondary);
+  font: 500 11px/1.3 var(--v5-font);
+  letter-spacing: 0.1em;
+}
+
+.v5-brush-cats__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.v5-brush-cat {
+  width: 100%;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--v5-text-secondary);
+  font: 500 13px/1.35 var(--v5-font);
+  text-align: left;
+  cursor: pointer;
+  transition: background 110ms ease, color 110ms ease;
+}
+
+.v5-brush-cat__mark {
+  flex: none;
+  width: 9px;
+  color: var(--v5-accent);
+  opacity: 0;
+  font-weight: 700;
+  transition: opacity 110ms ease;
+}
+
+.v5-brush-cat__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.v5-brush-cat:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-brush-cat.is-active {
+  background: var(--v5-accent-soft);
+  color: var(--v5-text);
+  font-weight: 600;
+}
+
+.v5-brush-cat.is-active .v5-brush-cat__mark { opacity: 1; }
+
+/* Sağ sütun: başlık + kart listesi + ayarlar */
+.v5-brush-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.v5-brush-main__head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 14px 10px;
+  border-bottom: 1px solid var(--v5-border);
+}
+
+.v5-brush-main__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--v5-text);
+  font: 600 12.5px/1.3 var(--v5-font);
+  letter-spacing: 0.04em;
+}
+
+.v5-brush-main__count {
+  flex: none;
+  color: var(--v5-text-secondary);
+  font: 500 11px/1.3 var(--v5-font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.v5-brush-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: clamp(180px, 32vh, 320px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 12px 13px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--v5-text) 16%, transparent) transparent;
+}
+
+.v5-brush-list::-webkit-scrollbar { width: 6px; }
+.v5-brush-list::-webkit-scrollbar-thumb {
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--v5-text) 16%, transparent);
+}
+
+.v5-brush-card {
+  display: block;
+  flex: none;
+  width: 100%;
+  position: relative;
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--v5-text);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.v5-brush-card:hover {
+  background: var(--v5-hover);
+}
+
+.v5-brush-card:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--v5-accent);
+}
+
+.v5-brush-card.is-active {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--v5-accent);
+}
+
+/* Yıldız düğmesi: kartın sağ üstünde; favori setine ekler/çıkarır
+   (native kütüphane overlay'inin yıldızıyla aynı set). */
+.v5-brush-card__star {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--v5-text-secondary);
+  background: color-mix(in srgb, var(--v5-panel) 72%, transparent);
+  opacity: 0.55;
+  transition: opacity 120ms ease, color 120ms ease;
+  cursor: pointer;
+}
+
+.v5-brush-card__star svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+
+.v5-brush-card__star:hover,
+.v5-brush-card__star:focus-visible {
+  outline: none;
+  opacity: 1;
+  color: var(--v5-text);
+}
+
+.v5-brush-card__star.is-on {
+  opacity: 1;
+  color: var(--v5-accent);
+}
+
+.v5-brush-card__canvas {
+  display: block;
+  width: 100%;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--v5-slot);
+}
+
+.v5-brush-card__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 0 4px 3px;
+}
+
+.v5-brush-card__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--v5-text);
+  font: 600 12.5px/1.3 var(--v5-font);
+}
+
+.v5-brush-card__size {
+  flex: none;
+  color: var(--v5-text-secondary);
+  font: 500 11.5px/1.3 var(--v5-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.v5-brush-card.is-active .v5-brush-card__size { color: var(--v5-text); }
+
+/* Kompakt yoğunluk: panel bölümü kısaldığında isim/boyut satırı küçülür,
+   önizleme daralır; kartlar kaybolmadan listeye çok kart sığar. */
+.v5-brush-lib--compact .v5-brush-main__head { padding: 7px 14px 5px; }
+.v5-brush-lib--compact .v5-brush-list { gap: 5px; padding: 6px 12px 8px; }
+.v5-brush-lib--compact .v5-brush-card__canvas { height: 34px; border-radius: 6px; }
+.v5-brush-lib--compact .v5-brush-card__meta { margin-top: 2px; padding: 0 4px 1px; }
+.v5-brush-lib--compact .v5-brush-card__name { font-size: 10.5px; }
+.v5-brush-lib--compact .v5-brush-card__size { font-size: 9.5px; }
+.v5-brush-lib--compact .v5-brush-cats { padding: 8px 6px 10px; }
+.v5-brush-lib--compact .v5-brush-cats__head { padding: 0 6px 6px; }
+.v5-brush-lib--compact .v5-brush-cat { min-height: 28px; padding: 5px 8px; font-size: 11.5px; }
+
+.v5-brush-custom-create {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 8px 0 0;
+  border: 1px solid color-mix(in srgb, var(--v5-accent) 48%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--v5-accent) 10%, transparent);
+  color: var(--v5-text);
+  font: 600 11px/1 var(--v5-font);
+  cursor: pointer;
+}
+
+.v5-brush-custom-create:hover,
+.v5-brush-custom-create:focus-visible {
+  outline: none;
+  border-color: var(--v5-accent);
+  background: color-mix(in srgb, var(--v5-accent) 18%, transparent);
+}
+
+.v5-brush-custom-create > span:first-child {
+  color: var(--v5-accent);
+  font-size: 15px;
+}
+
+.v5-brush-empty {
+  margin: 22px 6px;
+  color: var(--v5-text-secondary);
+  font: 400 12px/1.55 var(--v5-font);
+}
+
+/* Katlanır ayarlar */
+.v5-brush-settings {
+  flex: none;
+  border-top: 1px solid var(--v5-border);
+}
+
+.v5-brush-settings > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 11px 14px;
+  list-style: none;
+  color: var(--v5-text-secondary);
+  font: 600 10.5px/1.3 var(--v5-font);
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  user-select: none;
+}
+
+.v5-brush-settings > summary::-webkit-details-marker { display: none; }
+
+.v5-brush-settings > summary::after {
+  content: "+";
+  flex: none;
+  color: var(--v5-text-tertiary);
+  font: 500 16px/1 var(--v5-font);
+}
+
+.v5-brush-settings[open] > summary::after { content: "\2212"; }
+
+.v5-brush-settings > summary:hover { color: var(--v5-text); }
+
+.v5-brush-settings__body {
+  padding: 0 14px 14px;
+}
+
+.v5-brush-settings .v5-slider-row {
+  height: 36px;
+  gap: 10px;
+}
+
+.v5-brush-settings .v5-slider-row label {
+  width: 62px;
+  font-size: 11.5px;
+}
+
+.v5-brush-settings .v5-slider-row output {
+  width: 40px;
+  font-size: 11.5px;
+}
+
+.v5-brush-import {
+  width: 100%;
+  height: 32px;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--v5-r-card);
+  background: var(--v5-slot);
+  color: var(--v5-text-secondary);
+  font: 500 11.5px/1 var(--v5-font);
+  cursor: pointer;
+}
+
+.v5-brush-import:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}
+
+.v5-brush-import .v5-icon {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 900px) {
+  .v5-brush-cats {
+    flex-basis: 112px;
+    width: 112px;
+    padding: 10px 6px 12px;
+  }
+
+  .v5-brush-cat {
+    min-height: 34px;
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+
+  .v5-brush-card__canvas { height: 50px; }
+}
+
+/* K9 · canlı önizleme balonu: Boyut/Opaklık kaydırıcısının altında açılan
+   panel — damalı zemin (şeffaflık varsa okunur), gerçek üstünde çizilmiş
+   örnek vuruş + "N px · %M" etiketi. Fareyi bıraktıktan ~850ms sonra gizlenir. */
+#v5LivePreview {
+  position: fixed;
+  z-index: 3000; /* katman menüsü (2600) ve seçenek şeridinin üstünde durur */
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(392px, calc(100vw - 16px));
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--v5-glass, rgba(28, 28, 30, 0.88));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: inset 0 0 0 1px var(--v5-hairline, rgba(255, 255, 255, 0.08)),
+    0 10px 28px rgba(0, 0, 0, 0.42);
+  color: var(--v5-text, #f2f2f2);
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  animation: v5LiveIn 90ms ease-out;
+}
+#v5LivePreview[hidden] { display: none; }
+#v5LivePreviewVal {
+  font-variant-numeric: tabular-nums;
+  color: var(--v5-text, #f2f2f2);
+}
+/* K12 · büyük damga düzeni: kolon (etiket üstte) — damga asla panel
+   kenarından taşmaz (kullanıcı raporu: "son boyutta panelden çıkıyor"). */
+#v5LivePreview.is-big {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: min(430px, calc(100vw - 16px));
+}
+#v5LivePreview.is-big #v5LivePreviewVal {
+  text-align: center;
+}
+#v5LivePreview canvas {
+  display: block;
+  border-radius: 6px;
+  opacity: 0.96;
+}
+@keyframes v5LiveIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   FAZ 7.W · çok-duraklı gradyan barı + mini durağı seçicisi
+   ========================================================= */
+.v5-opt--gradient {
+  gap: 6px;
+}
+
+.v5-grad-strip {
+  position: relative;
+  width: 200px; /* FAZ 7.X: 148px dardı — durak düzenlemesine yer (kullanıcı) */
+  height: 18px;
+  background: var(--v5-slot);
+  border: 1px solid var(--v5-border);
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: copy;
+  flex: none;
+}
+
+.v5-grad-fill {
+  position: absolute;
+  inset: 0;
+}
+
+.v5-grad-handles {
+  position: absolute;
+  inset: 0;
+}
+
+.v5-grad-stop {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px; /* orta nokta durak konumunda */
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 45%);
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.v5-grad-stop.is-sel {
+  border-color: var(--v5-accent);
+  box-shadow: 0 0 0 2px rgb(0 0 0 / 55%);
+}
+
+/* FAZ 7.X: seçili durağın sağındaki sil rozeti — yalnız seçilide
+   görünür (visibility: hidden olayları da almaz). */
+.v5-grad-stop .v5-grad-x {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin: -6px 0 0 2px;
+  padding: 0;
+  border-radius: 50%;
+  background: #c73540;
+  color: #fff;
+  font: 700 9px/11px var(--v5-mono, monospace);
+  text-align: center;
+  cursor: pointer;
+  visibility: hidden;
+  z-index: 2;
+}
+
+.v5-grad-stop.is-sel .v5-grad-x {
+  visibility: visible;
+}
+
+.v5-grad-stop .v5-grad-x:hover {
+  background: #e5484d;
+}
+
+.v5-grad-picker {
+  min-width: 0;
+  width: 190px;
+  padding: 10px;
+  gap: 8px;
+  z-index: 2610;
+}
+
+.v5-grad-sv {
+  position: relative;
+  height: 110px;
+  border: 1px solid var(--v5-border);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.v5-grad-sv-dot,
+.v5-grad-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 45%);
+  pointer-events: none;
+}
+
+/* FAZ 7.X: hue/alpha noktaları dikeyde ortalanır — yalnızca left JS'ten
+   set ediliyordu, top:auto kaldığı için noktalar üste yapışıyordu.
+   (sv-dot'un top'u JS'ten yüzdeyle verilir; bu kural onu etkilemez.) */
+.v5-grad-dot {
+  top: 50%;
+}
+
+.v5-grad-hue,
+.v5-grad-alpha {
+  position: relative;
+  height: 14px;
+  border: 1px solid var(--v5-border);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.v5-grad-hue {
+  background: linear-gradient(90deg,
+    #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%,
+    #00f 67%, #f0f 83%, #f00 100%);
+}
+
+.v5-grad-alpha {
+  background-image: repeating-conic-gradient(#8b8b8b 0% 25%, #c4c4c4 0% 50%);
+  background-size: 8px 8px;
+}
+
+.v5-grad-alpha-fill {
+  position: absolute;
+  inset: 0;
+}
+
+.v5-grad-row {
+  display: flex;
+  gap: 6px;
+}
+
+.v5-grad-hex {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--v5-slot);
+  border: 1px solid var(--v5-border);
+  border-radius: 5px;
+  color: var(--v5-text);
+  font: 11px/1 var(--v5-mono, monospace);
+}
+
+.v5-grad-hex:focus {
+  outline: none;
+  border-color: var(--v5-accent);
+}
+
+.v5-grad-swatches {
+  display: flex;
+  flex-wrap: wrap; /* FAZ 7.X: dar kalan panelde taşma yerine alt satır */
+  gap: 5px;
+}
+
+.v5-grad-picker .v5-grad-swatch {
+  width: 16px;
+  height: 16px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--v5-border);
+  border-radius: 4px;
+  flex: none;
+}
+
+.v5-grad-picker .v5-grad-swatch:hover {
+  border-color: var(--v5-accent);
+}
+
+/* FAZ 7.X: popup sil düğmesi (hex'in sağı) */
+.v5-grad-picker .v5-grad-del {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--v5-border);
+  border-radius: 5px;
+  background: var(--v5-slot);
+  color: var(--v5-text);
+  font: 700 12px/1 var(--v5-mono, monospace);
+  cursor: pointer;
+}
+
+.v5-grad-picker .v5-grad-del:hover {
+  border-color: #e5484d;
+  color: #e5484d;
+}
+
+/* =========================================================
+   AYRI PANEL PENCERES�
+   Panel ayr� penceredeyken ana uygulamada gizlenir. v5 layoutPanels()
+   her apply() turunda inline display yazd��� i�in !important gerekir.
+   .v5-detached-probe yaln�z ayr� pencereden gelen i�aret�i i�in
+   (hit-test ve tuval �l��leri) paneli yerle�ime sokar; g�r�nmez kal�r.
+   ========================================================= */
+.v5-panel[data-detached="1"] {
+  display: none !important;
+}
+
+/* Probe ekran dışında durur: dock yerleşimini kaydırmaz, çift görünüm
+   yaratmaz. Ölçüler ayırma anındaki panel dikdörtgeninden gelir. */
+.v5-panel[data-detached="1"].v5-detached-probe {
+  display: flex !important;
+  position: fixed !important;
+  left: -20000px !important;
+  top: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: var(--v5-probe-w, 300px) !important;
+  height: var(--v5-probe-h, 500px) !important;
+  opacity: 0 !important;
+  pointer-events: auto !important;
+  z-index: 0 !important;
+}
+
+/* Ayrı pencere düğmesi v5 başlık eylemleriyle uyumlu. */
+#v5DrawUI .v5-panel-head .v5-panel-actions [data-panel-popout] {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 6px;
+  color: var(--v5-text-secondary);
+}
+
+#v5DrawUI .v5-panel-head .v5-panel-actions [data-panel-popout]:hover {
+  background: var(--v5-hover);
+  color: var(--v5-text);
+}

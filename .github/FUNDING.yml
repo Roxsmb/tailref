@@ -1,0 +1,10 @@
+# TailRef funding
+#
+# No donation link is configured yet. The Buy Me a Coffee page does not exist,
+# so the placeholder is deliberately left commented out: GitHub would otherwise
+# show a broken "Sponsor" button.
+#
+# When the real page exists, replace YOUR_BUY_ME_A_COFFEE_URL and uncomment:
+#
+# custom:
+#   - YOUR_BUY_ME_A_COFFEE_URL

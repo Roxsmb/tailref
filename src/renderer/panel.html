@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TailRef panel</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="ui-shell.css">
+<link rel="stylesheet" href="draw-proto.css">
+<link rel="stylesheet" href="draw-v5.css">
+<link rel="stylesheet" href="native-brushes.css">
+<style>
+  /* Pencere saydam: panelin kendi köşe yarıçapı, rengi ve gölgesi
+     uygulama içindeki görünümle birebir aynı kalır. Kenardaki boşluk
+     yalnızca panelin gölgesinin kırpılmaması için. */
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:transparent;color:#eef2f7;
+    font-family:'Inter',BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+  body{display:block}
+  #panelRoot{
+    position:relative;
+    width:100%;height:100%;
+    padding:22px 42px 62px;
+    display:flex;
+    overflow:hidden;
+    background:transparent;
+  }
+  /* Ana penceredeki panelin kopyası: yalnızca konum/ölçü sıfırlanır;
+     arka plan, köşe yarıçapı, gölge ve renkler olduğu gibi korunur. */
+  #panelRoot > *{
+    position:relative!important;
+    left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;
+    transform:none!important;
+    width:100%!important;height:100%!important;
+    min-width:0!important;min-height:0!important;
+    max-width:none!important;max-height:none!important;
+    margin:0!important;
+  }
+  /* Panelin kendi başlığı pencereyi taşımak için tutamak olur. */
+  #panelRoot .floatingPanelHead,
+  #panelRoot .ibTitle{
+    -webkit-app-region:drag;
+  }
+  #panelRoot .floatingPanelHead button,
+  #panelRoot .floatingPanelHead input,
+  #panelRoot .floatingPanelHead select,
+  #panelRoot .floatingPanelHead textarea,
+  #panelRoot .floatingPanelHead a,
+  #panelRoot .floatingPanelHead label,
+  #panelRoot .floatingPanelHead [role="button"],
+  #panelRoot .ibTitle button,
+  #panelRoot .ibTitle input{
+    -webkit-app-region:no-drag;
+  }
+  /* Ayrı pencerede tam ekran: gölge boşluğu kalkar, panel ekranı kaplar. */
+  #panelRoot.is-fullscreen{
+    padding:0;
+  }
+  #panelRoot.is-fullscreen > *{
+    border-radius:0!important;
+    box-shadow:none!important;
+    border:0!important;
+  }
+  /* ---------- v5 çizim panelleri ----------
+     v5 stilleri #v5DrawUI altında kapsanır; kopya bu sarmalayıcıyla
+     gelir. Sarmalayıcı ana pencerede tam ekran sabittir; kopyada panel
+     penceresinin içeriğini doldurur. */
+  body.panel-v5 #v5DrawUI{
+    position:relative!important;
+    inset:auto!important;
+    width:100%!important;
+    height:100%!important;
+    display:block!important;
+    pointer-events:auto!important;
+    z-index:auto!important;
+  }
+  body.panel-v5 #v5DrawUI > .v5-panel{
+    position:relative!important;
+    left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;
+    transform:none!important;
+    width:100%!important;height:100%!important;
+    min-width:0!important;min-height:0!important;
+    max-width:none!important;max-height:none!important;
+    margin:0!important;
+    z-index:auto!important;
+    border-radius:var(--v5-r-panel)!important;
+  }
+  /* Katlanmış panel başlık yüksekliğine iner (ana penceredeki kural). */
+  body.panel-v5 #v5DrawUI > .v5-panel.is-collapsed{
+    height:auto!important;
+    min-height:34px!important;
+  }
+  /* Başlık pencereyi taşır; düğmeler tıklanabilir kalır. */
+  body.panel-v5 #v5DrawUI .v5-panel-head{
+    -webkit-app-region:drag;
+  }
+  body.panel-v5 #v5DrawUI .v5-panel-head button,
+  body.panel-v5 #v5DrawUI .v5-panel-head input,
+  body.panel-v5 #v5DrawUI .v5-panel-head select,
+  body.panel-v5 #v5DrawUI .v5-panel-head textarea,
+  body.panel-v5 #v5DrawUI .v5-panel-head a,
+  body.panel-v5 #v5DrawUI .v5-panel-head label,
+  body.panel-v5 #v5DrawUI .v5-panel-head [role="button"]{
+    -webkit-app-region:no-drag;
+  }
+  /* Kopyada panel pencereyi doldurur: ana uygulamada yalnız yüzen
+     panellerde görünen sekiz boyutlandırma tutamağı burada her zaman
+     etkin olsun. Tutamaklar görünmez; imleç kenarda değişir. */
+  body.panel-v5 #v5DrawUI .v5-panel .v5-resize-edge{
+    display:block!important;
+    -webkit-app-region:no-drag;
+  }
+  /* Mini tahtanın canlı rasterı (veri URL'si) stage'i doldurur. */
+  body.panel-v5 #v5RefStage > img.v5-ref-window{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:fill;
+    pointer-events:none;
+    user-select:none;
+    -webkit-user-drag:none;
+  }
+</style>
+</head>
+<body>
+  <div id="panelRoot"></div>
+  <script src="panel-window.js"></script>
+</body>
+</html>

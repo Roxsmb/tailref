@@ -1,0 +1,2050 @@
+﻿/* ======================================================================
+   TailRef · SGI IRIX 4Dwm arayüz skin'i — v2 OTANTİK REVİZYON (16 Kasım 2026)
+   ======================================================================
+   ARAYÜZ katmanı — TEMA katmanından BAĞIMSIZ. <link data-ui-skin="irix">
+   üzerinden 02c-interface-registry.js enable/disable eder; link kapalıyken
+   etkisi yoktur (classic parite). Yalnızca
+   documentElement[data-interface="irix"] altında uygulanır — JS YOK,
+   davranış/ID/event DEĞİŞMEZ.
+
+   v2 OTANTİKLİK KURALLARI (gerçek IRIX ekran görüntüleriyle: Paint,
+   Explorer, Control Panel, Notepad):
+   • LACİVERT yalnız: ana pencere başlığı (#appModeBar) + SEÇİLİ liste
+     öğeleri + menü hover. Panel başlıkları GRİ + siyah kalın metin,
+     altında etched (oyuk) ayraç. Paneller ayrı mavi başlıklı pencere DEĞİL.
+   • BEVEL sistemi DrawEdge doğrultulu: raised = dış üst/sol beyaz +
+     iç üst/sol #dfdfdf + dış alt/sağ #0a0a0a + iç alt/sağ #808080.
+     sunken alan = dış üst/sol #808080 + iç #0a0a0a + dış alt/sağ beyaz +
+     iç #dfdfdf. Pencere çerçevesi = raised-window varyantı (#dfdfdf dış).
+   • Hover'da renk değişimi YOK (dönem davranışı); basılı = sunken,
+     kalıcı basılı (aktif araç/mod) = damalıtkan (50% dither) + sunken.
+   • Seçim/liste: beyaz alan + siyah metin; seçili = lacivert + beyaz.
+   • Kaydırma çubuğu: 16px, damalıtkan track, ok düğmeli, raised thumb.
+   • Typography: Tahoma/MS Sans Serif 11-12px, griye siyah, laciverte beyaz.
+   • DÜZEN DEĞİŞMEZ: panel konum/boyut kuralları v1'den aynen korunur.
+   ====================================================================== */
+
+/* ---------- tokenlar ---------- */
+:root[data-interface="irix"]{
+  --ui-font:'Helvetica','Nimbus Sans L','Liberation Sans',Arial,sans-serif;
+  --ui-fs-base:12px;
+  --ui-fs-small:11px;
+  --ui-fs-title:11px;
+  --ui-radius:0;
+  --ui-radius-sm:0;
+  --ui-radius-pill:0;
+  --ui-border-w:1px;
+  --ui-control-h:22px;
+  --ui-btn-h:22px;
+  --ui-titlebar-h:30px;
+  --ui-icon:16px;
+  --ui-scrollbar-w:16px;
+  --ui-control-transition:none;
+  /* SGI IRIX paleti (kullanıcı spesifikasyonu; temadan bağımsız) */
+  --irix-face:#868b96;          /* panel/pencere yüzeyi */
+  --irix-face-light:#c3c7d1;    /* açık bevel (highlight) */
+  --irix-hilite:#c3c7d1;
+  --irix-shadow:#40444d;        /* koyu bevel */
+  --irix-dark:#1d2026;          /* derin iç gölge / dış çerçeve */
+  --irix-text:#14161a;          /* etiket/buton metni (yakın siyah) */
+  --irix-text-disabled:#6a6d77; /* inaktif başlık grisi */
+  --irix-title:#3b446b;         /* aktif başlık: koyu indigo */
+  --irix-title-alt:#5b2c45;     /* alternatif aktif başlık: koyu plum */
+  --irix-title-text:#ffffff;
+  --irix-title-inactive:#6a6d77;
+  --irix-field:#ffffff;         /* girilen alanlar beyaz */
+  --irix-selected:#d9a441;      /* seçim/vurgu: mustard gold */
+  --irix-selected-text:#14161a;
+  --irix-accent:#c84b31;        /* terracotta (kapat/danger) */
+  --irix-desktop:#26586a;       /* çalışma alanı zemini: petrol teal */
+  /* tema köprüsü: body/html zemin teal (temalar kendi --bg'ini yazar) */
+  --bg:var(--irix-desktop);
+  --irix-tooltip:#ffffe1;
+  /* MOTIF/4Dwm BEVEL: 3px ridges + 1px derin dış çerçeve.
+     Katman sırası (üstte ilk): 1px near-black çerçeve → 2px açık/koyu
+     ridge. field-thin = 2px sığ versiyon (küçük kontroller). */
+  --irix-bev-btn:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-hilite),
+    inset 3px 3px 0 var(--irix-hilite),
+    inset -1px -1px 0 var(--irix-shadow),
+    inset -3px -3px 0 var(--irix-shadow);
+  --irix-bev-btn-press:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+  /* pencere: DIŞTA görünür 4Dwm çerçevesi (1px koyu + 2px açık + 1px
+     koyu halka) + içeride 3px ridge — IRIX pencerelerindeki kalın
+     çift çerçeve (Color Scheme diyaloğu dili) */
+  --irix-bev-window:
+    0 0 0 1px var(--irix-dark),
+    0 0 0 3px var(--irix-hilite),
+    0 0 0 4px var(--irix-shadow),
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-hilite),
+    inset 4px 4px 0 var(--irix-hilite),
+    inset -1px -1px 0 var(--irix-shadow),
+    inset -4px -4px 0 var(--irix-shadow);
+  --irix-bev-field:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset 3px 3px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite),
+    inset -3px -3px 0 var(--irix-hilite);
+  --irix-bev-field-thin:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 1px 1px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite);
+  /* IRIX %50 damalıtkan (track + kalıcı basılı yüzey) */
+  --irix-dither:repeating-conic-gradient(var(--irix-hilite) 0% 25%,var(--irix-face) 0% 50%) 0 0/2px 2px;
+}
+
+/* ---------- evrensel ---------- */
+:root[data-interface="irix"] body,
+:root[data-interface="irix"] button,
+:root[data-interface="irix"] input,
+:root[data-interface="irix"] select,
+:root[data-interface="irix"] textarea{
+  font-family:var(--ui-font);
+}
+:root[data-interface="irix"] *{border-radius:0}
+:root[data-interface="irix"] *{transition:none!important}
+/* disabled: dönem gümbürdetmesi — gri metin + beyaz kabartı gölgesi */
+:root[data-interface="irix"] button:disabled{
+  color:var(--irix-text-disabled)!important;
+  text-shadow:1px 1px 0 var(--irix-hilite)!important;
+}
+/* odak: dönem noktalı iç dikdörtgeni */
+:root[data-interface="irix"] button:focus-visible,
+:root[data-interface="irix"] select:focus-visible,
+:root[data-interface="irix"] input:focus-visible,
+:root[data-interface="irix"] textarea:focus-visible{
+  outline:1px dotted #000!important;
+  outline-offset:-4px;
+}
+
+/* ======================================================================
+   BEVEL SİSTEMİ
+   ====================================================================== */
+/* pencere çerçevesi (raised-window): paneller, diyaloglar, menüler */
+:root[data-interface="irix"] .irix-window,
+:root[data-interface="irix"] #settings,
+:root[data-interface="irix"] #pomodoroPanel,
+:root[data-interface="irix"] #youtubeMusicPanel,
+:root[data-interface="irix"] #pose3dPanel,
+:root[data-interface="irix"] #pinterestPanel,
+:root[data-interface="irix"] #artstationPanel,
+:root[data-interface="irix"] #imageEditor,
+:root[data-interface="irix"] #help,
+:root[data-interface="irix"] #inspector,
+:root[data-interface="irix"] #itemBar,
+:root[data-interface="irix"] #trashPanel,
+:root[data-interface="irix"] #contextMenu,
+:root[data-interface="irix"] #overflowMenu,
+:root[data-interface="irix"] #projectNotice{
+  background:var(--irix-face)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window),2px 2px 0 rgba(0,0,0,.35)!important;
+}
+/* diyalog/mod pencere dış gölgesiz olanlar */
+:root[data-interface="irix"] #projectNotice{
+  box-shadow:var(--irix-bev-window),2px 2px 0 rgba(0,0,0,.35)!important;
+}
+
+/* BUTON — evrensel kural: hiçbir modern düğme kalmasın.
+   (temel sayfadaki ID'li kuralları yenmek için !important zorunlu)
+   MUAFİYET: renk chip'leri (inline hex bg taşır) bevel dışı tutulur. */
+:root[data-interface="irix"] button:not(.inkColorChip):not(.v5-color-swatch):not(.v5-opt-color):not(.v5-recents-chip):not(.inkCpSwatch):not(.inkCpSquare):not(.v5-recents-chip){
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  text-shadow:none!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+/* hover döneminde değişmez */
+:root[data-interface="irix"] button:not(.inkColorChip):not(.v5-color-swatch):not(.v5-opt-color):not(.v5-recents-chip):not(.inkCpSwatch):not(.inkCpSquare):hover{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+}
+/* anlık basılı: sunken */
+:root[data-interface="irix"] button:not(.inkColorChip):not(.v5-color-swatch):not(.v5-opt-color):not(.v5-recents-chip):not(.inkCpSwatch):not(.inkCpSquare):active{
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+/* kalıcı basılı (aktif araç/mod/seçenek): damalıtkan + sunken */
+:root[data-interface="irix"] button:not(.inkColorChip):not(.v5-color-swatch):not(.v5-opt-color):not(.v5-recents-chip):not(.inkCpSwatch):not(.inkCpSquare)[aria-pressed="true"],
+:root[data-interface="irix"] button:not(.inkColorChip):not(.v5-color-swatch):not(.v5-opt-color):not(.v5-recents-chip):not(.inkCpSwatch):not(.inkCpSquare)[aria-checked="true"],
+:root[data-interface="irix"] button:not(.inkColorChip):not(.v5-color-swatch):not(.v5-opt-color):not(.v5-recents-chip):not(.inkCpSwatch):not(.inkCpSquare).is-active,
+:root[data-interface="irix"] button:not(.inkColorChip):not(.v5-color-swatch):not(.v5-opt-color):not(.v5-recents-chip):not(.inkCpSwatch):not(.inkCpSquare).is-on{
+  background:var(--irix-dither)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] button:not(.inkColorChip):not(.v5-color-swatch):not(.v5-opt-color):not(.v5-recents-chip):not(.inkCpSwatch):not(.inkCpSquare)[aria-pressed="true"]:active,
+:root[data-interface="irix"] button:not(.inkColorChip):not(.v5-color-swatch):not(.v5-opt-color):not(.v5-recents-chip):not(.inkCpSwatch):not(.inkCpSquare).is-active:active{
+  background:var(--irix-dither)!important;
+}
+
+/* GİRİŞ ALANI — beyaz sunken (evrensel) */
+:root[data-interface="irix"] input[type="text"],
+:root[data-interface="irix"] input[type="number"],
+:root[data-interface="irix"] input[type="search"],
+:root[data-interface="irix"] input[type="password"],
+:root[data-interface="irix"] input[type="email"],
+:root[data-interface="irix"] textarea{
+  background:var(--irix-field)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  min-height:var(--ui-control-h);
+  box-shadow:var(--irix-bev-field)!important;
+}
+
+/* SELECT — beyaz sunken alan + sağda raised ok düğmesi (dönem tarzı;
+   gri raised select YANLIŞTI) */
+:root[data-interface="irix"] select,
+:root[data-interface="irix"] #bar .themeSelect,
+:root[data-interface="irix"] #settings select{
+  appearance:none!important;
+  background:var(--irix-field)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  min-height:var(--ui-control-h);
+  padding:0 20px 0 4px!important;
+  box-shadow:var(--irix-bev-field)!important;
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 17"><rect x="0" y="0" width="16" height="17" fill="%237e828c"/><rect x="0" y="0" width="15" height="1" fill="%23b8bcc6"/><rect x="0" y="0" width="1" height="16" fill="%23b8bcc6"/><rect x="1" y="15" width="14" height="1" fill="%23383a40"/><rect x="14" y="1" width="1" height="14" fill="%23383a40"/><rect x="15" y="0" width="1" height="17" fill="%231e2024"/><rect x="0" y="16" width="16" height="1" fill="%231e2024"/><path d="M5 7h6L8 11z" fill="black"/></svg>')!important;
+  background-repeat:no-repeat!important;
+  background-position:right 0 center!important;
+}
+:root[data-interface="irix"] select option,
+:root[data-interface="irix"] #bar .themeSelect option,
+:root[data-interface="irix"] #settings select option{
+  background:var(--irix-field)!important;
+  color:var(--irix-text)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+}
+:root[data-interface="irix"] select option:checked{
+  background:var(--irix-selected)!important;
+  color:var(--irix-selected-text)!important;
+}
+:root[data-interface="irix"] select[multiple]{
+  padding:2px!important;
+}
+
+/* CHECKBOX — evrensel: 13px beyaz sunken kare + siyah ✓ */
+:root[data-interface="irix"] input[type="checkbox"]{
+  appearance:none!important;
+  width:13px!important;
+  height:13px!important;
+  margin:0 2px 0 0!important;
+  padding:0!important;
+  background:var(--irix-field)!important;
+  border:0!important;
+  border-radius:0!important;
+  flex:0 0 auto;
+  box-shadow:var(--irix-bev-field)!important;
+}
+:root[data-interface="irix"] input[type="checkbox"]:checked{
+  background:var(--irix-field)
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13 13"><path d="M3 6.5l2.5 2.5L10.5 3.5" stroke="black" stroke-width="1.8" fill="none"/></svg>')
+    center/9px no-repeat!important;
+}
+:root[data-interface="irix"] input[type="checkbox"]:disabled{
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-field-thin)!important;
+}
+
+/* RADIO — evrensel: 13px beyaz sunken daire + siyah nokta */
+:root[data-interface="irix"] input[type="radio"]{
+  appearance:none!important;
+  width:13px!important;
+  height:13px!important;
+  margin:0 2px 0 0!important;
+  padding:0!important;
+  background:var(--irix-field)!important;
+  border:0!important;
+  border-radius:50%!important;
+  flex:0 0 auto;
+  box-shadow:var(--irix-bev-field)!important;
+}
+:root[data-interface="irix"] input[type="radio"]:checked{
+  background:radial-gradient(circle at 50% 50%,#000 0 3px,transparent 3.5px) var(--irix-field)!important;
+}
+:root[data-interface="irix"] input[type="radio"]:disabled{
+  background:var(--irix-face)!important;
+}
+
+/* COLOR input — sunken */
+:root[data-interface="irix"] input[type="color"]{
+  border:0!important;
+  border-radius:0!important;
+  padding:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+
+/* RANGE — groove track + raised thumb */
+:root[data-interface="irix"] input[type="range"]{
+  appearance:none!important;
+  background:transparent!important;
+  height:20px;
+}
+:root[data-interface="irix"] input[type="range"]::-webkit-slider-runnable-track{
+  height:4px;
+  background:var(--irix-face-light);
+  box-shadow:
+    inset 1px 1px 0 var(--irix-shadow),
+    inset -1px -1px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] input[type="range"]::-webkit-slider-thumb{
+  appearance:none;
+  width:11px;height:18px;
+  margin-top:-7px;
+  background:var(--irix-face);
+  border-radius:0;
+  box-shadow:var(--irix-bev-btn);
+}
+:root[data-interface="irix"] input[type="range"]:focus-visible::-webkit-slider-thumb{
+  outline:1px dotted #000;
+  outline-offset:-3px;
+}
+
+/* SCROLLBAR — 16px, damalıtkan track, ok düğmeli */
+:root[data-interface="irix"] ::-webkit-scrollbar,
+:root[data-interface="irix"] ::-webkit-scrollbar-corner{
+  width:var(--ui-scrollbar-w);
+  height:var(--ui-scrollbar-w);
+  background:var(--irix-face);
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-track{
+  background:var(--irix-dither);
+  box-shadow:inset 1px 1px 0 var(--irix-face-light);
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-thumb{
+  background:var(--irix-face);
+  border-radius:0;
+  box-shadow:var(--irix-bev-btn);
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-thumb:active{
+  box-shadow:var(--irix-bev-btn-press);
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-button{
+  width:var(--ui-scrollbar-w);
+  height:var(--ui-scrollbar-w);
+  background:var(--irix-face) center/8px no-repeat;
+  box-shadow:var(--irix-bev-btn);
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-button:active{
+  background-color:var(--irix-face);
+  box-shadow:var(--irix-bev-btn-press);
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-button:single-button:vertical:decrement{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path d="M4 2L7 6H1z" fill="black"/></svg>');
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-button:single-button:vertical:increment{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path d="M4 6L1 2h6z" fill="black"/></svg>');
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-button:single-button:horizontal:decrement{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path d="M2 4L6 1v6z" fill="black"/></svg>');
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-button:single-button:horizontal:increment{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path d="M6 4L2 7V1z" fill="black"/></svg>');
+}
+:root[data-interface="irix"] ::-webkit-scrollbar-button:vertical:start:increment,
+:root[data-interface="irix"] ::-webkit-scrollbar-button:vertical:end:decrement,
+:root[data-interface="irix"] ::-webkit-scrollbar-button:horizontal:start:increment,
+:root[data-interface="irix"] ::-webkit-scrollbar-button:horizontal:end:decrement{display:none}
+
+/* ETCHED ayraç (oyuk): 1px gölge + 1px açık — araç çubuğu, panel
+   bölüm ayracı */
+:root[data-interface="irix"] #bar .tsep{
+  width:2px!important;
+  height:20px!important;
+  background:var(--irix-shadow)!important;
+  border-radius:0!important;
+  box-shadow:1px 0 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-sep{
+  width:2px!important;
+  background:var(--irix-shadow)!important;
+  box-shadow:1px 0 0 var(--irix-hilite)!important;
+}
+
+/* ======================================================================
+   KABUK — başlık çubuğu, menü çubuğu, araç çubuğu, durum, görev çubuğu
+   ====================================================================== */
+/* ---- mod kümesi (#appModeBar): CLASSIC konumunda compact 4Dwm
+   penceresi. Kullanıcı kararı: tam genişlik başlık çubuğu YOK —
+   original TailRef üst düzeni korunur; yalnız görsel IRIX dili. ---- */
+:root[data-interface="irix"] #appModeBar{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+/* marka: classic konumu (override YOK — original TailRef yerleşimi) */
+:root[data-interface="irix"] #appModeBar .appModeTitle,
+:root[data-interface="irix"] #appModeBar b{
+  color:var(--irix-text)!important;
+}
+/* mod sekme metni: raised gri düğme ÜZERİNDE koyu (mockup) */
+:root[data-interface="irix"] #appModeBar .modeBtnText{
+  color:var(--irix-text)!important;
+  text-shadow:none!important;
+}
+:root[data-interface="irix"] #appModeBar .modeBtn[aria-pressed="true"] .modeBtnText,
+:root[data-interface="irix"] #appModeBar .modeBtn[aria-selected="true"] .modeBtnText{
+  font-weight:700;
+}
+/* başlık çubuğundaki düğmeler: lacivert üzerinde raised gri (Paint
+   başlık düğmeleri gibi) */
+:root[data-interface="irix"] #appModeBar .modeBtn:not(.winbtn){
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #appModeBar .modeBtn:not(.winbtn):hover{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #appModeBar .modeBtn:not(.winbtn):active{
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #appModeBar .modeBtn[aria-pressed="true"]:not(.winbtn),
+:root[data-interface="irix"] #appModeBar .modeBtn[aria-selected="true"]:not(.winbtn){
+  background:var(--irix-dither)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+/* pencere düğmeleri (winbtn + wbtn): raised gri kare, radius 0;
+   kapat düğmesi hover'da terracotta (IRIX accent) */
+:root[data-interface="irix"] #bar .windowTools .winbtn,
+:root[data-interface="irix"] #appModeBar .winbtn,
+:root[data-interface="irix"] #appModeBar .wbtn{
+  width:20px!important;
+  min-width:20px!important;
+  font-family:var(--ui-font)!important;
+  font-size:10px!important;
+  line-height:1!important;
+  padding:0!important;
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #appModeBar .winbtn:hover,
+:root[data-interface="irix"] #appModeBar .wbtn:hover{
+  background:var(--irix-face-light)!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #appModeBar .winbtn:active,
+:root[data-interface="irix"] #appModeBar .wbtn:active{
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #appModeBar .wbtn--close:hover,
+:root[data-interface="irix"] #appModeBar .winbtn--close:hover{
+  background:var(--irix-accent)!important;
+  color:#fff!important;
+}
+/* araç çubuğu kapatma kabzası */
+:root[data-interface="irix"] #barCollapseBtn{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+
+/* ---- MENÜ ÇUBUĞU KALDIRILDI (kullanıcı kararı + otantiklik):
+   4Dwm'de global menü çubuğu yoktur; menüler pencere içindedir.
+   #uiMenuBar kuralları ve irix-shell.js kurulumu silindi. ---- */
+
+/* ---- sekme şeridi (#projectBar) — konum classic'ten gelir.
+   Görsel: raised pencere şeridi, sekmeler = kalıcı basılı (damalıtkan)
+   aktif ---- */
+:root[data-interface="irix"] #projectBar{
+  height:26px!important;
+  padding:2px 4px!important;
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  max-width:none!important;
+}
+:root[data-interface="irix"] #projectBar .projTab{
+  background:var(--irix-face)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+:root[data-interface="irix"] #projectBar .projTabLabel,
+:root[data-interface="irix"] #projectBar .projTabClose,
+:root[data-interface="irix"] #projectBar .projAdd{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #projectBar .projTab.is-active .projTabLabel{
+  background:var(--irix-dither)!important;
+  font-weight:700;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+
+/* ---- araç çubuğu (#bar / #barDock) — konum classic'ten gelir ---- */
+:root[data-interface="irix"] #bar{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+:root[data-interface="irix"] #bar .segment,
+:root[data-interface="irix"] #bar .zoombox,
+:root[data-interface="irix"] #bar .opbox,
+:root[data-interface="irix"] #bar .wgroup{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+:root[data-interface="irix"] #bar .tbtn{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font:11px var(--ui-font)!important;
+  letter-spacing:normal!important;
+  transform:none!important;
+  filter:none!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #bar .tbtn:hover{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #bar .tbtn:active{
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #bar .tbtn[aria-pressed="true"],
+:root[data-interface="irix"] #bar .tbtn.is-active{
+  background:var(--irix-dither)!important;
+  color:var(--irix-text)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #bar .tbtn:disabled{
+  opacity:1!important;
+  background:var(--irix-face)!important;
+  color:var(--irix-text-disabled)!important;
+  text-shadow:1px 1px 0 var(--irix-hilite)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #bar .tbtn:disabled .toolIcon{opacity:.5}
+/* zoom değeri: beyaz sunken spinbox alanı */
+:root[data-interface="irix"] #bar .zoombox{
+  padding:1px!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+:root[data-interface="irix"] #bar .zoombox .tbtn,
+:root[data-interface="irix"] #bar .zval{
+  box-shadow:none!important;
+  background:var(--irix-field)!important;
+  color:var(--irix-text)!important;
+}
+/* araç çubuğu tooltip'leri: dönem sarısı, kare, siyah çerçeve */
+:root[data-interface="irix"] button[data-tooltip]:hover::after,
+:root[data-interface="irix"] button[data-tooltip]:focus-visible::after{
+  background:var(--irix-tooltip)!important;
+  color:#000!important;
+  border:1px solid #000!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  font:11px var(--ui-font)!important;
+  text-shadow:none!important;
+}
+
+/* Görev çubuğu ve durum çubuğu YOK (kullanıcı kararı): alt şeritler
+   classic düzenle birebir aynı kalır — #uiTaskbar / #psStatusBar
+   kuralları kaldırıldı. */
+
+/* ======================================================================
+   MENÜLER (bağlam menüsü + taşma menüsü)
+   ====================================================================== */
+:root[data-interface="irix"] #contextMenu,
+:root[data-interface="irix"] #overflowMenu{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  padding:2px!important;
+  min-width:160px;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  box-shadow:var(--irix-bev-btn),2px 2px 0 rgba(0,0,0,.35)!important;
+}
+:root[data-interface="irix"] #contextMenu .menuItem,
+:root[data-interface="irix"] #overflowMenu button,
+:root[data-interface="irix"] #overflowMenu .menuItem{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  padding:3px 20px 3px 22px;
+  position:relative;
+  text-align:left;
+}
+:root[data-interface="irix"] #contextMenu .menuItem:hover:not([disabled]),
+:root[data-interface="irix"] #overflowMenu button:hover{
+  background:var(--irix-selected)!important;
+  color:var(--irix-selected-text)!important;
+}
+:root[data-interface="irix"] #contextMenu .menuItem[data-tooltip]::after{
+  display:none!important;
+}
+
+/* ======================================================================
+   YÜZEN PANELLER — GRİ başlıklar (lacivert YALNIZ ana başlıkta),
+   etched alt ayracı, gri gövde
+   ====================================================================== */
+:root[data-interface="irix"] #settings,
+:root[data-interface="irix"] #pomodoroPanel,
+:root[data-interface="irix"] #youtubeMusicPanel,
+:root[data-interface="irix"] #pose3dPanel,
+:root[data-interface="irix"] #pinterestPanel,
+:root[data-interface="irix"] #artstationPanel,
+:root[data-interface="irix"] #imageEditor,
+:root[data-interface="irix"] #help,
+:root[data-interface="irix"] #inspector,
+:root[data-interface="irix"] #itemBar{
+  font-family:var(--ui-font)!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] .floatingPanelHead{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-title)!important;
+  font-weight:700;
+  padding:3px 4px;
+  text-transform:none;
+  box-shadow:inset 0 -1px 0 var(--irix-shadow),inset 0 -2px 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] .floatingPanelHead b,
+:root[data-interface="irix"] .floatingPanelHead span{
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] .floatingPanelHead button{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] .floatingPanelBody{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  font-size:var(--ui-fs-small)!important;
+}
+/* bölüm başlığı altına etched ayraç (görsel; layout etkisi yok) */
+:root[data-interface="irix"] #itemBar .itemBarSectionHeading{
+  color:var(--irix-text)!important;
+  box-shadow:0 1px 0 var(--irix-shadow),0 2px 0 var(--irix-hilite);
+}
+:root[data-interface="irix"] #itemBar .itemBarEyebrow{
+  color:var(--irix-text)!important;
+  font-weight:700;
+}
+
+/* ---- ayarlar paneli ---- */
+:root[data-interface="irix"] #settings .settingsNavItem{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+}
+:root[data-interface="irix"] #settings .settingsNavItem:hover{
+  background:var(--irix-face-light)!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #settings .settingsNavItem[aria-current="true"],
+:root[data-interface="irix"] #settings .settingsNavItem.is-active{
+  background:var(--irix-selected)!important;
+  color:var(--irix-selected-text)!important;
+}
+:root[data-interface="irix"] .settingsAction,
+:root[data-interface="irix"] #settings .settingsAction{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  min-height:var(--ui-btn-h);
+  padding:1px 10px;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] .settingsAction.is-primary{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  font-weight:700;
+}
+:root[data-interface="irix"] .settingsAction.is-danger{
+  color:#800000!important;
+}
+:root[data-interface="irix"] .settingsAction:active{
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #settings .settingsFootActions button{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  min-height:var(--ui-btn-h);
+  padding:1px 10px;
+  transform:none!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #settings .settingsFootActions button:active{
+  background:var(--irix-face)!important;
+  transform:none!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+/* ayarlar sayfası: gri zeminde siyah metin (soluk gri YOK) */
+:root[data-interface="irix"] #settings .settingsPage,
+:root[data-interface="irix"] #settings .settingsPage *{
+  color:var(--irix-text)!important;
+  text-shadow:none!important;
+}
+:root[data-interface="irix"] #settings .settingsPage .settingRow[data-help]::after,
+:root[data-interface="irix"] #settings .settingsPage .settingCheck[data-help]::after{
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #settings .settingsFoot,
+:root[data-interface="irix"] #settings .settingsFoot *{
+  color:var(--irix-text)!important;
+  text-shadow:none!important;
+}
+/* toggle düğmesi → klasik onay kutusu görünümü (aria-pressed korunur) */
+:root[data-interface="irix"] .settingToggleBtn{
+  background:var(--irix-field)!important;
+  border:0!important;
+  border-radius:0!important;
+  width:14px!important;
+  min-width:14px!important;
+  height:14px!important;
+  padding:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+:root[data-interface="irix"] .settingToggleBtn::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  opacity:0;
+  width:8px;height:4px;
+  border-left:2px solid #000;
+  border-bottom:2px solid #000;
+  transform:rotate(-45deg);
+  background:none;
+  box-shadow:none;
+  border-radius:0;
+}
+:root[data-interface="irix"] .settingToggleBtn[aria-pressed="true"]::after{opacity:1}
+
+/* ---- New canvas diyaloğu ---- */
+:root[data-interface="irix"] #newCanvasModal .ncCard{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  box-shadow:var(--irix-bev-window),2px 2px 0 rgba(0,0,0,.35)!important;
+}
+:root[data-interface="irix"] #newCanvasModal .ncCard *{
+  color:var(--irix-text)!important;
+  text-shadow:none!important;
+}
+:root[data-interface="irix"] #newCanvasModal button{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #newCanvasModal button[aria-pressed="true"],
+:root[data-interface="irix"] #newCanvasModal .is-active{
+  background:var(--irix-dither)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #newCanvasModal button[type="submit"],
+:root[data-interface="irix"] #newCanvasModal .ncPrimary{
+  font-weight:700;
+}
+
+/* ======================================================================
+   3D POSE — tool window düzeni: GRİ bölüm başlıkları (lacivert YOK)
+   ====================================================================== */
+:root[data-interface="irix"] #pose3dPanel .poseStackItem{
+  background:var(--irix-face)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseStackItem > summary{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-title)!important;
+  font-weight:700;
+  text-transform:none!important;
+  letter-spacing:normal!important;
+  box-shadow:inset 0 -1px 0 var(--irix-shadow),inset 0 -2px 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .posePaneBody{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseChip{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+/* viewport: sunken çerçeve (canvas'a dokunulmaz) */
+:root[data-interface="irix"] #pose3dPanel .poseViewport{
+  box-shadow:var(--irix-bev-field)!important;
+}
+
+/* ======================================================================
+   ÇİZİM MODU (body.mode-draw) — ink editörü + v5 panel sistemi
+   ======================================================================
+   KONUM KURALLARI: v5Toolbar/v5OptionsBar/paneller classic konumlarında
+   (override YOK). Çizim tuvaline DOKUNULMAZ. */
+
+/* ÇALIŞMA ALANI ZEMİNİ — KULLANICI KARARI (saydamlaştırma + tema
+   değişimi çalışsın): opak pin YOK. Teal, --bg token'ı üzerinden
+   body/html'e akar (temalar ezebilir); #backdrop katmanı theme
+   gradyanlarını taşır ve bgOpacity slider'ı onun opacity'sini
+   sürer. Yalnız #inkEditor (çizim masası, tema-dışı hardcoded
+   yüzey) teal kalır. */
+:root[data-interface="irix"] #inkEditor{
+  background:var(--irix-desktop)!important;
+  background-image:none!important;
+}
+/* backdrop: skin'in teal varsayılanı — :where() ile (1,0,0)'a düşürülür,
+   böylece [data-theme] kuralları (1,1,0) her zaman ezebilir: classic'te
+   teal, diğer temalarda kendi gradyanı görünür (tema değişimi çalışır). */
+:where([data-interface="irix"]) #backdrop{
+  background:var(--irix-desktop);
+}
+/* kanvas çerçevesi: sunken (çerçeve; tuval değil) */
+:root[data-interface="irix"] #inkCanvasFrame{
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+/* HUD + doküman boyutu çipleri: raised */
+:root[data-interface="irix"] #inkHud,
+:root[data-interface="irix"] #inkDocSize{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+/* #inkDocSize konumu classic'ten gelir (override silindi) */
+
+/* ---- araç çubuğu (#v5Toolbar) ---- */
+:root[data-interface="irix"] #v5Toolbar{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+}
+:root[data-interface="irix"] #v5Toolbar .v5-tool{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #v5Toolbar .v5-tool:hover{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #v5Toolbar .v5-tool:active{
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #v5Toolbar .v5-tool.is-active{
+  background:var(--irix-dither)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #v5Toolbar #v5ToolbarToggle{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+
+/* ---- seçenekler şeridi (#v5OptionsBar) ---- */
+:root[data-interface="irix"] #v5OptionsBar{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+}
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-label,
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-val,
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-tool-name,
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-key,
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-brush-name,
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-view-deg{
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-recents button,
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-action-btn,
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-view-reset{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+/* hap anahtar → kare irix anahtar (sunken yuva + raised topuz) */
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-toggle{
+  background:var(--irix-field)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-toggle::after{
+  border-radius:0!important;
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #v5OptionsBar .v5-opt-color{
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field-thin)!important;
+}
+
+/* ---- dock'lar: saydam taşıyıcı (panel kendisi raised) ---- */
+:root[data-interface="irix"] .v5-dock{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+/* ---- v5 panelleri: raised pencere + GRİ başlık + etched ayraç ---- */
+:root[data-interface="irix"] .v5-panel{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+}
+:root[data-interface="irix"] .v5-panel-head{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-title)!important;
+  font-weight:700;
+  box-shadow:inset 0 -1px 0 var(--irix-shadow),inset 0 -2px 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] .v5-panel-title{
+  color:var(--irix-text)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-title)!important;
+}
+:root[data-interface="irix"] .v5-panel-head .v5-head-btn,
+:root[data-interface="irix"] .v5-panel-head .v5-collapse-chevron{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+:root[data-interface="irix"] .v5-panel-head .v5-head-btn:hover{
+  background:var(--irix-face-light)!important;
+}
+:root[data-interface="irix"] .v5-panel-body{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+}
+/* Color paneli başlığı classic davranış: görünmez, hover'da çıkar */
+:root[data-interface="irix"] .v5-panel--color .v5-panel-head{
+  opacity:0;
+}
+:root[data-interface="irix"] .v5-panel--color:hover .v5-panel-head,
+:root[data-interface="irix"] .v5-panel--color:focus-within .v5-panel-head,
+:root[data-interface="irix"] .v5-panel--color.is-collapsed .v5-panel-head{
+  opacity:1;
+}
+/* panel gövdesi metinleri: siyah */
+:root[data-interface="irix"] .v5-ref-sub-name,
+:root[data-interface="irix"] .v5-ref-zoom-value,
+:root[data-interface="irix"] .v5-ref-empty,
+:root[data-interface="irix"] .v5-brush-name,
+:root[data-interface="irix"] .v5-layer-opacity-val,
+:root[data-interface="irix"] #v5DrawUI #inkLayerList .inkLayerName{
+  color:var(--irix-text)!important;
+}
+/* panel içi küçük düğmeler: raised */
+:root[data-interface="irix"] .v5-brush-action,
+:root[data-interface="irix"] .v5-ref-zoom button,
+:root[data-interface="irix"] .v5-ref-fit{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] .v5-dock-resize::after{
+  background:var(--irix-shadow)!important;
+}
+
+/* ---- Renk paneli: çark + swatch'lar (çarka dokunulmaz) ---- */
+:root[data-interface="irix"] .v5-color-swatch{
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field-thin)!important;
+}
+
+/* ---- Katmanlar listesi: beyaz liste alanı, seçili lacivert ---- */
+:root[data-interface="irix"] #v5DrawUI #inkLayerList{
+  background:var(--irix-field)!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+:root[data-interface="irix"] #v5DrawUI #inkLayerList .inkLayerRow{
+  background:var(--irix-field)!important;
+  border-radius:0!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #v5DrawUI #inkLayerList .inkLayerRow.active,
+:root[data-interface="irix"] #v5DrawUI #inkLayerList .inkLayerRow.active:hover{
+  background:var(--irix-selected)!important;
+}
+:root[data-interface="irix"] #v5DrawUI #inkLayerList .inkLayerRow.active .inkLayerName{
+  color:var(--irix-selected-text)!important;
+}
+:root[data-interface="irix"] #v5DrawUI #inkLayerList .inkLayerRow::before,
+:root[data-interface="irix"] #v5DrawUI #inkLayerList .inkLayerRow::after{
+  display:none!important;
+}
+
+/* ---- Fırça kitaplığı: beyaz liste + seçili lacivert ---- */
+:root[data-interface="irix"] .v5-brush-cat{
+  background:var(--irix-field)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+}
+:root[data-interface="irix"] .v5-brush-cat.is-active{
+  background:var(--irix-selected)!important;
+  color:var(--irix-selected-text)!important;
+}
+:root[data-interface="irix"] .v5-brush-cat.is-active .v5-brush-cat__name{
+  color:var(--irix-selected-text)!important;
+}
+
+/* ---- referans panosu içerik alanı: sunken çerçeve ----
+   DİKKAT: .v5-ref-stage panonun CANLI görünümüdür (#world içindeki
+   öğeleri gösterir) — opak zemin VERİLMEZ, yalnız sunken çerçeve. */
+:root[data-interface="irix"] .v5-ref-stage,
+:root[data-interface="irix"] #v5RefStage{
+  background:transparent!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+/* CANLI TAHTA KURALI (ps-ref-live): çizim modunda soldaki "Reference
+   board" paneli gerçek panonun KIRPILMIŞ görünümüdür (#stage z1230,
+   dock z1500'ün altında). Panel gövdesi opak olursa canlı tahtayı
+   kapatır → gövde/wrap saydam; stage saydam + SUNKEN çerçeve kalır. */
+:root[data-interface="irix"] body.mode-draw .v5-panel--reference,
+:root[data-interface="irix"] body.mode-draw .v5-panel--reference .v5-panel-body,
+:root[data-interface="irix"] body.mode-draw .v5-panel--reference .v5-ref-body-wrap{
+  background:transparent!important;
+  box-shadow:none!important;
+}
+:root[data-interface="irix"] body.mode-draw .v5-panel--reference .v5-ref-stage{
+  background:transparent!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+/* #stage pin YOK (saydamlaştırma + tema kuralı): classic'te
+   transparent; altındaki #backdrop görünür. */
+/* panel ayak kısmı (zoom düğmeleri): gri şerit + etched üst ayraç */
+:root[data-interface="irix"] .v5-ref-foot{
+  background:var(--irix-face)!important;
+  border-radius:0!important;
+  border-top:1px solid var(--irix-shadow)!important;
+  box-shadow:inset 0 1px 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] .v5-ref-foot .v5-ref-zoom button,
+:root[data-interface="irix"] .v5-ref-foot .v5-ref-fit,
+:root[data-interface="irix"] #v5DrawUI .v5-ref-zoom button,
+:root[data-interface="irix"] #v5DrawUI .v5-ref-fit{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+
+/* ---- itemBar / inspector içerikleri: siyah metin + raised düğmeler ---- */
+:root[data-interface="irix"] #itemBar,
+:root[data-interface="irix"] #inspector{
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #itemBar .itemBarContent,
+:root[data-interface="irix"] #itemBar .itemBarSection{
+  color:var(--irix-text)!important;
+  background-color:transparent!important;
+}
+:root[data-interface="irix"] #itemBar .itemBarActionGrid button{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #itemBar .itemBarActionGrid button:active{
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+
+/* ---- pano zemini: pin YOK (saydamlaştırma + tema kuralı);
+   zemin #backdrop + --bg'ten gelir ---- */
+:root[data-interface="irix"] #board .boardEmpty,
+:root[data-interface="irix"] #board .emptyState,
+:root[data-interface="irix"] #stage .boardEmpty{
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #alphaVal{
+  color:var(--irix-text)!important;
+}
+/* çöp dock düğmesi (pano sağ alt): raised */
+:root[data-interface="irix"] #trashDock #btnTrashDock{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+
+/* ---- legacy ink dock'ları (görünürse): gri yüzey ---- */
+:root[data-interface="irix"] #inkLeftDock,
+:root[data-interface="irix"] #inkRightDock,
+:root[data-interface="irix"] #inkScopeBar{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+}
+
+/* ======================================================================
+   FAZ 7 — odak dışı pencere: yalnız ANA başlık çubuğu grileşir
+   (irix-shell.js .irix-window-inactive yazar; gerçek blur durumu)
+   ====================================================================== */
+:root[data-interface="irix"].irix-window-inactive #appModeBar{
+  background:var(--irix-title-inactive)!important;
+}
+
+/* ======================================================================
+   FAZ 8 — 3D POSE PANELİ (tam kapsamlı IRIX çevirisi)
+   ======================================================================
+   #pose3dPanel koyu cam zeminli modern panel → gri tool window. KURAL:
+   motor/model/viewport çizimi DOKUNULMAZ; yalnız çevre chrome. Tüm
+   kurallar !important'lı (base koyu kurallar ID'li olduğundan). */
+:root[data-interface="irix"] #pose3dPanel{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window),2px 2px 0 rgba(0,0,0,.35)!important;
+  font-family:var(--ui-font)!important;
+}
+/* cam tonu katmanı kaldırılır */
+:root[data-interface="irix"] #pose3dPanel::before{
+  content:none!important;
+}
+
+/* ---- panel başlığı (floatingPanelHead sınıflı): gri + siyah + etched ---- */
+:root[data-interface="irix"] #pose3dPanel .pose3dHead{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-title)!important;
+  font-weight:700!important;
+  text-transform:none!important;
+  letter-spacing:normal!important;
+  box-shadow:inset 0 -1px 0 var(--irix-shadow),inset 0 -2px 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .pose3dHead b{
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .pose3dHead button{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .pose3dHead button:active{
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+
+/* ---- viewport: sunken çerçeve (3D çizim alanına dokunulmaz) ---- */
+:root[data-interface="irix"] #pose3dPanel .poseViewport{
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+
+/* ---- HUD chip'leri (kamera/status): raised gri + siyah metin ---- */
+:root[data-interface="irix"] #pose3dPanel .poseChip{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  letter-spacing:normal!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseChipDim{
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseChipButton:hover{
+  background:var(--irix-face)!important;
+  border-color:transparent!important;
+}
+
+/* ---- dock (sağ alt): raised araç çubuğu ---- */
+:root[data-interface="irix"] #pose3dPanel .poseDock{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseDock button{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseDock button:hover{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-color:transparent!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseDock button:active{
+  transform:none!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseDock button[aria-pressed="true"]{
+  background:var(--irix-dither)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseDockSep{
+  width:2px!important;
+  background:var(--irix-shadow)!important;
+  box-shadow:1px 0 0 var(--irix-hilite)!important;
+}
+
+/* ---- sol hızlı şerit (.poseQuick): raised pencere ---- */
+:root[data-interface="irix"] #pose3dPanel .poseQuick{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+/* 3D bölüm kartları (Görsel/Kamera/Poz...) = 4Dwm alt pencereleri
+   (kullanıcı: "bunların da çerçevesi yok") */
+:root[data-interface="irix"] #pose3dPanel .poseSection,
+:root[data-interface="irix"] #pose3dPanel .poseStackItem{
+  box-shadow:var(--irix-bev-window)!important;
+  border-radius:0!important;
+}
+/* gruplar: etched (oyuk) çerçeveli gri kutu — IRIX grup çerçevesi */
+:root[data-interface="irix"] #pose3dPanel .poseQuickGroup{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:inset -1px -1px 0 var(--irix-hilite),inset 1px 1px 0 var(--irix-shadow)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickTitle{
+  color:var(--irix-text)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  font-weight:700!important;
+  letter-spacing:normal!important;
+  text-transform:none!important;
+}
+/* quick düğmeler: evrensel raised kuralı boyar; Primary vurgusu ve
+   aria-pressed accent'i döneme çevrilir */
+:root[data-interface="irix"] #pose3dPanel .poseQuickBtn,
+:root[data-interface="irix"] #pose3dPanel .poseQuickBtnPrimary{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  color:var(--irix-text)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  transform:none!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickBtn:hover{
+  background:var(--irix-face)!important;
+  border-color:transparent!important;
+  filter:none!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickBtn:active{
+  transform:none!important;
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickBtn[aria-pressed="true"]{
+  background:var(--irix-dither)!important;
+  border-color:transparent!important;
+  color:var(--irix-text)!important;
+  font-weight:700;
+  filter:none!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickBtn:disabled{
+  opacity:1!important;
+  color:var(--irix-text-disabled)!important;
+  text-shadow:1px 1px 0 var(--irix-hilite)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+
+/* ---- mini anahtar: sunken yuva + raised kare topuz ---- */
+:root[data-interface="irix"] #pose3dPanel .poseQuickSwitch{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickSwitch:hover{
+  background:transparent!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickSwitchText{
+  color:var(--irix-text)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  font-weight:700;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickSwitchTrack{
+  background:var(--irix-field)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickSwitchTrack::after{
+  background:var(--irix-face)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickSwitch[aria-pressed="true"] .poseQuickSwitchTrack{
+  background:var(--irix-field)!important;
+}
+
+/* ---- etiket/değer metinleri: SİYAH (soluk gri metin kalmaz) ---- */
+:root[data-interface="irix"] #pose3dPanel .poseQuickLabel,
+:root[data-interface="irix"] #pose3dPanel .poseQuickVal,
+:root[data-interface="irix"] #pose3dPanel .poseQuickCheck,
+:root[data-interface="irix"] #pose3dPanel .poseBadge,
+:root[data-interface="irix"] #pose3dPanel .poseKeyList,
+:root[data-interface="irix"] #pose3dPanel .poseNote,
+:root[data-interface="irix"] #pose3dPanel .poseSize,
+:root[data-interface="irix"] #pose3dPanel .poseCheck,
+:root[data-interface="irix"] #pose3dPanel .poseCharScaleLbl,
+:root[data-interface="irix"] #pose3dPanel .poseListName,
+:root[data-interface="irix"] #pose3dPanel .poseValue,
+:root[data-interface="irix"] #pose3dPanel .poseGuideText b,
+:root[data-interface="irix"] #pose3dPanel .poseGuideText span,
+:root[data-interface="irix"] #pose3dPanel .poseGuideText em,
+:root[data-interface="irix"] #pose3dPanel .poseHint{
+  color:var(--irix-text)!important;
+  text-shadow:none!important;
+  letter-spacing:normal!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickLabel,
+:root[data-interface="irix"] #pose3dPanel .poseQuickCheck,
+:root[data-interface="irix"] #pose3dPanel .poseSize,
+:root[data-interface="irix"] #pose3dPanel .poseCheck,
+:root[data-interface="irix"] #pose3dPanel .poseCharScaleLbl{
+  font-size:var(--ui-fs-small)!important;
+  font-family:var(--ui-font)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickVal,
+:root[data-interface="irix"] #pose3dPanel .poseValue{
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  font-weight:700!important;
+}
+/* rehber tuş tablosu kbd'leri: gri raised minik tuş */
+:root[data-interface="irix"] #pose3dPanel .poseKeyList kbd{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  color:var(--irix-text)!important;
+  font-family:var(--ui-font)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+
+/* ---- quick slider satırı: groove kızak + raised kare thumb ---- */
+:root[data-interface="irix"] #pose3dPanel input[type="range"]{
+  height:20px!important;
+  background:transparent!important;
+  accent-color:var(--irix-shadow)!important;
+}
+:root[data-interface="irix"] #pose3dPanel input[type="range"]::-webkit-slider-runnable-track{
+  height:4px!important;
+  border-radius:0!important;
+  background:var(--irix-face-light)!important;
+  box-shadow:inset 1px 1px 0 var(--irix-shadow),inset -1px -1px 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] #pose3dPanel input[type="range"]::-webkit-slider-thumb{
+  width:11px!important;
+  height:18px!important;
+  margin-top:-7px!important;
+  border-radius:0!important;
+  background:var(--irix-face)!important;
+  border:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+  transition:none!important;
+  transform:none!important;
+}
+/* karakter boyut çubuğu (dolgu göstergeli ince ray) aynı dile çevrilir */
+:root[data-interface="irix"] #pose3dPanel .poseCharScale input[type="range"]::-webkit-slider-runnable-track{
+  height:4px!important;
+  border-radius:0!important;
+  background:var(--irix-face-light)!important;
+}
+
+/* ---- hızlı ad alanı + seçiciler: beyaz sunken ---- */
+:root[data-interface="irix"] #pose3dPanel .poseQuickName{
+  background:var(--irix-field)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  height:22px!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickName::placeholder{
+  color:var(--irix-text-disabled)!important;
+  font-weight:400!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickSelect,
+:root[data-interface="irix"] #pose3dPanel .poseSize select,
+:root[data-interface="irix"] #pose3dPanel select{
+  background:var(--irix-field)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  font-weight:400!important;
+  height:22px!important;
+  padding:0 20px 0 4px!important;
+  transition:none!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickSelect:hover,
+:root[data-interface="irix"] #pose3dPanel .poseQuickSelect:focus{
+  border-color:transparent!important;
+  outline:none!important;
+}
+
+/* ---- seg/btn/axes/help satırları: raised (evrensel kurala ek vurgu) ---- */
+:root[data-interface="irix"] #pose3dPanel .poseQuickSeg button,
+:root[data-interface="irix"] #pose3dPanel .poseSectionBody > button,
+:root[data-interface="irix"] #pose3dPanel .poseAxes button,
+:root[data-interface="irix"] #pose3dPanel .poseBtnRow button,
+:root[data-interface="irix"] #pose3dPanel .poseSegRow button,
+:root[data-interface="irix"] #pose3dPanel .poseHelpRow > button{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  color:var(--irix-text)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  text-transform:none!important;
+  letter-spacing:normal!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickSeg button:hover,
+:root[data-interface="irix"] #pose3dPanel .poseSectionBody > button:hover,
+:root[data-interface="irix"] #pose3dPanel .poseAxes button:hover,
+:root[data-interface="irix"] #pose3dPanel .poseBtnRow button:hover,
+:root[data-interface="irix"] #pose3dPanel .poseSegRow button:hover,
+:root[data-interface="irix"] #pose3dPanel .poseHelpRow > button:hover{
+  background:var(--irix-face)!important;
+  border-color:transparent!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseQuickSeg button[aria-pressed="true"],
+:root[data-interface="irix"] #pose3dPanel .poseSectionBody > button[aria-pressed="true"],
+:root[data-interface="irix"] #pose3dPanel .poseSegRow button[aria-pressed="true"],
+:root[data-interface="irix"] #pose3dPanel .poseAxes button.active{
+  background:var(--irix-dither)!important;
+  border-color:transparent!important;
+  color:var(--irix-text)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+
+/* ---- sağ bölüm yığınları (poseStack/poseStackItem/poseSection) ---- */
+:root[data-interface="irix"] #pose3dPanel .poseStack{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseStackItem{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseStackItem > summary{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-title)!important;
+  font-weight:700!important;
+  text-transform:none!important;
+  letter-spacing:normal!important;
+  box-shadow:inset 0 -1px 0 var(--irix-shadow),inset 0 -2px 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseStackItem > summary:hover{
+  background:var(--irix-face)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseStackItem[open] > summary{
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  border-bottom:0!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseStackItem .posePaneBody{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseStackItem.pose-help-on [data-help]::after{
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseSection{
+  border-bottom:0!important;
+  /* 4Dwm alt pencere çerçevesi (kullanıcı: bölüm kartları çerçevesiz kalmasın) */
+  box-shadow:var(--irix-bev-window)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseSection > summary{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-title)!important;
+  font-weight:700!important;
+  text-transform:none!important;
+  letter-spacing:normal!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseSection[open] > summary{
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .posePane,
+:root[data-interface="irix"] #pose3dPanel .poseAccordion{
+  border-top:1px solid var(--irix-shadow)!important;
+  border-bottom:0!important;
+}
+
+/* ---- poz/karakter listeleri: beyaz liste, seçili lacivert ---- */
+:root[data-interface="irix"] #pose3dPanel .poseListRow{
+  background:var(--irix-field)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field-thin)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseListName,
+:root[data-interface="irix"] #pose3dPanel .poseListRow .poseCharName{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  letter-spacing:normal!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseListRow .poseCharName:hover{
+  background:var(--irix-face-light)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseListRow .poseCharName:disabled{
+  color:var(--irix-text-disabled)!important;
+  text-shadow:1px 1px 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseListRow .poseListBtn{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseListRow .poseListBtn:hover{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-color:transparent!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseListRow .poseListBtn.is-off{
+  opacity:1!important;
+  color:var(--irix-text-disabled)!important;
+  text-shadow:1px 1px 0 var(--irix-hilite)!important;
+}
+/* karakter kartları: seçili = lacivert + beyaz */
+:root[data-interface="irix"] #pose3dPanel .poseCharRow.is-active{
+  background:var(--irix-selected)!important;
+  border:0!important;
+  box-shadow:var(--irix-bev-field-thin)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseCharRow.is-active .poseCharName{
+  color:var(--irix-selected-text)!important;
+}
+
+/* ---- "?" rehberi / yakala kartı ---- */
+:root[data-interface="irix"] #pose3dPanel .poseBody > #poseGuide{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window),2px 2px 0 rgba(0,0,0,.35)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseGuideStep{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:inset -1px -1px 0 var(--irix-hilite),inset 1px 1px 0 var(--irix-shadow)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseGuideTip{
+  background:var(--irix-face)!important;
+  border:1px solid var(--irix-shadow)!important;
+  border-radius:0!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseGuideNum{
+  background:var(--irix-selected)!important;
+  color:var(--irix-selected-text)!important;
+  border-radius:0!important;
+}
+
+/* ---- ayar sekmeleri (poseTabs): klasik sekmeler ---- */
+:root[data-interface="irix"] #pose3dPanel .poseTabs{
+  background:var(--irix-face)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseTab{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  text-transform:none!important;
+  letter-spacing:normal!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseTab:hover{
+  background:var(--irix-face)!important;
+  border-color:transparent!important;
+}
+:root[data-interface="irix"] #pose3dPanel .poseTab[aria-selected="true"]{
+  background:var(--irix-dither)!important;
+  border-color:transparent!important;
+  color:var(--irix-text)!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+
+/* ---- poz kütüphanesi listesi (.poseList) kayar alanı ---- */
+:root[data-interface="irix"] #pose3dPanel .poseList{
+  background:transparent!important;
+}
+
+/* ======================================================================
+   FAZ 9 — küçük otantiklik düzeltmeleri
+   ====================================================================== */
+/* 1) kaydırma çubuğu boyutu: base ID kuralları (5px ince) ezilir */
+:root[data-interface="irix"] ::-webkit-scrollbar{
+  width:16px!important;
+  height:16px!important;
+}
+/* 2) pano opaklık kaydırıcıları (#itemAlpha + #bar #bgOpacity):
+   groove kızak + raised kare thumb (beyaz daire KALMAZ) */
+:root[data-interface="irix"] #itemAlpha,
+:root[data-interface="irix"] #bar #bgOpacity{
+  height:16px!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+}
+:root[data-interface="irix"] #itemAlpha::-webkit-slider-runnable-track,
+:root[data-interface="irix"] #bar #bgOpacity::-webkit-slider-runnable-track{
+  height:4px!important;
+  border-radius:0!important;
+  background:var(--irix-face-light)!important;
+  box-shadow:inset 1px 1px 0 var(--irix-shadow),inset -1px -1px 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] #itemAlpha::-webkit-slider-thumb,
+:root[data-interface="irix"] #bar #bgOpacity::-webkit-slider-thumb{
+  width:11px!important;
+  height:18px!important;
+  margin-top:-7px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:var(--irix-face)!important;
+  box-shadow:var(--irix-bev-btn)!important;
+  transition:none!important;
+  transform:none!important;
+}
+:root[data-interface="irix"] #itemAlpha:hover,
+:root[data-interface="irix"] #bar #bgOpacity:hover{
+  background:transparent!important;
+}
+/* 3) "100%" değer çipi: düz siyah metin (balon/bubble yok) */
+:root[data-interface="irix"] #alphaVal,
+:root[data-interface="irix"] #itemBar #alphaVal{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+}
+/* 4) pano sekmeleri (.projTab): klasik kare düğme/tab dili — hap YOK */
+:root[data-interface="irix"] #projectBar .projTab{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #projectBar .projTab:hover{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #projectBar .projTab.is-active{
+  background:var(--irix-dither)!important;
+  color:var(--irix-text)!important;
+  border-color:transparent!important;
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+:root[data-interface="irix"] #projectBar .projTabLabel{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  letter-spacing:normal!important;
+}
+:root[data-interface="irix"] #projectBar .projTab.is-active .projTabLabel{
+  background:transparent!important;
+  font-weight:700;
+  box-shadow:none!important;
+}
+:root[data-interface="irix"] #projectBar .projTabClose{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+:root[data-interface="irix"] #projectBar .projTabClose:hover{
+  background:var(--irix-face-light)!important;
+  color:var(--irix-text)!important;
+}
+:root[data-interface="irix"] #projectBar .projAdd{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #projectBar .projTabRename{
+  background:var(--irix-field)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field)!important;
+  font-family:var(--ui-font)!important;
+}
+/* 5) itemBar opaklık satırı: modern cam hap zemini düzlenir */:root[data-interface="irix"] #itemBar .itemOpacityControl{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+:root[data-interface="irix"] #itemBar .itemOpacityControl .bgic{
+  color:var(--irix-text)!important;
+  opacity:1!important;
+}
+/* 6) lacivert karakter kartında metin/etiket beyaz */
+:root[data-interface="irix"] #pose3dPanel .poseCharRow.is-active .poseCharScaleLbl,
+:root[data-interface="irix"] #pose3dPanel .poseCharRow.is-active .poseListName,
+:root[data-interface="irix"] #pose3dPanel .poseCharRow.is-active .poseListRow .poseListName{
+  color:var(--irix-selected-text)!important;
+  text-shadow:none!important;
+}
+/* 7) lacivert katman satırındaki simge düğmeleri: gri raised */
+:root[data-interface="irix"] #v5DrawUI #inkLayerList .inkLayerRow.active button{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] #v5DrawUI #inkLayerList .inkLayerRow.active button:active{
+  box-shadow:var(--irix-bev-btn-press)!important;
+}
+/* 8) katman küçük resimleri: koyu panel rengi yerine beyaz sunken alan
+   (boş katman şeffaftır; IRIX küçük resmi beyaz zemin gösterir) */
+:root[data-interface="irix"] body.mode-draw .inkLayerThumb,
+:root[data-interface="irix"] body.mode-draw .inkLayerMaskThumb{
+  background:var(--irix-field)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field-thin)!important;
+}
+
+/* ======================================================================
+   FAZ 10 — IRIX v3 parite bloğu (renk chip'leri + v5 slot dilleri)
+   ====================================================================== */
+/* 1) renk chip'leri: inline hex bg görünür + thin sunken bevel
+   (evrensel button kuralından :not() ile muaf) */
+:root[data-interface="irix"] .inkColorChip,
+:root[data-interface="irix"] .v5-color-swatch,
+:root[data-interface="irix"] .v5-opt-color{
+  border:0!important;
+  border-radius:0!important;
+  text-shadow:none!important;
+  box-shadow:var(--irix-bev-field-thin)!important;
+}
+:root[data-interface="irix"] .inkColorChip:active,
+:root[data-interface="irix"] .v5-color-swatch:active,
+:root[data-interface="irix"] .v5-opt-color:active{
+  box-shadow:inset 0 0 0 2px var(--irix-selected)!important;
+}
+/* 1b) fırça rengi seçici: geçmiş + palet swatch'ları ve ön plan/arka plan
+   kareleri — 18-27px boyutlarda da okunur belirgin sunken çerçeve */
+:root[data-interface="irix"] .inkCpSwatch,
+:root[data-interface="irix"] .inkCpSquare{
+  border:0!important;
+  border-radius:0!important;
+  text-shadow:none!important;
+  box-shadow:
+    inset 0 0 0 1px var(--irix-dark),
+    inset 2px 2px 0 0 var(--irix-shadow),
+    inset -2px -2px 0 0 var(--irix-hilite)!important;
+}
+:root[data-interface="irix"] .inkCpSwatch:active{
+  box-shadow:inset 0 0 0 2px var(--irix-selected)!important;
+}
+/* 2) referans panosu zoom slotu: koyu hap KALMAZ — düz etiket */
+:root[data-interface="irix"] .v5-ref-zoom{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+:root[data-interface="irix"] .v5-ref-zoom-value{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  color:var(--irix-text)!important;
+  text-shadow:none!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  font-weight:700!important;
+}
+/* 3) fırça kartları: beyaz tile slotu + siyah etiket; aktif = gold ring */
+:root[data-interface="irix"] .v5-brush-card{
+  border:0!important;
+  border-radius:0!important;
+  background:var(--irix-field)!important;
+  box-shadow:var(--irix-bev-field-thin)!important;
+}
+:root[data-interface="irix"] .v5-brush-card.is-active{
+  box-shadow:inset 0 0 0 2px var(--irix-selected)!important;
+}
+:root[data-interface="irix"] .v5-brush-card__name,
+:root[data-interface="irix"] .v5-brush-card__meta,
+:root[data-interface="irix"] .v5-brush-card__size{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  text-shadow:none!important;
+  font-family:var(--ui-font)!important;
+  font-size:var(--ui-fs-small)!important;
+  border-radius:0!important;
+}
+/* 4) seçenekler şeridi fırça slotu: beyaz sunken alan + siyah metin */
+:root[data-interface="irix"] .v5-opt-brush{
+  background:var(--irix-field)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-field-thin)!important;
+}
+:root[data-interface="irix"] .v5-opt-brush .v5-opt-brush-name{
+  color:var(--irix-text)!important;
+  text-shadow:none!important;
+}
+:root[data-interface="irix"] .v5-opt-empty{
+  background:transparent!important;
+  color:var(--irix-text)!important;
+  text-shadow:none!important;
+}
+
+/* ======================================================================
+   FAZ 11 — IRIX v5: sağ tık radial menü (performans düzeltmesi)
+   ======================================================================
+   Cam disk (backdrop-filter blur 26px) IRIX bevel'lı içerik üzerinde
+   her hover karesinde yeniden blur yapar → "kasa kasa". Motif cam
+   tanımaz: disk düz yüzey + 1px çerçeve; slotlar hafif 1px dil
+   (5 katmanlı bevel + conic dither blur altında yeniden raster
+   edilmemesi için). */
+:root[data-interface="irix"] body.mode-draw .inkRadialDisk{
+  background:var(--irix-face)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+}
+:root[data-interface="irix"] body.mode-draw .inkRadialSlot{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:inset 0 0 0 1px var(--irix-dark)!important;
+}
+:root[data-interface="irix"] body.mode-draw .inkRadialSlot:hover{
+  background:var(--irix-face-light)!important;
+}
+:root[data-interface="irix"] body.mode-draw .inkRadialSlot.is-active{
+  background:var(--irix-face)!important;
+  box-shadow:inset 0 0 0 2px var(--irix-selected)!important;
+}
+:root[data-interface="irix"] body.mode-draw .inkRadialSub{
+  border-radius:0!important;
+  box-shadow:inset 0 0 0 1px var(--irix-dark)!important;
+}
+/* renk diski yuvarlak kalır (renk önizleme çarkı) — yalnız 1px dil */
+:root[data-interface="irix"] body.mode-draw .inkRadialColorDisc{
+  box-shadow:inset 0 0 0 1px var(--irix-dark)!important;
+}
+
+/* ======================================================================
+   FAZ 12 — IRIX v5: çizim dock panelleri (kullanıcı: çerçevesiz)
+   ====================================================================== */
+/* Renk çarkı paneli (#inkColorPanel): modern yumuşak gölge KALMAZ,
+   4Dwm pencere çerçevesi gelir (Layers/Brush .v5-panel zaten çerçeveli). */
+:root[data-interface="irix"] body.mode-draw #inkColorPanel{
+  background:var(--irix-face)!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-window)!important;
+}
+:root[data-interface="irix"] body.mode-draw #inkColorPanel .inkColorPanelBody,
+:root[data-interface="irix"] body.mode-draw #inkColorPanel .inkColorPanelHead{
+  background:var(--irix-face)!important;
+  border-radius:0!important;
+}
+
+/* ======================================================================
+   FAZ 13 — IRIX v5: dock'a kenetlenen panel halkaları kırpılıyordu
+   ======================================================================
+   #v5LeftDock/#v5RightDock overflow-y:auto + overflow-x:hidden →
+   .v5-panel'in dışına taşan 4Dwm halkaları (1px koyu + 3px açık +
+   4px gölge) padding-box dışında KIRPILIYORDU: yüzen panel (Brush
+   Library gibi) çerçeveli görünürken kenetlenen panel çıplak kalıyordu.
+   Çözüm: dock'a yalnız DIŞ tarafta ve üstte 5px halka payı; genişlik
+   aynı miktarda dışa büyütülür → panelin iç konumu/genişliği birebir
+   korunur (border-box). Panel ARALARI (gap 12px ≥ 5+5) halkayı zaten
+   taşır; alt pay padding-bottom ile verilir. */
+:root[data-interface="irix"] body.mode-draw #v5LeftDock,
+:root[data-interface="irix"] body.mode-draw #v5RightDock{
+  top:calc(var(--v5-top) - 5px);
+  padding-top:5px;
+  padding-bottom:9px;
+}
+:root[data-interface="irix"] body.mode-draw #v5LeftDock{
+  left:calc(var(--v5-edge) - 5px);
+  width:calc(var(--v5-left-w) + 5px);
+  padding-left:5px;
+}
+:root[data-interface="irix"] body.mode-draw #v5RightDock{
+  right:calc(var(--v5-edge) - 5px);
+  width:calc(var(--v5-right-w) + 5px);
+  padding-right:5px;
+}
+/* dock'un dikey sınırı da 5px yukarı taşınır (alt kenar aynı yerde kalır) */
+:root[data-interface="irix"] body.mode-draw #v5LeftDock,
+:root[data-interface="irix"] body.mode-draw #v5RightDock{
+  min-height:calc(100vh - var(--v5-top) - 15px);
+  max-height:calc(100vh - var(--v5-top) - 15px);
+}
+
+/* ---- son kullanılanlar oku + ızgara (Motif dilinde) ----
+   chip'ler (.v5-recents-chip) evrensel buton kuralından muaf:
+   inline hex zemin görünür, yalnız 1px koyu kenar + radius 0. */
+:root[data-interface="irix"] body.mode-draw .v5-recents-chip{
+  border-radius:0!important;
+  box-shadow:inset 0 0 0 1px var(--irix-dark)!important;
+}
+:root[data-interface="irix"] body.mode-draw .v5-recents-toggle{
+  background:var(--irix-face)!important;
+  color:var(--irix-text)!important;
+  border-radius:0!important;
+  box-shadow:var(--irix-bev-btn)!important;
+}
+:root[data-interface="irix"] body.mode-draw .v5-recents-chip.is-current{
+  box-shadow:inset 0 0 0 1px var(--irix-dark),0 0 0 1px var(--irix-selected)!important;
+}
