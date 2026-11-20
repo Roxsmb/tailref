@@ -8,7 +8,7 @@
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download for Windows 10 and 11" src="https://img.shields.io/badge/Download-Windows%2010%20%7C%2011-2F6FB0?style=for-the-badge&logo=windows11&logoColor=white"></a>
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.1" src="https://img.shields.io/badge/version-1.4.1-1F6FEB?style=for-the-badge"></a>
   <a href="LICENSE"><img alt="License: PolyForm Noncommercial 1.0.0" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-2F6FB0?style=for-the-badge"></a>
-  <a href="https://www.buymeacoffee.com/roxsmb"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-%E2%98%95-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
+  <a href="https://www.buymeacoffee.com/roxsmb"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-support-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
 </p>
 
 <h1 align="center">TailRef Studio</h1>
@@ -225,7 +225,7 @@ troubleshooting, are in [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 
 <p align="center">
   <a href="https://www.buymeacoffee.com/roxsmb">
-    <img src="https://img.shields.io/badge/☕%20Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" height="46">
+    <img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-support-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" height="46">
   </a>
 </p>
 
