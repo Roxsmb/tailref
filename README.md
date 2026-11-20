@@ -244,6 +244,28 @@ Other ways to help that cost nothing:
 - 💡 **Request features** or share your workflow in the issues.
 - 🎨 **Show your work** made with TailRef.
 
+## TailRef vs. a dedicated reference board (PureRef)
+
+TailRef is often compared to [PureRef](https://www.pureref.com/), the well-known
+reference-board app. Both let you pin images to an infinite canvas, and TailRef
+is **not affiliated with PureRef** — but they are built for different scopes.
+
+If all you need is a lightweight pinboard, a dedicated reference board does that
+job well. TailRef is for the case where the reference, the drawing and the pose
+belong to the same project:
+
+| | A reference board only | TailRef |
+|---|---|---|
+| Collect and arrange references | Yes | Yes — plus groups, notes, links and palette extraction |
+| Draw on top of references | No | Ink engine, layers, masks, selection and `.abr` brushes |
+| 3D pose and lighting reference | No | Pose3D mannequin, FBX/GLTF/OBJ import, 8K captures |
+| Finish without leaving the app | No | Non-destructive FX stack and PDF/image export |
+| Platforms | Windows, macOS, Linux | Windows 10/11 x64 |
+
+In short: choose a dedicated reference board for a pure pinboard, and TailRef
+when you want the reference board, the drawing workspace and the 3D posing
+studio to share one project and one file.
+
 ## FAQ
 
 ### What is TailRef?
@@ -279,9 +301,10 @@ ArtStation and YouTube Music panels need internet only when you open them.
 
 ### Is TailRef a PureRef alternative?
 
-TailRef covers some of the same ground as a reference board such as PureRef, but
-it is an independent project with drawing, a brush library, an FX stack and
-Pose3D built in. TailRef is not affiliated with PureRef or any other product.
+It can be, but it is broader. TailRef covers the reference-board workflow and
+adds drawing, a brush library, an FX stack and Pose3D. It is an independent
+project and is not affiliated with PureRef or any other product. See
+[TailRef vs. a dedicated reference board](#tailref-vs-a-dedicated-reference-board-pureref).
 
 ### Can I use TailRef for commercial work?
 
