@@ -8,6 +8,7 @@
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download for Windows 10 and 11" src="https://img.shields.io/badge/Download-Windows%2010%20%7C%2011-2F6FB0?style=for-the-badge&logo=windows11&logoColor=white"></a>
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.1" src="https://img.shields.io/badge/version-1.4.1-1F6FEB?style=for-the-badge"></a>
   <a href="LICENSE"><img alt="License: PolyForm Noncommercial 1.0.0" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-2F6FB0?style=for-the-badge"></a>
+  <a href="https://www.buymeacoffee.com/roxsmb"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-%E2%98%95-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
 </p>
 
 <h1 align="center">TailRef Studio</h1>
@@ -21,6 +22,7 @@
   <a href="#feature-showcase">Features</a> ·
   <a href="#screenshots">Screenshots</a> ·
   <a href="#installation">Installation</a> ·
+  <a href="#support-tailref">Support</a> ·
   <a href="#faq">FAQ</a> ·
   <a href="#roadmap">Roadmap</a> ·
   <a href="#license">License</a>
@@ -50,6 +52,30 @@ projects stay on your machine.
 > other noncommercial use. TailRef is **source-available**, not unrestricted
 > open-source software. Commercial use requires written permission.
 > See [License](#license).
+
+<p align="center">
+  <sub>TailRef is free to use. If it saves you time, you can <a href="https://www.buymeacoffee.com/roxsmb"><strong>☕ buy me a coffee</strong></a> to support development.</sub>
+</p>
+
+## Why artists keep it open
+
+| | |
+|---|---|
+| **🔎 Your references stay in the project** | No more alt-tabbing to a browser or a folder. The images, the notes and the drawing live on the same board. |
+| **✏️ You can draw on the reference** | Trace, paint over, annotate and correct — directly on the image, in layers, without exporting to another app. |
+| **🧍 Pose before you commit** | Block a pose, check anatomy and lighting from any angle, then capture it as a new reference on the board. |
+| **🎨 It looks the way you want** | Ten built-in themes, custom palettes, interface skins and ten UI languages. |
+| **🔒 It stays yours** | Offline by default, no account, no cloud, no telemetry. Projects are plain files on your disk. |
+
+## Before and after TailRef
+
+| The usual workflow | With TailRef |
+|---|---|
+| References scattered across folders, browser tabs and Pinterest boards | One infinite board per project, with search, groups, locking and notes |
+| Switch to a drawing app to sketch over a reference | Draw over it in place, with layers, masks and `.abr` brushes |
+| Open a full DCC just to check a pose | Pose a mannequin in Pose3D and capture it to the board in seconds |
+| Rebuild the same look with a stack of filters | A non-destructive FX stack with presets and before/after preview |
+| Lose work to a crash or a stray overwrite | Automatic backups, crash recovery, trash and atomic project files |
 
 ## Feature showcase
 
@@ -187,6 +213,28 @@ differ, do not run the file.
 Copying the `.exe` does not copy your work. Full details, including
 troubleshooting, are in [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 
+## Support TailRef
+
+<p align="center">
+  <a href="https://www.buymeacoffee.com/roxsmb">
+    <img src="https://img.shields.io/badge/☕%20Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee" height="46">
+  </a>
+</p>
+
+TailRef is a one-person project, built and maintained by an independent artist.
+It is free for noncommercial use and has no ads, no tracking and no paid tier.
+
+If TailRef helps your work, you can
+[**buy me a coffee**](https://www.buymeacoffee.com/roxsmb). Support goes towards
+development time, new features and keeping the project alive.
+
+Other ways to help that cost nothing:
+
+- ⭐ **Star this repository** — it helps other artists find TailRef.
+- 🐛 **Report bugs** with clear reproduction steps.
+- 💡 **Request features** or share your workflow in the issues.
+- 🎨 **Show your work** made with TailRef.
+
 ## FAQ
 
 ### What is TailRef?
@@ -225,6 +273,13 @@ ArtStation and YouTube Music panels need internet only when you open them.
 TailRef covers some of the same ground as a reference board such as PureRef, but
 it is an independent project with drawing, a brush library, an FX stack and
 Pose3D built in. TailRef is not affiliated with PureRef or any other product.
+
+### Can I use TailRef for commercial work?
+
+Commercial use of the software requires written permission. The artwork you
+create with TailRef is yours; the license covers the software, not your output.
+If you are unsure whether your use is commercial, ask first — see
+[`LICENSE-FAQ.md`](LICENSE-FAQ.md).
 
 ### Where should I download TailRef?
 
@@ -369,4 +424,5 @@ The TailRef name, wordmark and logo are covered by [`TRADEMARK.md`](TRADEMARK.md
 
 - **Email:** tailrefstudio@gmail.com
 - **Issues:** [github.com/Roxsmb/tailref/issues](https://github.com/Roxsmb/tailref/issues)
+- **Support:** [buymeacoffee.com/roxsmb](https://www.buymeacoffee.com/roxsmb)
 - **Documentation:** [`docs/`](docs/README.md)
