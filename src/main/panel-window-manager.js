@@ -282,6 +282,20 @@ function createPanelWindowManager(options) {
     try { panelWin.setAlwaysOnTop(true, 'floating'); } catch { /* pencere yöneticisi desteklemiyorsa */ }
     panelWin.loadURL(appUrl + 'panel.html');
     panelWin.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    /* Ayrı panel penceresi yalnızca uygulamanın kendi origin'inde kalır.
+       Kopyalanan panel HTML'i bir bağlantı içerse bile pencere harici bir
+       siteye gezemez; dış bağlantılar ana penceredeki open-external
+       kapısından geçer. */
+    let panelOrigin = '';
+    try { panelOrigin = new URL(appUrl).origin; } catch { /* appUrl sabit */ }
+    const guardPanelNavigation = (event, url) => {
+      try {
+        if (panelOrigin && new URL(url).origin === panelOrigin) return;
+      } catch { /* geçersiz URL: engelle */ }
+      event.preventDefault();
+    };
+    panelWin.webContents.on('will-navigate', guardPanelNavigation);
+    panelWin.webContents.on('will-redirect', guardPanelNavigation);
 
     panelWin.once('ready-to-show', () => {
       if (panelWin.isDestroyed()) return;

@@ -1319,6 +1319,9 @@ async function importBackupPayload(backup) {
     if (Array.isArray(backup.images)) {
       for (const image of backup.images) {
         if (!image || !image.id || !image.dataUrl) continue;
+        /* İçe aktarılan dosyadan yalnız data:image/* URI kabul edilir;
+           keyfi http/file URL'leri fetch edilmez (SSRF / istenmeyen ağ). */
+        if (!/^data:image\//i.test(String(image.dataUrl))) continue;
         try {
           const blob = await (await fetch(image.dataUrl)).blob();
           await idbPut('images', image.id, { blob, name: image.name || 'image', savedAt: Date.now() });

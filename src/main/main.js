@@ -10,6 +10,11 @@ const { registerArtStation } = require('./artstation');
 const { installGuestGuards } = require('./guest-guards');
 const { createPanelWindowManager } = require('./panel-window-manager');
 const { normalizeExternalUrl } = require('./external-links');
+const {
+  isTailFilePath,
+  normalizeExportDir,
+  isAllowedExportDir,
+} = require('./path-policy');
 
 /* Ana-süreç diyalog yerelleştirmesi (dil renderer'dan gelir). */
 const dialogL10n = require('./dialog-l10n');
@@ -821,6 +826,53 @@ const EXPORT_IMAGE_EXT = {
   'image/webp': 'webp', 'image/gif': 'gif', 'image/bmp': 'bmp',
   'image/avif': 'avif', 'image/tiff': 'tif',
 };
+
+/* Dışa aktarma klasörü allowlist'i: yalnızca kullanıcının klasör seçme
+   penceresinde (veya kaydet penceresinde onayladığı) klasörlere sessiz
+   yazılır. Liste ana süreçte tutulur ve userData/export-dirs.json içinde
+   kalıcıdır; renderer yalnızca yol metni gönderebilir, listeyi değiştiremez.
+   Böylece ele geçirilmiş bir renderer keyfi bir klasöre dosya bırakamaz. */
+const EXPORT_DIRS_FILE = 'export-dirs.json';
+const MAX_EXPORT_DIRS = 50;
+let exportDirsCache = null;
+
+function exportDirsFile() {
+  return path.join(app.getPath('userData'), EXPORT_DIRS_FILE);
+}
+
+function loadExportDirs() {
+  if (exportDirsCache) return exportDirsCache;
+  exportDirsCache = [];
+  try {
+    const parsed = JSON.parse(fs.readFileSync(exportDirsFile(), 'utf8'));
+    if (Array.isArray(parsed)) {
+      exportDirsCache = parsed
+        .map(normalizeExportDir)
+        .filter(Boolean)
+        .slice(-MAX_EXPORT_DIRS);
+    }
+  } catch { /* dosya yok/bozuk: boş listeyle başla */ }
+  return exportDirsCache;
+}
+
+function saveExportDirs() {
+  try {
+    writeFileAtomic(exportDirsFile(), JSON.stringify(loadExportDirs().slice(-MAX_EXPORT_DIRS)));
+  } catch { /* yazılamazsa oturum belleğiyle devam */ }
+}
+
+function rememberExportDir(dir) {
+  const normalized = normalizeExportDir(dir);
+  if (!normalized) return null;
+  const list = loadExportDirs();
+  if (!isAllowedExportDir(normalized, list)) {
+    list.push(normalized);
+    if (list.length > MAX_EXPORT_DIRS) list.splice(0, list.length - MAX_EXPORT_DIRS);
+    saveExportDirs();
+  }
+  return normalized;
+}
+
 /* Kayıt klasörü seçme penceresi: Dışa Aktar diyaloğundan klasör seçilir. */
 ipcMain.handle('choose-dir', async () => {
   try {
@@ -830,7 +882,8 @@ ipcMain.handle('choose-dir', async () => {
       properties: ['openDirectory', 'createDirectory'],
     });
     if (r.canceled || !r.filePaths || !r.filePaths[0]) return { ok: false, canceled: true };
-    return { ok: true, dir: r.filePaths[0] };
+    const chosen = rememberExportDir(r.filePaths[0]) || r.filePaths[0];
+    return { ok: true, dir: chosen };
   } catch (error) {
     return { ok: false, error: error.message };
   }
@@ -852,17 +905,19 @@ ipcMain.handle('export-image', async (_e, bytes, suggestedName, mime, dir) => {
     .slice(0, 120) || dialogL10n.t('photo');
   const fileName = `${base}.${ext}`;
   const filterName = ext === 'jpg' ? 'JPEG' : ext.toUpperCase();
-  /* Klasör verilmişse pencere açmadan doğrudan o klasöre yaz. */
-  if (typeof dir === 'string' && dir.trim()) {
+  /* Klasör verilmişse ve kullanıcı bu klasörü daha önce açıkça seçtiyse
+     pencere açmadan doğrudan yaz. Allowlist dışı bir yol geldiyse sessiz
+     yazma yapılmaz; aşağıdaki kaydet penceresi kullanıcıya onaylatır. */
+  const requestedDir = typeof dir === 'string' ? normalizeExportDir(dir) : null;
+  if (requestedDir && isAllowedExportDir(requestedDir, loadExportDirs())) {
     try {
-      const klasor = dir.trim();
-      if (!fs.existsSync(klasor) || !fs.statSync(klasor).isDirectory()) {
+      if (!fs.existsSync(requestedDir) || !fs.statSync(requestedDir).isDirectory()) {
         return { ok: false, error: dialogL10n.t('Folder not found.') };
       }
-      let hedef = path.join(klasor, fileName);
+      let hedef = path.join(requestedDir, fileName);
       let sira = 1;
       while (fs.existsSync(hedef)) {
-        hedef = path.join(klasor, `${base} (${sira}).${ext}`);
+        hedef = path.join(requestedDir, `${base} (${sira}).${ext}`);
         sira += 1;
       }
       fs.writeFileSync(hedef, buffer);
@@ -871,14 +926,25 @@ ipcMain.handle('export-image', async (_e, bytes, suggestedName, mime, dir) => {
       return { ok: false, error: error.message };
     }
   }
+  /* İstenen klasör geçerliyse kaydet penceresi orada açılsın (eski
+     yapılandırmadan gelen saveDir için tek seferlik onay). */
+  let defaultDir = app.getPath('pictures');
+  if (requestedDir) {
+    try {
+      if (fs.statSync(requestedDir).isDirectory()) defaultDir = requestedDir;
+    } catch { /* klasör yok: resimler klasörü */ }
+  }
   try {
     const result = await dialog.showSaveDialog(win, {
       title: dialogL10n.t('Export photo'),
-      defaultPath: path.join(app.getPath('pictures'), fileName),
+      defaultPath: path.join(defaultDir, fileName),
       filters: [{ name: filterName, extensions: [ext] }],
     });
     if (result.canceled || !result.filePath) return { ok: false, canceled: true };
     fs.writeFileSync(result.filePath, buffer);
+    /* Kullanıcı bu klasörü kaydet penceresinde onayladı: sonraki sessiz
+       dışa aktarmalar için hatırla. */
+    rememberExportDir(path.dirname(result.filePath));
     return { ok: true, file: result.filePath };
   } catch (error) {
     return { ok: false, error: error.message };
@@ -1024,7 +1090,12 @@ ipcMain.handle('open-tail', async () => {
    aynı okuma kapısından döndürür. */
 ipcMain.handle('open-tail-path', async (_e, filePath) => {
   try {
-    return await readBoardFile(String(filePath || ''));
+    /* Renderer'dan gelen yol güvenilmez: yalnızca yerel, mutlak ve .tail
+       uzantılı dosyalar açılır. UNC/aygıt yolları reddedilir. */
+    if (!isTailFilePath(filePath)) {
+      return { ok: false, error: dialogL10n.t('This is not a valid .tail file.') };
+    }
+    return await readBoardFile(String(filePath).trim());
   } catch (error) {
     return { ok: false, error: error.message };
   }

@@ -60,6 +60,13 @@ function main() {
       fmt.validate({ ...good, rules: [{ selector: '@media screen', props: { color: '#111' } }] }, 'ui_x').ok === false],
     ['braces değeri → red',
       fmt.validate({ ...good, rules: [{ selector: 'b', props: { color: '#fff} body{display:none}' } }] }, 'ui_x').ok === false],
+    /* CSS kaçış dizisi (ters bölü) ile filtre atlatma denemeleri. */
+    ['seçicide CSS kaçışı (\\7b) → red',
+      fmt.validate({ ...good, rules: [{ selector: 'b\\7b color:red', props: { color: '#111' } }] }, 'ui_x').ok === false],
+    ['değerde CSS kaçışı (u\\72l) → red',
+      fmt.validate({ ...good, rules: [{ selector: 'b', props: { background: 'u\\72l(http://x)' } }] }, 'ui_x').ok === false],
+    ['token değerinde ters bölü → red',
+      fmt.validate({ ...good, tokens: { '--ui-x': '\\40 import' } }, 'ui_x').ok === false],
     ['token adı --ui- dışı → red',
       fmt.validate({ ...good, tokens: { '--pos': 'fixed' } }, 'ui_x').ok === false],
     ['background-image data:image kabul', fmt.validate({ ...good, rules: [
