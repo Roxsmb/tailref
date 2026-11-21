@@ -71,9 +71,12 @@ Do this only after the maintainer approves. Do not force-push a tag.
    - `TailRef_Studio.exe`
    - `TailRef_Studio_Setup.exe` (if built)
    - `SHA256SUMS.txt`
-6. Mention the license and link `LICENSE`, `LICENSE-FAQ.md` and
-   `THIRD_PARTY_NOTICES.md`.
-7. Publish manually.
+6. Mention the license (GPL-3.0-or-later) and link `LICENSE`,
+   `LICENSE-FAQ.md` and `THIRD_PARTY_NOTICES.md`.
+7. Confirm that the Corresponding Source is available for the release: the
+   matching Git tag must be pushed and the source archive downloadable. This is
+   the GPLv3 section 6 source offer for the binaries you publish.
+8. Publish manually.
 
 ### 5. After publishing
 

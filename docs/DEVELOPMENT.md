@@ -133,6 +133,10 @@ app detects the missing `.node` file and uses JavaScript instead.
 - Match the naming of the area you touch (`ink*`, `settings*`, `panel*`).
 - User-facing strings go through the localization layer when the surrounding
   code does; do not hard-code a new language in only one place.
+- New source files start with an SPDX header:
+  `// SPDX-License-Identifier: GPL-3.0-or-later` and
+  `// Copyright (C) 2026 Emre Melik Nameli`. Do not add license headers to
+  vendored third-party files; they keep their own notices.
 
 ## Common problems
 

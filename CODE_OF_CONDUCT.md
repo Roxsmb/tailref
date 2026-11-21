@@ -74,6 +74,6 @@ email.
 ## Attribution and license
 
 This code of conduct is part of the project documentation. It does not change
-the software license ([PolyForm Noncommercial License 1.0.0](LICENSE)) and does
-not grant any rights to the TailRef name or logo
+the software license ([GNU General Public License, version 3 or later](LICENSE))
+and does not grant any rights to the TailRef name or logo
 (see [`TRADEMARK.md`](TRADEMARK.md)).

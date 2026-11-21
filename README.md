@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download for Windows 10 and 11" src="https://img.shields.io/badge/Download-Windows%2010%20%7C%2011-2F6FB0?style=for-the-badge&logo=windows11&logoColor=white"></a>
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.1" src="https://img.shields.io/badge/version-1.4.1-1F6FEB?style=for-the-badge"></a>
-  <a href="LICENSE"><img alt="License: PolyForm Noncommercial 1.0.0" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-2F6FB0?style=for-the-badge"></a>
+  <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-2F6FB0?style=for-the-badge"></a>
   <a href="https://www.buymeacoffee.com/roxsmb"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
 </p>
 
@@ -48,10 +48,10 @@ the whole loop in one window:
 It runs offline. There are no accounts, no cloud, no telemetry, and your
 projects stay on your machine.
 
-> **License in one line:** free for personal, educational, research, hobby and
-> other noncommercial use. TailRef is **source-available**, not unrestricted
-> open-source software. Commercial use requires written permission.
-> See [License](#license).
+> **License in one line:** TailRef is **free and open-source software** under
+> the GNU General Public License, version 3 or later (GPL-3.0-or-later). You may
+> use it, study it, modify it, redistribute it and sell it — including for
+> commercial work — as long as you comply with the GPL. See [License](#license).
 
 <p align="center">
   <sub>TailRef is free to use. If it saves you time:</sub><br>
@@ -228,8 +228,10 @@ Get the latest build from the
 | `TailRef_Studio_Setup.exe` | Windows installer with optional desktop and Start Menu shortcuts. |
 | `SHA256SUMS.txt` | SHA-256 checksums for both executables. |
 
-Only download TailRef from this repository's Releases page. Builds from other
-sources are unofficial and may be modified.
+Official builds are published on this repository's Releases page. Because
+TailRef is open source, other people may also build and share it under the GPL;
+those builds are not endorsed by the project. Verify the SHA-256 checksum of any
+build you download.
 
 ### Run it
 
@@ -281,7 +283,8 @@ troubleshooting, are in [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 </p>
 
 TailRef is a one-person project, built and maintained by an independent artist.
-It is free for noncommercial use and has no ads, no tracking and no paid tier.
+It is free and open-source software and has no ads, no tracking and no paid
+tier.
 
 If TailRef helps your work, you can
 [**buy me a coffee**](https://www.buymeacoffee.com/roxsmb). Support goes towards
@@ -326,18 +329,16 @@ library and a 3D posing module in one project.
 
 ### Is TailRef free?
 
-Yes, for noncommercial use. TailRef is distributed under the
-**PolyForm Noncommercial License 1.0.0**, which covers personal, educational,
-research, hobby and other noncommercial purposes. Selling TailRef, charging for
-access, paid redistribution, commercial integration and other commercial
-exploitation require prior written permission from the copyright holder.
+Yes. TailRef is **free and open-source software** under the **GNU General
+Public License, version 3 or later** (GPL-3.0-or-later). You can use it for
+personal, educational, research, hobby and commercial work, and you can modify
+and redistribute it under the GPL.
 
 ### Is TailRef open source?
 
-No. TailRef is **source-available**: the source is public so it can be studied,
-audited, improved and shared for noncommercial purposes, but the license does
-not grant the same rights as an OSI-approved open-source license. See
-[`LICENSE-FAQ.md`](LICENSE-FAQ.md).
+Yes. TailRef is licensed under GPL-3.0-or-later, an OSI-approved open-source
+license. The source is public, and you may study, modify, build and redistribute
+it. See [`LICENSE-FAQ.md`](LICENSE-FAQ.md).
 
 ### Does TailRef work on macOS or Linux?
 
@@ -358,16 +359,19 @@ project and is not affiliated with PureRef or any other product. See
 
 ### Can I use TailRef for commercial work?
 
-Commercial use of the software requires written permission. The artwork you
-create with TailRef is yours; the license covers the software, not your output.
-If you are unsure whether your use is commercial, ask first — see
+Yes. Commercial use is permitted under the GPL. You may also sell copies or
+modified versions, provided you comply with the GPL (including source-code
+availability and license notices). The artwork you create with TailRef is
+yours; the license covers the software, not your output. See
 [`LICENSE-FAQ.md`](LICENSE-FAQ.md).
 
 ### Where should I download TailRef?
 
-Only from the
+The official builds are on the
 [**official Releases page**](https://github.com/Roxsmb/tailref/releases/latest).
-Verify the SHA-256 checksum before running a build.
+Because TailRef is open source, other people may also build and share it under
+the GPL; those builds are not endorsed by the project. Verify the SHA-256
+checksum before running any build.
 
 ### How do I report a bug or request a feature?
 
@@ -381,8 +385,8 @@ problem. Security issues should be reported privately — see
 
 Yes. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the
 [Code of Conduct](CODE_OF_CONDUCT.md) first. Contributors keep copyright in
-their work. Contributions that require relicensing for commercial purposes need
-a reviewed [CLA](docs/CLA.md); until then they are not merged.
+their work. Contributions are accepted under GPL-3.0-or-later
+("inbound = outbound"); no CLA or copyright assignment is required.
 
 ## Roadmap
 
@@ -450,49 +454,54 @@ follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 - **Bugs and feature requests:** use the issue templates.
 - **Security issues:** report privately — see [`SECURITY.md`](SECURITY.md).
-- **Licensing:** contributors keep copyright in their work. Contributions that
-  require relicensing for commercial purposes need a reviewed
-  [CLA](docs/CLA.md); until then they are not merged.
+- **Licensing:** contributions are accepted under GPL-3.0-or-later
+  ("inbound = outbound"). Contributors keep copyright; no CLA is required.
 
 ## License
 
-TailRef is distributed under the **PolyForm Noncommercial License 1.0.0**. The
-complete, unmodified license text is in [`LICENSE`](LICENSE) and at
-<https://polyformproject.org/licenses/noncommercial/1.0.0>.
+TailRef is **free and open-source software** licensed under the **GNU General
+Public License, version 3 or (at your option) any later version**
+(SPDX: `GPL-3.0-or-later`). The complete license text is in
+[`LICENSE`](LICENSE) and at <https://www.gnu.org/licenses/gpl-3.0.html>.
 
-### Permitted, subject to the license
+You are free to:
 
-- Personal use.
-- Educational use.
-- Research.
-- Hobby projects.
-- Noncommercial modification.
-- Noncommercial redistribution.
+- use TailRef for any purpose, including commercial work;
+- study the source code and change it;
+- redistribute original or modified versions;
+- sell copies or modified versions;
+- build and distribute your own builds;
+- contribute improvements back to the project.
 
-### Not permitted without separate written permission
+If you distribute TailRef or a modified version, you must comply with the GPL.
+In particular, you must:
 
-- Selling TailRef or modified versions.
-- Charging for access.
-- Paid redistribution.
-- Commercial integration.
-- Offering TailRef as a paid service.
-- Other commercial exploitation covered by the license.
+- keep the copyright and license notices;
+- make the Corresponding Source available under the GPL;
+- license modified versions under GPL-3.0-or-later;
+- include the license text with the distribution;
+- mark modified versions and state the date of the changes.
 
-Commercial exceptions may only be granted through explicit written permission
-from the copyright holder, **Emre Melik Nameli**.
+There is no separate commercial license and no written permission is required
+for commercial use. TailRef is not "source-available but noncommercial"; it is
+genuinely open source.
 
-TailRef is **not unrestricted open-source software**. It is free and
-source-available: the source is public so it can be studied, audited, improved
-and shared for noncommercial purposes. Practical questions are answered in
-[`LICENSE-FAQ.md`](LICENSE-FAQ.md); that FAQ summarizes the policy and does not
-override the license.
+The GPL covers the software. It does not grant rights to the TailRef name,
+wordmark or logo; see [`TRADEMARK.md`](TRADEMARK.md). Third-party components
+keep their own licenses; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+Practical questions are answered in [`LICENSE-FAQ.md`](LICENSE-FAQ.md).
+
+TailRef is distributed in the hope that it will be useful, but **WITHOUT ANY
+WARRANTY**; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 ## Credits
 
 **TailRef** is designed and developed by **Emre Melik Nameli**.
 
 ```
-Copyright © Emre Melik Nameli
+Copyright © 2026 Emre Melik Nameli
+Licensed under GPL-3.0-or-later
 ```
 
 TailRef Studio is the project's publishing name. It is a brand, not a separate

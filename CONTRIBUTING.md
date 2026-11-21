@@ -8,9 +8,9 @@ By participating you agree to follow our
 
 ## Before you start
 
-- **Read the license.** TailRef is free and **source-available** under the
-  [PolyForm Noncommercial License 1.0.0](LICENSE), not unrestricted open
-  source. See the [License FAQ](LICENSE-FAQ.md).
+- **Read the license.** TailRef is **free and open-source software** under the
+  [GNU General Public License, version 3 or later](LICENSE)
+  (GPL-3.0-or-later). See the [License FAQ](LICENSE-FAQ.md).
 - **Search first.** Check existing issues and pull requests before opening a new
   one.
 - **Ask before large work.** For new features, refactors or new dependencies,
@@ -112,24 +112,36 @@ loads the language.
 ## Copyright and contribution licensing
 
 **You keep copyright in your contribution.** We do not ask you to assign your
-copyright to the project owner.
+copyright, and we do not require a Contributor License Agreement (CLA).
 
-To be mergeable, a contribution must be licensable in a way that is compatible
-with the project:
+TailRef uses an **"inbound = outbound"** policy: by submitting a contribution,
+you agree that it is licensed to the project and its users under
+[GPL-3.0-or-later](LICENSE), the same license as the project. This is the only
+license you grant, and it gives the project no right to relicense your work
+under proprietary terms.
 
-- By submitting a contribution you confirm that you wrote it (or have the right
-  to submit it) and that you license it to the project and its users under the
-  [PolyForm Noncommercial License 1.0.0](LICENSE).
-- Because the project may also be offered under separate commercial terms, the
-  maintainer needs the right to relicense contributions for that purpose.
-  Contributions that require this broader grant are only merged after a
-  [Contributor License Agreement](docs/CLA.md) has been reviewed and accepted.
-- If you do not want to sign a CLA, say so in the pull request. Your patch can
-  still be reviewed, but it may not be merged if the project cannot accept it
-  under its licensing model.
+By submitting a contribution you confirm that:
 
-Do not paste code from projects whose licenses are incompatible with TailRef.
+- you wrote it, or you have the right to submit it under GPL-3.0-or-later;
+- if it includes third-party material, you have identified it and its license,
+  and that license is compatible with GPL-3.0-or-later;
+- you have the authority to grant this license (for example, your employer has
+  approved the contribution if it owns your work).
+
+New source files should start with an SPDX header:
+
+```js
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 Emre Melik Nameli
+```
+
+Do not paste code from projects whose licenses are incompatible with the GPL.
 If you are unsure, ask before opening the PR.
+
+If you contributed code before the GPL migration and you do not agree to license
+your contribution under GPL-3.0-or-later, contact the maintainer so the
+contribution can be reviewed or removed. Do not assume that an old contribution
+has been silently relicensed.
 
 ## Security issues
 

@@ -20,7 +20,7 @@ material; some of it is historical and written in Turkish.
 | [`RELEASE.md`](RELEASE.md) | Versioning, release checklist, publishing, rollback |
 | [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) | Short pre-flight list before a build |
 | [`PROJECT_AUDIT.md`](PROJECT_AUDIT.md) | The pre-publication audit: findings and resolutions |
-| [`CLA.md`](CLA.md) | Contributor License Agreement — **draft, not in effect** |
+| [`LICENSE_MIGRATION.md`](LICENSE_MIGRATION.md) | The 2026 relicensing to GPL-3.0-or-later: audit, compatibility notes, open questions |
 
 ## Technical reference
 

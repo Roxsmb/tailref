@@ -1,3 +1,9 @@
+> **RETIRED — 2026-11-21.** This draft CLA was never in effect and is kept for
+> historical context only. TailRef is now licensed under GPL-3.0-or-later and
+> uses an "inbound = outbound" contribution policy. No CLA or copyright
+> assignment is required. See [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md)
+> and [`../LICENSE_MIGRATION.md`](../LICENSE_MIGRATION.md).
+
 # TailRef Contributor License Agreement (DRAFT)
 
 > **STATUS: DRAFT — NOT IN EFFECT.**

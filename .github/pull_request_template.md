@@ -24,5 +24,5 @@
 - [ ] I did not add a runtime npm dependency.
 - [ ] I did not commit secrets, personal paths or third-party artwork without a
       license.
-- [ ] My contribution is licensable under the project license; I have read
-      [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+- [ ] My contribution is licensed under GPL-3.0-or-later ("inbound =
+      outbound"); I have read [`CONTRIBUTING.md`](../CONTRIBUTING.md).

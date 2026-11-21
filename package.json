@@ -1,10 +1,10 @@
 {
   "name": "tailref",
   "version": "1.4.1",
-  "description": "TailRef — a free, source-available reference board, drawing workspace and 3D posing tool for artists.",
+  "description": "TailRef — a free and open-source reference board, drawing workspace and 3D posing tool for artists.",
   "main": "src/main/main.js",
   "author": "Emre Melik Nameli",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "GPL-3.0-or-later",
   "private": true,
   "keywords": [
     "art",
@@ -71,7 +71,9 @@
       "src/renderer/**",
       "native/inkcore/build/Release/inkcore.node",
       "LICENSE",
+      "LICENSE-FAQ.md",
       "NOTICE",
+      "TRADEMARK.md",
       "THIRD_PARTY_NOTICES.md",
       "docs/licenses/**"
     ],

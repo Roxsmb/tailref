@@ -2,11 +2,35 @@
 
 TailRef itself — its original code, documentation and artwork — is
 Copyright © 2026 Emre Melik Nameli and is distributed under the
-[PolyForm Noncommercial License 1.0.0](LICENSE).
+[GNU General Public License, version 3 or later](LICENSE)
+(SPDX: `GPL-3.0-or-later`).
 
-The components below are **not** owned by the TailRef author. Each one keeps its
-own license. When you redistribute TailRef, keep these notices and the license
-texts in [`docs/licenses/`](docs/licenses/).
+The components below are **not** owned by the TailRef author and are **not
+relicensed** under the GPL. Each one keeps its own license. When you
+redistribute TailRef, keep these notices and the license texts in
+[`docs/licenses/`](docs/licenses/).
+
+## GPL compatibility
+
+The third-party licenses in this project are compatible with distributing the
+components alongside GPL-3.0-or-later software:
+
+| License | Used by | GPL-3.0-or-later compatibility |
+|---|---|---|
+| MIT | Electron, three.js, fflate, SimplexNoise | Compatible (permissive) |
+| BSD-3-Clause | Chromium | Compatible (permissive) |
+| BSD-2-Clause, ISC | transitive build dependencies | Compatible (permissive) |
+| Apache-2.0 | transitive build dependencies | Compatible with GPLv3 |
+| SIL Open Font License 1.1 | Inter, Nunito Sans | Compatible; the font files stay under the OFL and are not relicensed as GPL |
+| Mixamo / Adobe terms | Pose3D base models (`*.fbx`) | **Not verified** — see [Bundled 3D models](#bundled-3d-models--review-required); not relicensed under the GPL |
+| ZBrush export | `female-base.obj` | **Provenance undocumented** — see the same section |
+| Python-2.0, BlueOak-1.0.0 | build-only Python/npm tooling, not shipped | Compatible (permissive); not part of the distributed app |
+
+No bundled software component is currently known to be incompatible with
+GPL-3.0-or-later. The 3D model assets need a separate provenance and terms
+review before a public release. The items that deserve a closer look before a
+redistribution are listed under
+[Review before redistribution](#review-before-redistribution).
 
 ## Runtime components
 
@@ -44,13 +68,36 @@ Full texts: [`Inter-OFL-1.1.txt`](docs/licenses/Inter-OFL-1.1.txt),
 The font names are used only to describe the fonts. They are not used as product
 names, and no modified font is distributed under a reserved name.
 
+## Bundled 3D models — review required
+
+These files are shipped with the application but are **not** original TailRef
+code and are **not** covered by the GPL. Their terms must be confirmed before a
+public release:
+
+| File | Marker found | Status |
+|---|---|---|
+| `src/renderer/assets/models/female-base.fbx` | `Mixamo, Inc.`, `mixamo.com`, `mixamorig:*` skeleton | Mixamo/Adobe asset. Not relicensed under the GPL. Confirm that the applicable Mixamo/Adobe terms allow redistribution in this form, or replace it with an original or clearly licensed model. |
+| `src/renderer/assets/models/male-base.fbx` | `Mixamo, Inc.`, `mixamo.com`, `mixamorig:*` skeleton | Same as above. |
+| `src/renderer/assets/models/female-base.obj` | `# www.zbrush.com` | ZBrush export marker. Provenance is undocumented; treat as unverified until the author confirms it is original or licensed. |
+
+These models are optional Pose3D presets. The default mannequin used by the
+app is generated in code by `src/renderer/pose3d/dummy/DummyRig.js`, which is
+original TailRef work. Removing the three model files would change a documented
+feature, so they are kept and flagged instead of being silently relicensed.
+
 ## Brand assets
 
 `assets/tailref_logo_*`, `assets/favicon-*`, `assets/tailref-mark.svg`,
-`assets/logo-source/*`, `build/icon*` and `build/installer*` belong to
-**Emre Melik Nameli** and are published under the **TailRef Studio** brand.
-The software license does not grant trademark rights; see
-[`TRADEMARK.md`](TRADEMARK.md).
+`assets/logo-source/*`, `assets/brand/*`, `assets/demos/*`, `assets/shots/*`,
+`build/icon*` and `build/installer*` belong to **Emre Melik Nameli** and are
+published under the **TailRef Studio** brand. They are distributed with the
+application under GPL-3.0-or-later, but the GPL does not grant trademark rights
+in the name or logo; see [`TRADEMARK.md`](TRADEMARK.md).
+
+The files under `assets/demos/` and `assets/shots/` are captures of the
+application and the author's own artwork. They are not third-party material.
+When adding new captures, do not include reference images or artwork that you do
+not own or license.
 
 `assets/logo-source/logo-paint-master.png` is the hand-drawn paint master for
 the brand. It is not loaded by the application.
@@ -95,6 +142,29 @@ not be reintroduced without a verified license:
   `ShaderPass`, `SSAOPass`, `BokehPass`, `OutputPass`, `GTAOPass`) and
   `vendor/shaders/*` (`CopyShader`, `OutputShader`, `SSAOShader`, `BokehShader`,
   `GTAOShader`, `PoissonDenoiseShader`) are three.js examples (MIT).
+
+## Review before redistribution
+
+These items are not blockers for the GPL migration, but they should be checked
+for the exact build you distribute:
+
+- **Electron / Chromium.** Ship the `LICENSE.electron.txt` and
+  `LICENSES.chromium.html` files that electron-builder produces, and keep them
+  next to the application. Chromium contains third-party components with their
+  own notices; the generated Chromium license file is the authoritative list for
+  the Electron version you ship.
+- **Media codecs.** Review the codec and media components included in the
+  Electron build you distribute. Their terms are separate from TailRef's GPL
+  license.
+- **Fonts.** Keep the OFL texts, and do not redistribute a modified font under a
+  Reserved Font Name. The bundled fonts are unmodified.
+- **Brand assets.** The TailRef logo and wordmark are original artwork owned by
+  the copyright holder. They are not third-party material, and the GPL does not
+  grant trademark rights; see [`TRADEMARK.md`](TRADEMARK.md).
+- **Build-only tools.** electron-builder, Pillow and NumPy are used to build the
+  app and are not shipped inside it. Their licenses do not affect the
+  distributed application, but keep their notices if you redistribute a build
+  environment.
 
 ## Verified
 

@@ -4,6 +4,12 @@ This is the pre-change audit of the TailRef repository, performed before the
 GitHub publication cleanup. It records what the project is, what was found, and
 what was intentionally left alone.
 
+> **License note (2026-11-21).** This audit records the repository as it was
+> before the original GitHub publication. The project has since been relicensed
+> from PolyForm Noncommercial 1.0.0 to GPL-3.0-or-later. The licensing findings
+> below are kept as history; see [`LICENSE_MIGRATION.md`](LICENSE_MIGRATION.md)
+> for the current state.
+
 ## 1. Method
 
 - Read every top-level directory, the package configuration, the build scripts,
@@ -102,8 +108,9 @@ arbitrary remote content.
 
 ## 6. Intentionally not changed
 
-- The PolyForm Noncommercial 1.0.0 license text (apart from the Required Notice
-  line the license itself asks for).
+- The license text as it stood during that audit (PolyForm Noncommercial 1.0.0,
+  apart from the Required Notice line). It was replaced by GPL-3.0-or-later on
+  2026-11-21; see [`LICENSE_MIGRATION.md`](LICENSE_MIGRATION.md).
 - Third-party licenses and copyright notices (three.js, fflate, Electron,
   Chromium, fonts).
 - The drawing engine, persistence formats, IPC surface and UI behaviour.

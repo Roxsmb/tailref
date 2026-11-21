@@ -25,6 +25,8 @@ in [`RELEASE.md`](RELEASE.md).
 - [ ] `dist/TailRef_Studio_Setup.exe` (installer, if shipping it).
 - [ ] `SHA256SUMS.txt` generated with `Get-FileHash` or `sha256sum`.
 - [ ] `THIRD_PARTY_NOTICES.md` is attached or linked in the release notes.
+- [ ] The release tag is pushed and the source archive is downloadable
+      (GPLv3 Corresponding Source).
 
 ## Publish (manual)
 

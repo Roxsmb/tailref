@@ -4,50 +4,57 @@
 Developed by Emre Melik Nameli
 Published as a TailRef Studio project.
 
-Copyright © 2026 Emre Melik Nameli. All Rights Reserved.
+Copyright © 2026 Emre Melik Nameli.
 
-Required Notice: Copyright © 2026 Emre Melik Nameli. All Rights Reserved.
+## License
+
+TailRef is **free and open-source software**. You can redistribute it and/or
+modify it under the terms of the **GNU General Public License, version 3 or (at
+your option) any later version** — SPDX identifier `GPL-3.0-or-later`.
+
+The complete license text is in [`LICENSE`](LICENSE) and at
+<https://www.gnu.org/licenses/gpl-3.0.html>.
+
+TailRef is distributed in the hope that it will be useful, but **WITHOUT ANY
+WARRANTY**; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+Commercial use, modification, redistribution and selling copies are permitted
+under the GPL. If you distribute TailRef or a modified version, you must comply
+with the GPL, including the requirement to make the Corresponding Source
+available to the people you distribute to.
 
 ## Brand and legal ownership
 
 - **TailRef** is the product name.
-- **TailRef Studio** is the publishing/brand name used for TailRef.
+- **TailRef Studio** is the publishing/brand name used for TailRef. It is a
+  brand name, **not a separate company or legal entity**.
 - **Emre Melik Nameli** is the developer, creator and copyright holder.
 
-TailRef Studio is a brand name, **not a separate company or legal entity**. Using
-it does not transfer, share or reassign copyright ownership, and it does not
-create a new rights holder. All original TailRef code, documentation and artwork
-remain the property of Emre Melik Nameli unless a file says otherwise.
-
-## License
-
-TailRef is free to download and is distributed under the **PolyForm
-Noncommercial License 1.0.0**. The complete, unmodified license text is in the
-[`LICENSE`](LICENSE) file and at
-<https://polyformproject.org/licenses/noncommercial/1.0.0>.
-
-Permitted use covers personal, educational, research, hobby and other
-noncommercial purposes as defined by the license. Commercial use, commercial
-distribution and commercial licensing require prior written permission from the
-copyright holder.
-
-TailRef is **source-available**, not unrestricted open-source software.
+TailRef Studio does not hold a separate copyright. The GPL covers the software;
+it does not grant rights to the TailRef name, wordmark or logo. See
+[`TRADEMARK.md`](TRADEMARK.md).
 
 ## Third-party material
 
 TailRef bundles third-party libraries, fonts and assets that remain the property
-of their respective authors and are licensed under their own terms. See
-[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for the full list.
-
-The TailRef name, wordmark and logo are governed by
-[`TRADEMARK.md`](TRADEMARK.md).
+of their respective authors and are licensed under their own terms. They are
+**not** relicensed under the GPL. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+for the full list and the GPL compatibility notes.
 
 ## Contributions
 
-Copyright in external contributions remains with the contributor unless a
-separate written agreement says otherwise. See [`CONTRIBUTING.md`](CONTRIBUTING.md)
-and [`docs/CLA.md`](docs/CLA.md).
+Contributions are accepted under **GPL-3.0-or-later**, the same license as the
+project ("inbound = outbound"). Contributors keep copyright in their work. No
+copyright assignment and no Contributor License Agreement are required. See
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+## Source code
+
+The Corresponding Source for each release is the source tree at the matching
+Git tag in the official repository:
+<https://github.com/Roxsmb/tailref>.
 
 ## Contact
 
-Commercial licensing and permissions: Emre Melik Nameli — tailrefstudio@gmail.com
+Emre Melik Nameli — tailrefstudio@gmail.com

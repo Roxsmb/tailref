@@ -7,8 +7,7 @@ body:
     attributes:
       value: |
         Describe the problem first, then the solution you have in mind.
-        Please keep requests within the project's noncommercial, free-to-use
-        scope.
+        Please keep requests within the project's scope.
 
   - type: textarea
     id: problem

@@ -3,6 +3,28 @@
 Format bu repo için sadeleştirilmiş Keep a Changelog'dur; sürümler
 [SemVer] mantığıyla (MAJOR.MINOR.PATCH) ilerler.
 
+## [Unreleased]
+
+### Changed — lisans
+
+- **GPL-3.0-or-later:** TailRef artık **GNU General Public License, sürüm 3
+  veya sonrası** altında dağıtılıyor. `LICENSE` tam GPL-3.0 metniyle
+  değiştirildi; `package.json` ve `package-lock.json` SPDX alanı
+  `GPL-3.0-or-later` oldu.
+- **Ticari kullanım serbest:** Ticari kullanım, değiştirme, yeniden dağıtma ve
+  satış GPL koşullarıyla serbesttir. "Yazılı izin gerekir", "source-available"
+  ve "noncommercial" ifadeleri README, FAQ, NOTICE, TRADEMARK, katkı belgeleri
+  ve uygulama içi About metninden kaldırıldı.
+- **Katkı politikası:** GPL uyumlu "inbound = outbound" politikası. CLA ve
+  telif devri gerekmiyor; taslak `docs/CLA.md` arşivlendi
+  (`docs/archive/CLA-draft-retired.md`).
+- **Telif sahibi:** Emre Melik Nameli. TailRef Studio yalnızca yayın markasıdır;
+  uygulama içi About/footer telif satırı da bu sahibi gösterecek şekilde
+  düzeltildi.
+- **Üçüncü taraflar:** Kendi lisanslarını korur; GPL uyumluluk ve inceleme
+  notları `THIRD_PARTY_NOTICES.md` içinde. Geçişin tam kaydı:
+  `docs/LICENSE_MIGRATION.md`.
+
 ## [1.4.1] — 2026-11-20
 
 Çizim hissini/akıcılığını koruyarak performans turu (parite sözleşmesi
@@ -13,12 +35,14 @@ korundu: canlı önizleme == tahtada bırakılan raster).
 - **Lisans:** MIT yerine **PolyForm Noncommercial 1.0.0** (değiştirilmemiş
   resmî metin + `Required Notice`). Paket `license` alanı, README, NOTICE ve
   üçüncü taraf bildirimleri buna göre güncellendi. Üçüncü taraf bileşenler
-  kendi lisanslarını korur.
+  kendi lisanslarını korur. *(2026-11-21'de GPL-3.0-or-later ile değiştirildi;
+  tarihsel kayıt.)*
 - **Marka kimliği:** Ürün **TailRef**, yayın markası **TailRef Studio**,
   geliştirici **Emre Melik Nameli**. About'a Credits bölümü, Ayarlar alt
   şeridine telif satırı eklendi.
 - **Telif satırı:** `© 2026 TailRef Studio. All rights reserved.` —
-  geliştirici atfı `Developed by Emre Melik Nameli`.
+  geliştirici atfı `Developed by Emre Melik Nameli`. *(Bu satır 2026-11-21'de
+  `© 2026 Emre Melik Nameli · GPL-3.0-or-later` olarak düzeltildi.)*
 - **Yeni belgeler:** `NOTICE`, `LICENSE-FAQ.md`, `TRADEMARK.md`,
   `docs/CLA.md`, `docs/ARCHITECTURE.md`, `docs/FEATURES.md`,
   `docs/INSTALLATION.md`, `docs/DEVELOPMENT.md`, `docs/ROADMAP.md`,
