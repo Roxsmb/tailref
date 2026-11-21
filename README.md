@@ -1,6 +1,6 @@
 ﻿<p align="center">
   <a href="https://github.com/Roxsmb/tailref/releases/latest">
-    <img src="assets/brand/hero.png" alt="TailRef Studio reference board with color palettes, reference images and the selection properties panel." width="100%">
+    <img src="assets/brand/hero.png?v=2" alt="TailRef Studio reference board with color palettes, reference images and the selection properties panel." width="100%">
   </a>
 </p>
 
