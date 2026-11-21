@@ -42,9 +42,11 @@
   function checkText(value, label, errors, max) {
     if (typeof value !== 'string') { err(errors, label + ' metin değil'); return; }
     if (value.length > max) { err(errors, label + ' çok uzun (>' + max + ')'); }
-    /* CSS dil enjeksiyonu yüzeyi: {} ; @ belgeye bizim derleyicimizden
-       girmedikçe zararsız olsa da doğrulama REDDEDER (hatasız paket ilkesi). */
-    if (/[{};@]/.test(value)) { err(errors, label + ' yasaklı karakter'); return; }
+    /* CSS dil enjeksiyonu yüzeyi: {} ; @ ve ters bölü (CSS kaçış dizisi)
+       belgeye bizim derleyicimizden girmedikçe zararsız olsa da doğrulama
+       REDDEDER (hatasız paket ilkesi). Ters bölü olmadan `\7b` gibi bir
+       kaçış dizisi `{` olarak çözülüp kural enjekte edebilirdi. */
+    if (/[{};@\\]/.test(value)) { err(errors, label + ' yasaklı karakter'); return; }
     const low = value.toLowerCase();
     for (const bad of FORBIDDEN_IN_VALUE) {
       if (low.includes(bad)) { err(errors, label + ' yasaklı içerik: ' + bad); return; }
@@ -60,11 +62,11 @@
     }
   }
 
-  /** Seçici: {} ; @ < yasak — enjeksiyon yüzeyini kapatır. */
+  /** Seçici: {} ; @ < ve ters bölü yasak — enjeksiyon yüzeyini kapatır. */
   function checkSelector(sel, errors) {
     if (typeof sel !== 'string' || !sel.trim()) { err(errors, 'boş seçici'); return; }
     if (sel.length > 120) { err(errors, 'seçici çok uzun'); return; }
-    if (/[{};@<]/.test(sel)) { err(errors, 'seçicide yasaklı karakter'); return; }
+    if (/[{};@<\\]/.test(sel)) { err(errors, 'seçicide yasaklı karakter'); return; }
   }
 
   /**
@@ -101,7 +103,7 @@
       if (!/^--ui-[a-z0-9-]{2,40}$/.test(key)) { err(errors, 'token adı whitelist dışı: ' + key); continue; }
       const value = tokens[key];
       checkText(value, 'token ' + key, errors, 200);
-      if (typeof value === 'string' && !/[{};@]/.test(value)) {
+      if (typeof value === 'string' && !/[{};@\\]/.test(value)) {
         tokenCss += key + ':' + value + ';';
       }
     }
@@ -141,12 +143,14 @@
         if (typeof value !== 'string' || !PROP_ALLOW.has(pl)) continue;
         if (pl === 'background-image') {
           if (value !== 'none' && !/^data:image\//i.test(value)) continue;
-        } else if (/[{};@]/.test(value)) continue;
+        } else if (/[{};@\\]/.test(value)) continue;
         props += pl + ':' + value + '!important;';
       }
       /* ÖNEMLİ: önek ile seçici arasında torun kombinatoru (boşluk) ŞART —
          aksi hâlde compound selector olur ve hiçbir şeyi eşlemez. */
-      if (props) css += ':root[data-interface="' + id + '"] ' + rule.selector + '{' + props + '}';
+      if (props && !/[{};@<\\]/.test(rule.selector)) {
+        css += ':root[data-interface="' + id + '"] ' + rule.selector + '{' + props + '}';
+      }
     }
     return { ok: true, css };
   }

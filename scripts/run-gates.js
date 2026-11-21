@@ -41,6 +41,10 @@ const PURE = [
   'ink-stabilizer-test.js',
   /* Dış bağlantı kapısı: destek sayfası izinli, keyfi/taklit URL red. */
   'external-links-test.js',
+  /* Dosya yolu politikası: .tail kapısı + dışa aktarma klasörü allowlist'i. */
+  'path-policy-test.js',
+  /* Elektron güvenlik duruşu: CSP, sandbox, webview allowlist, fuses. */
+  'security-static-test.js',
   'shape-snap-check.js',
   'color-wheel-audit.js',
   /* Tur T Faz 6: arayüz paket formatı + güvenlik doğrulayıcı (saf) */

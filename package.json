@@ -50,7 +50,7 @@
     "test:unit": "node tests/pose3d-unit.js"
   },
   "devDependencies": {
-    "electron": "45.0.0",
+    "electron": "45.4.1",
     "electron-builder": "26.18.0"
   },
   "build": {
@@ -130,9 +130,16 @@
       "runAfterFinish": true,
       "include": "build/installer.nsh"
     },
-    "compression": "normal"
+    "compression": "normal",
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "onlyLoadAppFromAsar": true
+    }
   },
   "allowScripts": {
-    "electron@45.0.0": true
+    "electron@45.4.1": true
   }
 }
