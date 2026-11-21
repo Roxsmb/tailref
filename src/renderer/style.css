@@ -10011,3 +10011,81 @@ html[data-hi-contrast="1"] #settings .settingsPages .settingCheck[data-help]::af
 .settingsThemeDraftHint{
   font-size:10px;color:var(--dim);width:100%;
 }
+
+/* =========================================================
+   OTOMATİK GÜNCELLEME — Ayarlar > Hakkında + üst bar çipi
+   Ana süreç karar verir; burada yalnızca durum gösterilir.
+   ========================================================= */
+.updatePanel{
+  margin:8px 0 4px;padding:10px 12px;max-width:64ch;
+  border:1px solid var(--border);border-radius:10px;
+  background:var(--panel-alt,rgba(127,127,127,.05));
+  display:flex;flex-direction:column;gap:8px;
+}
+.updatePanel[data-status="downloaded"],
+.updatePanel[data-status="installing"]{
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--border));
+}
+.updatePanel[data-status="error"]{
+  border-color:color-mix(in srgb,var(--danger,#e5574c) 45%,var(--border));
+}
+.updateHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}
+.updateStatus{color:var(--text);font-size:12.5px;line-height:1.4;min-width:0}
+.updateVersion{color:var(--accent);font-size:11.5px;font-weight:600;white-space:nowrap}
+.updateProgress{
+  height:6px;border-radius:999px;overflow:hidden;
+  background:color-mix(in srgb,var(--border) 60%,transparent);
+}
+.updateProgress[hidden]{display:none}
+.updateProgressBar{
+  height:100%;width:0;border-radius:inherit;
+  background:var(--accent);
+  transition:width .2s ease;
+}
+.updateNotes{
+  border-top:1px solid color-mix(in srgb,var(--border) 70%,transparent);
+  padding-top:6px;color:var(--dim);font-size:11.5px;line-height:1.45;
+}
+.updateNotes[hidden]{display:none}
+.updateNotes b{display:block;color:var(--text);font-size:11.5px;font-weight:600}
+.updateNotes p{margin:4px 0 0;white-space:pre-wrap;max-height:150px;overflow:auto}
+.updateHint{margin:0;color:var(--dim);font-size:11.5px;line-height:1.45}
+.updateHint[hidden]{display:none}
+
+/* Üst bar çipi: yalnızca indirilebilir/hazır güncelleme varken görünür. */
+.updateChip{
+  display:inline-flex;align-items:center;gap:6px;
+  height:26px;padding:0 10px;border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--accent) 48%,transparent);
+  background:color-mix(in srgb,var(--accent) 18%,rgba(18,19,24,.62));
+  color:rgba(240,243,250,.92);
+  font:11px/1 "Inter","Segoe UI",system-ui,sans-serif;
+  cursor:pointer;white-space:nowrap;
+  -webkit-app-region:no-drag;
+  transition:background-color .15s ease,border-color .15s ease;
+}
+.updateChip[hidden]{display:none}
+.updateChip:hover{
+  background:color-mix(in srgb,var(--accent) 28%,rgba(18,19,24,.62));
+  border-color:var(--accent);
+}
+.updateChip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.updateChipDot{
+  width:6px;height:6px;border-radius:50%;flex:0 0 auto;
+  background:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent);
+}
+.updateChip[data-status="downloaded"] .updateChipDot,
+.updateChip[data-status="installing"] .updateChipDot{
+  animation:updateChipPulse 1.6s ease-in-out infinite;
+}
+.updateChipText{min-width:0;overflow:hidden;text-overflow:ellipsis}
+@keyframes updateChipPulse{
+  0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+  50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 6%,transparent)}
+}
+@media (prefers-reduced-motion: reduce){
+  .updateChip[data-status="downloaded"] .updateChipDot,
+  .updateChip[data-status="installing"] .updateChipDot{animation:none}
+  .updateProgressBar{transition:none}
+}

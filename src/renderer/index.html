@@ -176,6 +176,12 @@
        düğmesi ise "Paneller" menüsünü (Pomodoro/YouTube/Pinterest/
        ArtStation) açar. İkonlar FILE 16 enhanceIconButton id-bazlı
        enjekte edilir. -->
+  <button id="updateChip" class="updateChip" type="button" hidden
+          data-l10n-title="Update available" data-l10n-aria="Update available"
+          aria-label="Update available">
+    <span class="updateChipDot" aria-hidden="true"></span>
+    <span id="updateChipText" class="updateChipText"></span>
+  </button>
   <button id="btnPanelsBar" class="overflowToggle modeBtn modeBtn--icon" type="button"
           data-l10n-aria="Panels" aria-label="Panels" aria-haspopup="menu" aria-expanded="false"
           data-l10n-title="Panels — Pomodoro, YouTube, Pinterest, ArtStation"></button>
@@ -2039,6 +2045,37 @@
 
     <!-- ===== HAKKINDA — yapı damgası + motor sürümleri ===== -->
     <section id="settingsPage-about" class="settingsPage" data-page="about" hidden>
+      <header class="settingsGroupHead"><b data-l10n="Updates">Updates</b></header>
+      <div class="settingRow" data-l10n-help="The version you are running right now." data-help="The version you are running right now.">
+        <span data-l10n="Current version">Current version</span>
+        <span id="settingsUpdateCurrent" class="spHint settingsPointerInfo">-</span>
+      </div>
+      <div class="settingRow" data-l10n-help="TailRef checks GitHub Releases in the background. Checks never block startup and only download an update after you agree." data-help="TailRef checks GitHub Releases in the background. Checks never block startup and only download an update after you agree.">
+        <span data-l10n="Automatic update checks">Automatic update checks</span>
+        <button class="settingToggleBtn" id="settingsUpdateAuto" type="button" aria-pressed="true" data-l10n="On">On</button>
+      </div>
+      <div class="updatePanel" id="settingsUpdatePanel" data-status="idle">
+        <div class="updateHead">
+          <span class="updateStatus" id="settingsUpdateStatus" role="status" aria-live="polite">Checking for updates...</span>
+          <span class="updateVersion" id="settingsUpdateVersion"></span>
+        </div>
+        <div class="updateProgress" id="settingsUpdateProgress" role="progressbar"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+          <div class="updateProgressBar" id="settingsUpdateProgressBar"></div>
+        </div>
+        <div class="updateNotes" id="settingsUpdateNotes" hidden>
+          <b data-l10n="Release notes">Release notes</b>
+          <p id="settingsUpdateNotesText"></p>
+        </div>
+        <div class="settingActions">
+          <button id="settingsUpdateCheck" class="settingsAction" type="button" data-l10n="Check for updates">Check for updates</button>
+          <button id="settingsUpdateDownload" class="settingsAction is-primary" type="button" data-l10n="Download update" hidden>Download update</button>
+          <button id="settingsUpdateInstall" class="settingsAction is-primary" type="button" data-l10n="Restart and install" hidden>Restart and install</button>
+          <button id="settingsUpdatePage" class="settingsAction" type="button" data-l10n="Open download page" hidden>Open download page</button>
+          <button id="settingsUpdateSkip" class="settingsAction" type="button" data-l10n="Skip this version" hidden>Skip this version</button>
+        </div>
+        <p class="updateHint" id="settingsUpdateHint" hidden></p>
+      </div>
       <header class="settingsGroupHead"><b data-l10n="About">About</b></header>
       <div class="settingRow" data-l10n-help="The date this desktop app was packaged. Empty means a development run." data-help="The date this desktop app was packaged. Empty means a development run.">
         <span data-l10n="Build">Build</span>

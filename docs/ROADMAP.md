@@ -36,7 +36,7 @@ TailRef 1.4.1 is a Windows x64 desktop app with:
 These are ideas under evaluation, not commitments:
 
 - Code signing for release binaries (removes SmartScreen warnings).
-- A proper installer update path (the app currently updates manually).
+- Code signing for the installer and executables.
 - Optional native ink kernel enabled by default, if it proves stable and faster
   on typical hardware.
 - More capture passes and export presets in Pose3D.

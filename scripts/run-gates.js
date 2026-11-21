@@ -45,6 +45,10 @@ const PURE = [
   'path-policy-test.js',
   /* Elektron güvenlik duruşu: CSP, sandbox, webview allowlist, fuses. */
   'security-static-test.js',
+  /* Automatic updates: version policy, state machine, static security. */
+  'update-policy-test.js',
+  'update-manager-test.js',
+  'update-static-test.js',
   'shape-snap-check.js',
   'color-wheel-audit.js',
   /* Tur T Faz 6: arayüz paket formatı + güvenlik doğrulayıcı (saf) */

@@ -30,8 +30,8 @@ npm start
 ```bash
 npm run bundle        # regenerate src/renderer/app.js only
 npm start             # bundle + launch the app
-npm run gates         # fast chain: 14 pure gates
-npm run gates:full    # full chain: 69 gates (Electron + CDP, slow)
+npm run gates         # fast chain: 19 pure gates
+npm run gates:full    # full chain: 74 gates (Electron + CDP, slow)
 npm run build:dir     # unpacked build in dist/win-unpacked
 npm run test:package  # verify app.asar matches the working tree
 npm run build:portable
@@ -45,6 +45,9 @@ node tests/brush-library-test.js   # brush persistence + .abr round-trip
 node tests/ink-smoke.js            # drawing engine
 node tests/compositor-test.js      # layers/compositor
 node tests/desktop-smoke.js        # window, menus, startup
+node tests/update-policy-test.js   # SemVer, sanitising, error mapping
+node tests/update-manager-test.js  # update state machine + save handshake
+node tests/update-static-test.js   # updater IPC/preload/security invariants
 ```
 
 ## The bundle rule

@@ -10426,7 +10426,7 @@ window.TailRefLocales = {
   "⟲ Reset everything": "⟲ Сбросить всё",
   "⟳ Rotate gizmo": "⟳ Поворот гизмо",
   },
-  /* tr — 1455 anahtar */
+  /* tr — 1494 anahtar */
   "tr": {
   " (Ctrl+Shift+S also works). Choose size and background in the dialog,": "'ya bas (Ctrl+Shift+S de çalışır). Pencerede ölçü ve arka plan seç,",
   " hardness": " sertlik",
@@ -10568,6 +10568,10 @@ window.TailRefLocales = {
   "Auto (recommended)": "Otomatik (önerilen)",
   "Auto backup": "Otomatik yedekleme",
   "Auto → ": "Otomatik → ",
+  "Automatic update checks": "Otomatik güncelleme denetimi",
+  "Automatic update checks are off.": "Otomatik güncelleme denetimi kapalı.",
+  "Automatic updates are not available on this platform.": "Bu platformda otomatik güncellemeler kullanılamıyor.",
+  "Automatic updates are unavailable.": "Otomatik güncellemeler kullanılamıyor.",
   "Available when lineart is off": "Lineart kapalıyken kullanılabilir",
   "BRUSH": "FIRÇA",
   "BRUSH LIBRARY": "FIRÇA KÜTÜPHANESİ",
@@ -10673,6 +10677,9 @@ window.TailRefLocales = {
   "Change shortcut": "Kısayolu değiştir",
   "Characters": "Karakterler",
   "Characters loading…": "Karakterler yükleniyor…",
+  "Check for updates": "Güncellemeleri denetle",
+  "Checking for updates...": "Güncellemeler denetleniyor...",
+  "Checking...": "Denetleniyor...",
   "Choose a save mode": "Kayıt modunu seç",
   "Choose backup file": "Yedek dosyası seç",
   "Choose file": "Dosya seç",
@@ -10737,6 +10744,7 @@ window.TailRefLocales = {
   "Crop ratio": "Kırpma oranı",
   "Crosshair only": "Yalnız çarpı",
   "Ctrl+Shift+S opens the dialog · Ctrl+Shift+Alt+S captures straight to the board. Depth is 8-bit, not 16-bit.": "Ctrl+Shift+S modal · Ctrl+Shift+Alt+S hızlı tahtaya. Depth 8-bit, 16-bit değil.",
+  "Current version": "Geçerli sürüm",
   "Currently: Tile {tile} · 3D {q3}": "Şu an geçerli: Karo {tile} · 3D {q3}",
   "Currently: –": "Şu an geçerli: –",
   "Cursor shown in the drawing editor while painting: a ring sized to the brush, a plain crosshair, or nothing at all.": "Çizim editöründe boya sürerken gösterilen imleç: fırça boyutunda halka, çıplak çarpı ya da hiçbir şey.",
@@ -10779,6 +10787,7 @@ window.TailRefLocales = {
   "Detach mask": "Maskeyi bırak",
   "Detected pointer": "Algılanan işaretçi",
   "Development build": "Geliştirme sürümü (paketlenmemiş)",
+  "Development build - automatic updates are available in the installed release.": "Geliştirme derlemesi - otomatik güncellemeler kurulu sürümde kullanılabilir.",
   "Diagnostics panel and the graphics adapter the program renders with.": "Teşhis paneli ve programın çizim yaptığı grafik birimi.",
   "Difference": "Difference (Fark)",
   "Document layers": "Belge katmanları",
@@ -10787,6 +10796,8 @@ window.TailRefLocales = {
   "Double-click (empty area)": "Çift tık (boşluk)",
   "Double-click to rename": "Yeniden adlandırmak için çift tıkla",
   "Down": "Aşağı",
+  "Download update": "Güncellemeyi indir",
+  "Downloading update... {p}%": "Güncelleme indiriliyor... %{p}",
   "Draft": "Taslak",
   "Drag images from here onto the canvas to use them as references.": "Görselleri tuvale sürükleyerek referans olarak açabilirsin.",
   "Drag images here": "Görselleri buraya sürükle",
@@ -11223,6 +11234,7 @@ window.TailRefLocales = {
   "Noise": "Gürültü",
   "None": "Yok",
   "Normal": "Normal",
+  "Nothing is downloaded until you choose Download update.": "Siz \"Güncellemeyi indir\"i seçmeden hiçbir şey indirilmez.",
   "Nothing moves when I drag — Controls may be off, or the wrong tool is selected. Press E for rotate, W for move.": "Sürüklerken hiçbir şey hareket etmiyor — Kontroller kapalı olabilir ya da yanlış araç seçili. Döndürmek için E, taşımak için W'ye bas.",
   "Nothing to duplicate": "Kopyalanacak bir şey yok",
   "Nothing to redo": "Yinelenecek işlem yok",
@@ -11245,6 +11257,7 @@ window.TailRefLocales = {
   "Open boards": "Açık panolar",
   "Open color wheel": "Renk çarkını aç",
   "Open context menu": "Bağlam menüsünü aç",
+  "Open download page": "İndirme sayfasını aç",
   "Open drawing mode on the selected image (Ctrl+1)": "Seçili görselde çizim modunu aç (Ctrl+1)",
   "Open file": "Dosya aç",
   "Open folder": "Klasörü aç",
@@ -11327,6 +11340,8 @@ window.TailRefLocales = {
   "Playlist playing": "Playlist oynatılıyor",
   "Pointer devices this computer reports, detected live while you use the program.": "Bu bilgisayarın bildirdiği işaretçi cihazları; programı kullanırken canlı algılanır.",
   "Pomodoro focus timer": "Pomodoro odak sayacı",
+  "Portable build - download the new version from GitHub to update.": "Taşınabilir derleme - güncellemek için yeni sürümü GitHub'dan indirin.",
+  "Portable builds cannot replace themselves. Download the installer from GitHub and run it over this copy.": "Taşınabilir derlemeler kendini değiştiremez. Yükleyiciyi GitHub'dan indirip bu kopyanın üzerine çalıştırın.",
   "Pose": "Poz",
   "Pose could not be deleted": "Poz silinemedi",
   "Pose could not be saved": "Poz kaydedilemedi",
@@ -11348,6 +11363,7 @@ window.TailRefLocales = {
   "Preferences could not be saved": "Ayarlar kaydedilemedi",
   "Preferences saved": "Ayarlar kaydedildi",
   "Preparing preview…": "Önizleme hazırlanıyor…",
+  "Preparing to restart...": "Yeniden başlatmaya hazırlanıyor...",
   "Presentation mode": "Sunum modu",
   "Presentation mode (Esc to exit)": "Sunum modu (Esc ile çık)",
   "Preset colors": "Hazır renkler",
@@ -11379,6 +11395,7 @@ window.TailRefLocales = {
   "Raw · uncompressed": "Ham · sıkıştırmasız",
   "Re-measure for this computer": "Bu bilgisayar için yeniden ölç",
   "Re-measure the computer: the tile auto profile is cleared and 3D quality is re-picked with a 1-second test": "Bilgisayarı yeniden ölç: karo otomatik profili temizlenir, 3D kalite 1 sn'lik testle yeniden seçilir",
+  "Ready to check for updates.": "Güncellemeleri denetlemeye hazır.",
   "Recommended · Lossless": "Önerilen · Kayıpsız",
   "Rectangular selection": "Dikdörtgen seçim",
   "Rectangular selection (M)": "Dikdörtgen seçim (M)",
@@ -11398,6 +11415,7 @@ window.TailRefLocales = {
   "Reference zoom": "Referans yakınlaştırma",
   "Refresh": "Yenile",
   "Relaxed": "Rahat",
+  "Release notes": "Sürüm notları",
   "Remove": "Kaldır",
   "Remove HDRI environment": "HDRI ortamını kaldır",
   "Remove PNG tip": "PNG ucunu kaldır",
@@ -11425,6 +11443,10 @@ window.TailRefLocales = {
   "Reset zoom (Ctrl+0)": "Yakınlaştırmayı sıfırla (Ctrl+0)",
   "Resolution": "Çözünürlük",
   "Resolution and quality": "Çözünürlük ve kalite",
+  "Restart and install": "Yeniden başlat ve kur",
+  "Restart to update": "Güncellemek için yeniden başlat",
+  "Restart without saving": "Kaydetmeden yeniden başlat",
+  "Restarting...": "Yeniden başlatılıyor...",
   "Restore": "Geri yükle",
   "Restore all": "Hepsini geri getir",
   "Restore all defaults": "Tümünü varsayılana döndür",
@@ -11460,6 +11482,7 @@ window.TailRefLocales = {
   "Roundness": "Yuvarlaklık",
   "Roundness jitter": "Yuvarlaklık titreşimi",
   "Rule of thirds": "Üçler kuralı",
+  "Run the installed NSIS build to receive automatic updates.": "Otomatik güncellemeler için kurulu NSIS sürümünü çalıştırın.",
   "SAVE WORKSPACE": "ÇALIŞMA ALANINI KAYDET",
   "SELECTION PROPERTIES": "SEÇİM ÖZELLİKLERİ",
   "SHORTCUTS": "KISAYOLLAR",
@@ -11474,6 +11497,7 @@ window.TailRefLocales = {
   "Saturation jitter": "Doygunluk titreşimi",
   "Save": "Kaydet",
   "Save PNG (⌘/Ctrl+S)": "PNG kaydet (⌘/Ctrl+S)",
+  "Save and restart": "Kaydet ve yeniden başlat",
   "Save board": "Tahtayı kaydet",
   "Save canceled": "Kaydetme iptal edildi",
   "Save current pose to the library": "Mevcut duruşu kütüphaneye kaydet",
@@ -11484,6 +11508,7 @@ window.TailRefLocales = {
   "Save theme": "Temayı kaydet",
   "Save what you see — pick a format, the rest is optional.": "Gördüğün haliyle kaydet — biçimi seç, gerisini bırakabilirsin.",
   "Save your preferences (themes, language, panels, shortcuts and more) to a tailref-preferences.json file. Board content is never included.": "Tercihlerini (temalar, dil, paneller, kısayollar ve daha fazlası) tailref-preferences.json dosyasına kaydet. Tahta içeriği asla dahil edilmez.",
+  "Save your work before TailRef restarts to install the update?": "TailRef güncellemeyi kurmak için yeniden başlamadan önce çalışmanız kaydedilsin mi?",
   "Save, reset and saved poses live in the left strip. To add to the board use ◉ Capture in Tools (Ctrl+Shift+S).": "Kaydet, sıfırla ve kayıtlı pozlar soldaki şeritte. Tahtaya eklemek için araçlarda ◉ Yakala (Ctrl+Shift+S).",
   "Saved layouts are stored on this device.": "Kaydedilen düzenler bu cihazda saklanır.",
   "Saved poses": "Kayıtlı pozlar",
@@ -11585,6 +11610,8 @@ window.TailRefLocales = {
   "Size jitter": "Boyut titreşimi",
   "Size source": "Boyut kaynağı",
   "Sizes": "Boyutlar",
+  "Skip this version": "Bu sürümü atla",
+  "Skipped versions are ignored by automatic checks.": "Atlanan sürümler otomatik denetimlerde yok sayılır.",
   "Slight": "Az",
   "Small": "Küçük",
   "Small (128 px)": "Küçük (128 px)",
@@ -11631,6 +11658,7 @@ window.TailRefLocales = {
   "TOOL RAIL": "ARAÇ RAYI",
   "TOOLS": "ARAÇLAR",
   "TRASH": "ÇÖP KUTUSU",
+  "TailRef checks GitHub Releases in the background. Checks never block startup and only download an update after you agree.": "TailRef, GitHub Releases'i arka planda denetler. Denetimler açılışı engellemez ve bir güncelleme yalnızca siz onayladığınızda indirilir.",
   "TailRef title": "TailRef yazısı",
   "Temporary rotate view": "Görünümü geçici döndür",
   "Text": "Metin",
@@ -11663,6 +11691,8 @@ window.TailRefLocales = {
   "The seven theme colors: background, panel surface, borders, text, secondary text, accent and the text color drawn on top of the accent.": "Yedi tema rengi: arka plan, panel yüzeyi, kenarlıklar, metin, ikincil metin, vurgu rengi ve vurgu üstüne çizilen metin rengi.",
   "The slider button in the toolbox: size, opacity, hardness, spacing, smoothing and": "Araç kutusundaki kaydırıcı düğmesi: boyut, opaklık, sertlik, aralık, yumuşatma ve",
   "The underlying engine versions of this desktop app.": "Bu masaüstü uygulamasının altındaki motor sürümleri.",
+  "The update could not be completed.": "Güncelleme tamamlanamadı.",
+  "The version you are running right now.": "Şu anda çalıştırdığınız sürüm.",
   "The window stays in front of everything including the Windows taskbar — on by default at launch. Press the button to turn it off": "Pencere Windows görev çubuğu dahil her şeyin önünde kalır — açılışta varsayılan olarak açıktır. Kapatmak için düğmeye bas",
   "The {count} items on this board and its 3D/camera data will be deleted.": "Bu panodaki {count} öğe ve 3D/kamera verileri silinecek.",
   "Theme": "Tema",
@@ -11679,6 +11709,7 @@ window.TailRefLocales = {
   "This backup will be loaded in place of the current boards. Continue?": "Bu yedek mevcut panoların yerine yüklenecek. Devam edilsin mi?",
   "This file will be loaded in place of the current boards. Continue?": "Bu dosya mevcut panoların yerine yüklenecek. Devam edilsin mi?",
   "This interface is a work in progress — rough spots will be polished over time.": "Bu arayüz geliştirme aşamasında — pürüzlü yerler zamanla düzeltilecek.",
+  "This version is skipped. A manual check still shows it.": "Bu sürüm atlandı. Elle denetimde yine görünür.",
   "Thumb": "Başparmak",
   "Tight layout selected manually.": "Sıkı düzen elle seçildi.",
   "Tile and 3D quality reverted to Auto": "Karo ve 3D kalite yeniden Otomatik'e döndü",
@@ -11732,11 +11763,16 @@ window.TailRefLocales = {
   "Untitled Canvas": "Adsız Tuval",
   "Up": "Yukarı",
   "Up / down arrow": "Yukarı / aşağı ok",
+  "Update available": "Güncelleme mevcut",
+  "Update downloaded. Restart TailRef to install version {v}.": "Güncelleme indirildi. {v} sürümünü kurmak için TailRef'i yeniden başlatın.",
+  "Update {v}": "Güncelleme {v}",
+  "Updates": "Güncellemeler",
   "Upload an image first": "Önce görsel yükleyin",
   "Upload image…": "Görsel yükle…",
   "Use a PNG, JPG or WEBP image as the theme backdrop, or extract a color palette from it locally. Nothing is uploaded; everything stays on this computer.": "PNG, JPG veya WEBP görselini tema arka planı olarak kullanın ya da renk paletini yerel olarak çıkarın. Hiçbir şey yüklenmez; her şey bu bilgisayarda kalır.",
   "Use a single letter, number or Ctrl+a key. Shift and Alt are fixed.": "Tek harf, sayı ya da Ctrl+a kullan. Shift ve Alt sabittir.",
   "Use the following to sweep the view:": "Görüntüyü süpürmek için aşağıdakileri kullan:",
+  "Version {v} is available.": "{v} sürümü mevcut.",
   "Vertical flip chance": "Dikey çevirme şansı",
   "Vertical mirroring": "Dikey aynalama",
   "View": "Görünüm",
@@ -11774,8 +11810,10 @@ window.TailRefLocales = {
   "X scatter": "X saçılması",
   "Y scatter": "Y saçılması",
   "Yellow": "Sarı",
+  "You are using the latest version.": "En son sürümü kullanıyorsunuz.",
   "You can also drag the handles on the panel edges.": "Panel kenarındaki tutamaçları sürükleyerek de değiştirebilirsin.",
   "You can drag the option strip under the toolbar from its handle to dock it elsewhere; double-click re-docks it.": "Araç çubuğunun altındaki seçenek şeridini tutamacından sürükleyip başka yere sabitleyebilirsin; çift tıklayınca yerine geri kenetlenir.",
+  "You can try again, or download the new version from GitHub.": "Tekrar deneyebilir veya yeni sürümü GitHub'dan indirebilirsiniz.",
   "YouTube Music player": "YouTube Music oynatıcısı",
   "YouTube or playlist link": "YouTube veya playlist linki",
   "YouTube playing": "YouTube oynatılıyor",
@@ -11868,6 +11906,7 @@ window.TailRefLocales = {
   "{n} images saved": "{n} görsel kaydedildi",
   "{n} poses exported": "{n} poz dışa aktarıldı",
   "{n} poses imported": "{n} poz içe aktarıldı",
+  "{p}%": "%{p}",
   "— the pose lands as a layer on the drawing canvas and you can paint over it.": "— poz çizim yaptığın tuvale katman olarak düşer ve üstüne çizim yapabilirsin.",
   "“{key}” is already used by “{action}”.": "“{key}” zaten “{action}” tarafından kullanılıyor.",
   "” deleted.": "” silindi.",
@@ -67703,6 +67742,332 @@ try {
     window.L10N.onChange(() => { try { settingsExtSyncPointer(); } catch { /* sessiz */ } });
   }
 }
+
+/* TailRef — automatic update UI (settings + top-bar chip).
+   ---------------------------------------------------------
+   The main process owns every update decision. This module only renders
+   the state it receives and forwards explicit user actions. Installation
+   asks the main process to start a save handshake; it never closes the
+   window by itself. */
+'use strict';
+
+(function () {
+  const api = window.tailref;
+  if (!api || typeof api.updateGetState !== 'function') return;
+
+  const byId = id => document.getElementById(id);
+  const t = (key, params) => (typeof window.__t === 'function'
+    ? window.__t(key, params)
+    : key);
+
+  let state = null;
+  let preferences = { autoCheck: true, channel: 'latest', skippedVersion: '' };
+  let installHandling = false;
+
+  function isSupported(s) { return !!(s && s.supported); }
+
+  function statusText(s) {
+    if (!s) return t('Automatic updates are unavailable.');
+    if (!s.supported) {
+      if (s.reason === 'development') {
+        return t('Development build - automatic updates are available in the installed release.');
+      }
+      if (s.reason === 'portable') {
+        return t('Portable build - download the new version from GitHub to update.');
+      }
+      return t('Automatic updates are not available on this platform.');
+    }
+    switch (s.status) {
+      case 'checking': return t('Checking for updates...');
+      case 'up-to-date':
+        return s.message === 'skipped'
+          ? t('This version is skipped. A manual check still shows it.')
+          : t('You are using the latest version.');
+      case 'available':
+        return t('Version {v} is available.', { v: s.version || '' });
+      case 'downloading':
+        return t('Downloading update... {p}%', {
+          p: String(Math.round((s.progress && s.progress.percent) || 0)),
+        });
+      case 'downloaded':
+        return t('Update downloaded. Restart TailRef to install version {v}.', {
+          v: s.version || '',
+        });
+      case 'installing': return t('Preparing to restart...');
+      case 'error': return s.error || t('The update could not be completed.');
+      case 'disabled':
+        return t('Automatic updates are unavailable.');
+      default:
+        return s.autoCheck
+          ? t('Ready to check for updates.')
+          : t('Automatic update checks are off.');
+    }
+  }
+
+  function hintText(s) {
+    if (!s) return '';
+    if (!s.supported) {
+      if (s.reason === 'portable') {
+        return t('Portable builds cannot replace themselves. Download the installer from GitHub and run it over this copy.');
+      }
+      if (s.reason === 'development') {
+        return t('Run the installed NSIS build to receive automatic updates.');
+      }
+      return '';
+    }
+    if (s.status === 'error') {
+      return t('You can try again, or download the new version from GitHub.');
+    }
+    if (s.status === 'up-to-date' && s.message === 'skipped') {
+      return t('Skipped versions are ignored by automatic checks.');
+    }
+    if (s.status === 'available') {
+      return t('Nothing is downloaded until you choose Download update.');
+    }
+    return '';
+  }
+
+  function setHidden(el, hidden) {
+    if (el) el.hidden = !!hidden;
+  }
+
+  function applyState(next) {
+    if (!next) return;
+    state = next;
+    preferences = {
+      autoCheck: next.autoCheck !== false,
+      channel: next.channel === 'beta' ? 'beta' : 'latest',
+      skippedVersion: preferences.skippedVersion || '',
+    };
+
+    const current = byId('settingsUpdateCurrent');
+    if (current) current.textContent = next.currentVersion ? 'v' + next.currentVersion : '-';
+
+    const auto = byId('settingsUpdateAuto');
+    if (auto) {
+      auto.setAttribute('aria-pressed', String(preferences.autoCheck));
+      auto.textContent = t(preferences.autoCheck ? 'On' : 'Off');
+      auto.setAttribute('aria-label', t('Automatic update checks'));
+    }
+
+    const panel = byId('settingsUpdatePanel');
+    if (panel) panel.dataset.status = next.status || 'idle';
+
+    const status = byId('settingsUpdateStatus');
+    if (status) status.textContent = statusText(next);
+
+    const version = byId('settingsUpdateVersion');
+    if (version) {
+      version.textContent = (next.status === 'available' || next.status === 'downloaded' ||
+        next.status === 'installing') && next.version ? 'v' + next.version : '';
+    }
+
+    const progress = byId('settingsUpdateProgress');
+    const bar = byId('settingsUpdateProgressBar');
+    const showProgress = next.status === 'downloading' || next.status === 'installing';
+    if (progress) {
+      progress.hidden = !showProgress;
+      const percent = next.status === 'installing'
+        ? 100
+        : Math.round((next.progress && next.progress.percent) || 0);
+      progress.setAttribute('aria-valuenow', String(percent));
+      if (bar) bar.style.width = percent + '%';
+    }
+
+    const notes = byId('settingsUpdateNotes');
+    const notesText = byId('settingsUpdateNotesText');
+    const showNotes = !!(next.releaseNotes &&
+      (next.status === 'available' || next.status === 'downloaded'));
+    if (notes) notes.hidden = !showNotes;
+    if (notesText) notesText.textContent = showNotes ? next.releaseNotes : '';
+
+    const hint = byId('settingsUpdateHint');
+    if (hint) {
+      const text = hintText(next);
+      hint.textContent = text;
+      hint.hidden = !text;
+    }
+
+    const check = byId('settingsUpdateCheck');
+    if (check) {
+      setHidden(check, !isSupported(next));
+      check.disabled = next.status === 'checking' ||
+        next.status === 'downloading' || next.status === 'installing';
+      check.textContent = next.status === 'checking'
+        ? t('Checking...')
+        : t('Check for updates');
+    }
+
+    setHidden(byId('settingsUpdateDownload'), next.status !== 'available');
+    setHidden(byId('settingsUpdateInstall'), !(next.status === 'downloaded' && next.canInstall));
+    setHidden(byId('settingsUpdateSkip'), next.status !== 'available');
+    setHidden(byId('settingsUpdatePage'), isSupported(next) && next.status !== 'error');
+
+    renderChip(next);
+  }
+
+  function renderChip(s) {
+    const chip = byId('updateChip');
+    const label = byId('updateChipText');
+    if (!chip) return;
+    let text = '';
+    if (s.status === 'available') text = t('Update {v}', { v: s.version || '' });
+    else if (s.status === 'downloading') {
+      text = t('{p}%', { p: String(Math.round((s.progress && s.progress.percent) || 0)) });
+    } else if (s.status === 'downloaded') text = t('Restart to update');
+    else if (s.status === 'installing') text = t('Restarting...');
+    chip.hidden = !text;
+    chip.dataset.status = s.status || '';
+    if (label) label.textContent = text;
+    chip.setAttribute('aria-label', text || t('Update available'));
+    chip.setAttribute('title', text || t('Update available'));
+  }
+
+  function openAbout() {
+    const panel = byId('settings');
+    if (!panel || typeof openStudioPanel !== 'function') return;
+    let visible = openStudioPanel(panel);
+    if (!visible) visible = openStudioPanel(panel);
+    if (!visible) return;
+    if (typeof settingsNavSelect === 'function') settingsNavSelect('about');
+    if (typeof settingsHubSync === 'function') settingsHubSync();
+  }
+
+  async function refresh() {
+    try {
+      const next = await api.updateGetState();
+      applyState(next);
+      const prefs = await api.updateGetPreferences();
+      if (prefs) {
+        preferences = {
+          autoCheck: prefs.autoCheck !== false,
+          channel: prefs.channel === 'beta' ? 'beta' : 'latest',
+          skippedVersion: typeof prefs.skippedVersion === 'string' ? prefs.skippedVersion : '',
+        };
+      }
+    } catch { /* main process may still be starting */ }
+  }
+
+  function bind() {
+    const check = byId('settingsUpdateCheck');
+    if (check && !check.dataset.bound) {
+      check.dataset.bound = '1';
+      check.addEventListener('click', async () => {
+        check.disabled = true;
+        try { applyState(await api.updateCheck(true)); } catch { /* reported via state */ }
+      });
+    }
+
+    const download = byId('settingsUpdateDownload');
+    if (download && !download.dataset.bound) {
+      download.dataset.bound = '1';
+      download.addEventListener('click', async () => {
+        download.disabled = true;
+        try { applyState(await api.updateDownload()); } catch { /* reported via state */ }
+        finally { download.disabled = false; }
+      });
+    }
+
+    const install = byId('settingsUpdateInstall');
+    if (install && !install.dataset.bound) {
+      install.dataset.bound = '1';
+      install.addEventListener('click', async () => {
+        install.disabled = true;
+        try { applyState(await api.updateInstall()); } catch { /* reported via state */ }
+        finally { install.disabled = false; }
+      });
+    }
+
+    const page = byId('settingsUpdatePage');
+    if (page && !page.dataset.bound) {
+      page.dataset.bound = '1';
+      page.addEventListener('click', () => { api.updateOpenDownload().catch(() => {}); });
+    }
+
+    const skip = byId('settingsUpdateSkip');
+    if (skip && !skip.dataset.bound) {
+      skip.dataset.bound = '1';
+      skip.addEventListener('click', async () => {
+        if (!state || !state.version) return;
+        preferences.skippedVersion = state.version;
+        try { applyState(await api.updateSetPreferences({ skippedVersion: state.version })); }
+        catch { /* reported via state */ }
+      });
+    }
+
+    const auto = byId('settingsUpdateAuto');
+    if (auto && !auto.dataset.bound) {
+      auto.dataset.bound = '1';
+      auto.addEventListener('click', async () => {
+        const next = !(state ? state.autoCheck : preferences.autoCheck);
+        try { applyState(await api.updateSetPreferences({ autoCheck: next })); }
+        catch { /* reported via state */ }
+      });
+    }
+
+    const chip = byId('updateChip');
+    if (chip && !chip.dataset.bound) {
+      chip.dataset.bound = '1';
+      chip.addEventListener('click', openAbout);
+    }
+  }
+
+  /* Main process asks the renderer to save before the installer runs. The
+     renderer either saves, explicitly declines, or postpones. It never
+     closes the window on its own. */
+  if (typeof api.onUpdateInstallRequested === 'function') {
+    api.onUpdateInstallRequested(async () => {
+      if (installHandling) return;
+      installHandling = true;
+      let ready = false;
+      try {
+        if (!isPersistenceAuto()) {
+          const dirty = typeof manualSavedHash === 'undefined' || manualSavedHash === null ||
+            manualStateSignature() !== manualSavedHash;
+          if (!dirty) {
+            ready = true;
+          } else {
+            const choice = typeof api.updateInstallChoice === 'function'
+              ? await api.updateInstallChoice()
+              : 2;
+            if (choice === 0) ready = await saveAsTail();
+            else if (choice === 1) ready = true;
+          }
+        } else {
+          await flushSave();
+          ready = true;
+        }
+      } catch {
+        ready = false;
+      }
+      try {
+        if (ready) await api.updateInstallReady();
+        else await api.updateInstallPostpone();
+      } catch { /* main process decides */ }
+      installHandling = false;
+    });
+  }
+
+  if (typeof api.onUpdateState === 'function') {
+    api.onUpdateState(next => applyState(next));
+  }
+
+  function init() {
+    bind();
+    refresh();
+    if (window.L10N && typeof window.L10N.onChange === 'function') {
+      window.L10N.onChange(() => {
+        if (state) applyState(state);
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
 
 'use strict';
 /* ======================================================================

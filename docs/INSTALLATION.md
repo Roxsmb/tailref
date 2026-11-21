@@ -21,6 +21,24 @@ Download `TailRef_Studio_Setup.exe`, run it and choose an install directory.
 The installer can create desktop and Start Menu shortcuts. Uninstalling does
 **not** delete your project data by default.
 
+### Updating
+
+The installed (NSIS) build updates itself from GitHub Releases:
+
+- TailRef checks 25 seconds after startup and every 4 hours; you can also press
+  **Check for updates** in Settings → About.
+- Nothing is downloaded until you press **Download update**.
+- Before restarting, TailRef saves your work. In manual save mode it asks
+  whether to save, restart without saving, or cancel.
+- You can turn automatic checks off in Settings → About.
+
+The portable `TailRef_Studio.exe` cannot replace itself. When an update exists,
+TailRef shows **Open download page**; download the new `.exe` and replace the
+old file. Your projects and preferences are kept.
+
+Stable builds ignore pre-releases. A release tagged `vX.Y.Z-beta.N` is published
+as a GitHub prerelease and is never offered to a stable installation.
+
 ### SmartScreen
 
 Builds are not code-signed. Windows SmartScreen may show "Windows protected your

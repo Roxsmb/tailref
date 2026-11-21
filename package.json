@@ -1,6 +1,6 @@
 {
   "name": "tailref",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "TailRef — a free and open-source reference board, drawing workspace and 3D posing tool for artists.",
   "main": "src/main/main.js",
   "author": "Emre Melik Nameli",
@@ -20,7 +20,6 @@
   "scripts": {
     "bundle": "node scripts/build-app.js",
     "build:native": "node scripts/build-native.js",
-    
     "start": "node scripts/build-app.js && electron .",
     "build": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win",
     "build:portable": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win portable",
@@ -28,7 +27,7 @@
     "build:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win dir",
     "gates": "node scripts/run-gates.js",
     "gates:full": "node scripts/run-gates.js --full",
-    "test": "node scripts/build-app.js && node tests/pose3d-unit.js && node tests/smoke-test.js && node tests/pinterest-test.js && node tests/artstation-test.js",
+    "test": "node scripts/build-app.js && node tests/update-policy-test.js && node tests/update-manager-test.js && node tests/update-static-test.js && node tests/pose3d-unit.js && node tests/smoke-test.js && node tests/pinterest-test.js && node tests/artstation-test.js",
     "test:smoke": "node scripts/build-app.js && node tests/smoke-test.js",
     "test:desktop": "node scripts/build-app.js && node tests/desktop-smoke.js",
     "test:ink": "node scripts/build-app.js && node tests/ink-smoke.js",
@@ -40,14 +39,14 @@
     "test:compositor": "node scripts/build-app.js && node tests/compositor-test.js",
     "bench:ink": "node scripts/build-app.js && node scripts/ink-bench.js",
     "test:package": "node scripts/verify-package.js",
-    
     "test:projects": "node scripts/build-app.js && node tests/projects-test.js",
     "test:overload": "node scripts/build-app.js && node tests/overload-test.js",
     "test:close": "node scripts/build-app.js && node tests/save-on-close-test.js",
     "test:pinterest": "node scripts/build-app.js && node tests/pinterest-test.js",
     "test:artstation": "node scripts/build-app.js && node tests/artstation-test.js",
     "test:pose3d": "node tests/pose3d-smoke.js",
-    "test:unit": "node tests/pose3d-unit.js"
+    "test:unit": "node tests/pose3d-unit.js",
+    "test:update": "node tests/update-policy-test.js && node tests/update-manager-test.js && node tests/update-static-test.js"
   },
   "devDependencies": {
     "electron": "45.4.1",
@@ -90,6 +89,14 @@
       "output": "dist",
       "buildResources": "build"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Roxsmb",
+        "repo": "tailref",
+        "releaseType": "release"
+      }
+    ],
     "win": {
       "icon": "build/icon.ico",
       "signAndEditExecutable": true,
@@ -141,5 +148,8 @@
   },
   "allowScripts": {
     "electron@45.4.1": true
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
   }
 }

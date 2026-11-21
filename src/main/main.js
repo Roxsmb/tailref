@@ -5,10 +5,13 @@
    Sabit port önemli: IndexedDB deposu bu origin'e bağlı. */
 
 const { app, BrowserWindow, ipcMain, Menu, dialog, screen, session, shell, webContents, clipboard, nativeImage } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const { registerPinterest } = require('./pinterest');
 const { registerArtStation } = require('./artstation');
 const { installGuestGuards } = require('./guest-guards');
 const { createPanelWindowManager } = require('./panel-window-manager');
+const { createUpdateManager } = require('./update-manager');
+const { isPortableEnv } = require('./update-policy');
 const { normalizeExternalUrl } = require('./external-links');
 const {
   isTailFilePath,
@@ -227,7 +230,6 @@ let closeFallbackTimer = null;
    düşünürse düşünsün pencere kendiliğinden kapanmamalı. */
 let closeAck = false;
 const CLOSE_FALLBACK_MS = 5000;
-
 /* ---------------- dosya sunucusu ----------------
    Statik sunucu static-server.js içinde; tarayıcı sürümü de aynı modülü kullanır. */
 
@@ -634,6 +636,79 @@ ipcMain.handle('window-confirm-close', () => {
   if (win && !win.isDestroyed()) win.close();
   return true;
 });
+
+/* ---------------- otomatik gǬncelleme el s��k��Ymas�� ----------------
+   GǬncelleme kurulmadan ��nce renderer'a "kaydet" f��rsat�� verilir. Ana
+   sǬre��, renderer'��n update-install-ready / update-install-postpone
+   cevab��n�� bekler. Cevap gelmezse (renderer dondu) kurulum iptal edilir;
+   kullan��c�� verisi asla zorla kapat��larak riske at��lmaz. */
+let installHandshakeResolve = null;
+let installHandshakeTimer = null;
+
+function finishInstallHandshake(ready) {
+  const resolve = installHandshakeResolve;
+  installHandshakeResolve = null;
+  if (installHandshakeTimer) {
+    clearTimeout(installHandshakeTimer);
+    installHandshakeTimer = null;
+  }
+  if (resolve) resolve(!!ready);
+}
+
+function requestInstallHandshake() {
+  return new Promise(resolve => {
+    if (!win || win.isDestroyed()) { resolve(false); return; }
+    if (installHandshakeResolve) finishInstallHandshake(false);
+    installHandshakeResolve = resolve;
+    /* Kaydetme diyalo�Yu a����k kalabilir; 10 dakika sonra vazge�� say. */
+    installHandshakeTimer = setTimeout(() => finishInstallHandshake(false), 10 * 60 * 1000);
+    try {
+      win.webContents.send('update-install-requested');
+    } catch {
+      finishInstallHandshake(false);
+    }
+  });
+}
+
+ipcMain.handle('update-install-ready', (event) => {
+  if (!win || win.isDestroyed() || event.sender !== win.webContents) return false;
+  finishInstallHandshake(true);
+  return true;
+});
+
+ipcMain.handle('update-install-postpone', (event) => {
+  if (!win || win.isDestroyed() || event.sender !== win.webContents) return false;
+  finishInstallHandshake(false);
+  return true;
+});
+
+/* GǬncelleme kurulumundan ��nce "kaydet?" sorusu. Kapan��Ytaki ile ayn��
+   gǬvenlik s��zle�Ymesi, farkl�� d��Yme metinleri: 0 = kaydet ve yeniden
+   ba�Ylat, 1 = kaydetmeden yeniden ba�Ylat, 2 = vazge��. */
+ipcMain.handle('window-install-choice', async (event) => {
+  if (!win || win.isDestroyed() || event.sender !== win.webContents) return 2;
+  try {
+    const box = await dialog.showMessageBox(win, {
+      type: 'warning',
+      title: 'TailRef Studio',
+      message: dialogL10n.t('Unsaved changes will be lost.'),
+      detail: dialogL10n.t('Save your work before TailRef restarts to install the update?'),
+      buttons: [
+        dialogL10n.t('Save and restart'),
+        dialogL10n.t('Restart without saving'),
+        dialogL10n.t('Cancel'),
+      ],
+      defaultId: 0,
+      cancelId: 2,
+      noLink: true,
+    });
+    return box.response;
+  } catch {
+    return 2;
+  }
+});
+
+let updateManager = null;
 
 ipcMain.handle('toggle-on-top', () => {
   if (!win) return false;
@@ -1874,12 +1949,31 @@ if (!gotLock) {
 
     createWindow();
 
+    /* Otomatik gǬncelleme: yaln��zca kurulumlu (NSIS) pakette etkin.
+       Ba�Ylatmay�� bloklamaz; ilk kontrol gecikmeli yap��l��r. */
+    try {
+      updateManager = createUpdateManager({
+        app,
+        ipcMain,
+        autoUpdater,
+        getMainWindow: () => win,
+        isPortable: () => isPortableEnv(process.env),
+        onInstallRequest: requestInstallHandshake,
+        openExternal: url => shell.openExternal(url),
+      });
+      updateManager.start();
+    } catch (error) {
+      console.warn('[updates] manager could not start:', error && error.message);
+    }
+
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
   });
 
   app.on('before-quit', () => {
+    if (updateManager) { try { updateManager.stop(); } catch { /* sessiz */ } }
+    finishInstallHandshake(false);
     // Yükleme sürerken pencereleri kapatmak Electron'da iç bir kapanış
     // yarışına yol açabiliyor; önce konuk sayfaları durdur.
     for (const contents of webContents.getAllWebContents()) {

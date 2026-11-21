@@ -172,6 +172,24 @@ A panel can be docked in the main window or detached into its own always-on-top
 window (`panel-window-manager.js` + `17b-panel-dock.js`). The detached window
 mirrors the panel DOM and forwards interaction through IPC.
 
+## Automatic updates
+
+`src/main/update-manager.js` owns the update state machine: startup check
+(25 s delay), periodic checks (4 h), manual checks, download, install and the
+save handshake. `src/main/update-policy.js` holds the pure parts (SemVer
+ordering, release-note sanitising, error mapping, preference validation) so they
+can be tested without Electron.
+
+`electron-updater` is pinned to the GitHub provider (`Roxsmb/tailref`) and is
+configured with `autoDownload = false`, `autoInstallOnAppQuit = false`,
+`allowDowngrade = false` and `allowPrerelease = false` on the stable channel.
+The renderer talks to it only through the narrow `update:*` preload bridge; the
+main process verifies the sender of every call.
+
+The installed NSIS build updates in place. Portable builds (`PORTABLE_EXECUTABLE_*`
+environment variables) and development runs report a disabled state and offer a
+manual download page instead.
+
 ## Build and packaging
 
 ```

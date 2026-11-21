@@ -3,7 +3,50 @@
 Format bu repo için sadeleştirilmiş Keep a Changelog'dur; sürümler
 [SemVer] mantığıyla (MAJOR.MINOR.PATCH) ilerler.
 
-## [Unreleased]
+## [1.4.2] — 2026-11-21
+
+### Added — otomatik güncelleme
+
+- **GitHub Releases tabanlı otomatik güncelleme:** `electron-updater`,
+  `electron-builder` ve GitHub Actions ile uçtan uca güncelleme akışı.
+  Kurulumlu (NSIS) sürüm kendini günceller; taşınabilir `.exe` yalnızca
+  GitHub indirme sayfasını önerir.
+- **Güncelleme yaşam döngüsü:** açılıştan 25 saniye sonra ilk kontrol,
+  çalışırken 4 saatte bir kontrol, Ayarlar > Hakkında'dan elle kontrol.
+  Kontroller açılışı asla engellemez.
+- **Tercih:** otomatik güncelleme denetimi açık/kapalı; atlanan sürüm
+  otomatik kontrollerde yok sayılır, elle kontrolde yeniden görünür.
+- **Arayüz:** Hakkında sayfasında denetleniyor / güncel / mevcut /
+  indiriliyor / indirildi / hata durumları, ilerleme çubuğu, sürüm notları
+  ve üst barda yalnızca güncelleme varken görünen çip.
+- **Veri güvenliği:** kurulumdan önce kaydetme el sıkışması. Otomatik modda
+  tahta diske yazılır; manuel modda kaydedilmemiş değişiklik varsa
+  "Kaydet ve yeniden başlat / Kaydetmeden yeniden başlat / Vazgeç"
+  sorulur. Kayıt başarısız olursa veya renderer yanıt vermezse kurulum
+  ertelenir; pencere zorla kapatılmaz.
+- **Hata yönetimi:** çevrimdışı, GitHub hız sınırı, disk alanı, bozuk
+  indirme ve bilinmeyen hatalar için anlaşılır mesajlar; başarısız
+  otomatik kontrollerde 30 dk → 1 saat → 4 saat geri çekilme.
+- **Kararlı kanal:** kararlı sürümlerde ön sürüm (`allowPrerelease`) ve
+  sürüm düşürme kapalı. `vX.Y.Z-beta.N` etiketleri GitHub'da prerelease
+  olarak yayınlanır ve kararlı kurulumlara sunulmaz.
+- **Yayın hattı:** `v*.*.*` etiketiyle çalışan Release iş akışı; sürüm
+  etiketi/`package.json` eşleşmesi, tüm kapılar ve testler, güvenlik
+  denetimi, NSIS + portable derleme, `latest.yml`/blockmap doğrulaması,
+  varlıkları yükleme ve yayından sonra yeniden doğrulama. Doğrulama
+  başarısız olursa yayın oluşturulmaz.
+
+### Security
+
+- Tam güvenlik denetimi: dosya yolu politikası, dış bağlantı allowlist'i,
+  Electron fuse'ları, CSP/sandbox/webview sertleştirmesi, secret taraması.
+- Güncelleme mantığı yalnızca ana süreçte; preload yalnızca dar bir
+  `update:*` köprüsü sunar. Her IPC çağrısı ana pencerenin göndericisi
+  olduğunu doğrular; renderer Node, dosya sistemi veya updater nesnesine
+  erişemez.
+- Sürüm notları ve sürüm meta verisi HTML/kontrol karakterlerinden
+  arındırılır; kaynak kodda yayın kimlik bilgisi bulunmaz.
+- Electron `45.4.1`'e yükseltildi; `npm audit --omit=dev` temiz.
 
 ### Changed — lisans
 

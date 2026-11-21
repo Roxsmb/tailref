@@ -390,7 +390,7 @@ their work. Contributions are accepted under GPL-3.0-or-later
 
 ## Roadmap
 
-TailRef 1.4.1 is the current release. The near-term work is:
+TailRef 1.4.2 is the current release. The near-term work is:
 
 - ink-engine polish and the remaining parity items tracked in
   [`docs/INK_STATUS.md`](docs/INK_STATUS.md);
@@ -399,7 +399,12 @@ TailRef 1.4.1 is the current release. The near-term work is:
 - keeping the public documentation and captures current;
 - closing the remaining localization gaps.
 
-Under consideration: code signing, an installer update path, enabling the native
+The installed NSIS build updates itself from GitHub Releases; the portable
+`.exe` stays a manual download. Update checks never block startup, downloads
+only start when you ask, and the app saves your work before restarting.
+See [`docs/RELEASE.md`](docs/RELEASE.md) for the channel and release rules.
+
+Under consideration: code signing, enabling the native
 ink kernel by default, more Pose3D capture passes, and community themes and UI
 packages. Not planned: macOS/Linux builds, cloud sync, accounts, telemetry, a
 plugin marketplace, mobile/web builds, paid tiers or ads.
@@ -423,8 +428,8 @@ npm start
 hand.
 
 ```bash
-npm run gates        # fast chain: 14 pure gates
-npm run gates:full   # full chain: 69 gates (Electron + CDP, slow)
+npm run gates        # fast chain: 19 pure gates
+npm run gates:full   # full chain: 74 gates (Electron + CDP, slow)
 npm run build:portable
 npm run build:setup
 npm run test:package # verifies app.asar against the working tree

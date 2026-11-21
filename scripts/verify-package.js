@@ -24,6 +24,8 @@ const FILES = [
   'src/renderer/index.html',
   'src/renderer/style.css',
   'src/main/main.js',
+  'src/main/update-manager.js',
+  'src/main/update-policy.js',
   'src/renderer/workers/ink-worker.js',
   'src/preload/preload.js',
 ];

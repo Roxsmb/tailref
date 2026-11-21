@@ -212,4 +212,24 @@ contextBridge.exposeInMainWorld('tailref', {
   confirmDialog:     (message, detail, params) => ipcRenderer.invoke('confirm-dialog', String(message || ''), String(detail || ''), params || null),
   /* İlk frame çizildi: ana pencereyi görünür yap (beyaz flash önleme). */
   revealMainWindow:  () => ipcRenderer.send('reveal-main-window'),
+  /* Automatic updates. Every decision lives in the main process; the
+     renderer can only ask for state and confirm that saving is done. */
+  updateGetState:        () => ipcRenderer.invoke('update:get-state'),
+  updateGetPreferences:  () => ipcRenderer.invoke('update:get-preferences'),
+  updateSetPreferences:  (patch) => ipcRenderer.invoke('update:set-preferences', patch),
+  updateCheck:           (manual) => ipcRenderer.invoke('update:check', !!manual),
+  updateDownload:        () => ipcRenderer.invoke('update:download'),
+  updateInstall:         () => ipcRenderer.invoke('update:install'),
+  updateOpenDownload:    () => ipcRenderer.invoke('update:open-download'),
+  updateInstallChoice:   () => ipcRenderer.invoke('window-install-choice'),
+  updateInstallReady:    () => ipcRenderer.invoke('update-install-ready'),
+  updateInstallPostpone: () => ipcRenderer.invoke('update-install-postpone'),
+  onUpdateState: (cb) => {
+    if (typeof cb !== 'function') return;
+    ipcRenderer.on('update:state', (_event, state) => cb(state || null));
+  },
+  onUpdateInstallRequested: (cb) => {
+    if (typeof cb !== 'function') return;
+    ipcRenderer.on('update-install-requested', () => cb());
+  },
 });

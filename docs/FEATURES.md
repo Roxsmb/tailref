@@ -141,7 +141,8 @@ strings fall back to English.
 
 - Windows x64 portable executable and NSIS installer.
 - No installation required for the portable build.
-- No telemetry, no auto-update, no network calls unless you open a panel.
+- No telemetry. Network calls are limited to the web panels you open and the
+  GitHub Releases update check (which can be turned off).
 - Data stays on the local machine.
 
 macOS and Linux are **not** currently supported or planned as release targets.
