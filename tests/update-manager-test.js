@@ -230,7 +230,7 @@ function makeManager(opts = {}) {
     ok('install moves to installing', ctx.manager.getSnapshot().status === 'installing');
     await ctx.timers.runNextTimeout();
     ok('quitAndInstall called once', ctx.autoUpdater.quitCalls.length === 1);
-    ok('quitAndInstall flags', JSON.stringify(ctx.autoUpdater.quitCalls[0]) === '[false,true]');
+    ok('quitAndInstall flags', JSON.stringify(ctx.autoUpdater.quitCalls[0]) === '[true,true]');
     ctx.manager.stop();
   }
 

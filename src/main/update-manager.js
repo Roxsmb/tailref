@@ -465,10 +465,12 @@ function createUpdateManager(options) {
     }
 
     setState({ status: 'installing', message: 'restarting', canInstall: false });
-    /* Give the renderer one frame to paint the "restarting" state. */
+    /* Give the renderer one frame to paint the "restarting" state.
+       isSilent=true: the NSIS wizard would otherwise wait for a click,
+       so the update would never apply on its own. */
     timers.setTimeout(() => {
       try {
-        autoUpdater.quitAndInstall(false, true);
+        autoUpdater.quitAndInstall(true, true);
       } catch (error) {
         installInFlight = false;
         if (installFallbackTimer) {
