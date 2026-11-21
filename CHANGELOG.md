@@ -68,6 +68,17 @@ Format bu repo için sadeleştirilmiş Keep a Changelog'dur; sürümler
   notları `THIRD_PARTY_NOTICES.md` içinde. Geçişin tam kaydı:
   `docs/LICENSE_MIGRATION.md`.
 
+### Fixed — sessiz güncelleme kurulumu
+
+- **İndirilen güncelleme sessiz kuruluyor.** "Yeniden başlat ve kur"
+  NSIS sihirbazını açıp tıklama bekliyordu; kurulum artık `/S` ile
+  çalıştırılıyor, sihirbaz atlanıyor ve uygulama kendini yeniden
+  başlatıyor. Kurulumdan önceki kaydetme el sıkışması, hata yönetimi ve
+  geri dönüş davranışı değişmedi.
+- **İki sürümlü doğrulama:** gerçek `1.4.1` kurulumundan `1.4.2`'ye
+  güncelleme uçtan uca çalıştırıldı; sürüm yükseldi, tercihler ve 27
+  yedek dosyası korundu.
+
 ## [1.4.1] — 2026-11-20
 
 Çizim hissini/akıcılığını koruyarak performans turu (parite sözleşmesi
