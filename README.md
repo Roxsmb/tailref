@@ -1,12 +1,12 @@
 ﻿<p align="center">
   <a href="https://github.com/Roxsmb/tailref/releases/latest">
-    <img src="assets/brand/hero.png" alt="TailRef Studio — Reference. Draw. Pose. The drawing workspace with an FX stack, the reference board and Pose3D shown side by side." width="100%">
+    <img src="assets/brand/hero.png" alt="TailRef Studio reference board with color palettes, reference images and the selection properties panel." width="100%">
   </a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download for Windows 10 and 11" src="https://img.shields.io/badge/Download-Windows%2010%20%7C%2011-2F6FB0?style=for-the-badge&logo=windows11&logoColor=white"></a>
-  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.1" src="https://img.shields.io/badge/version-1.4.1-1F6FEB?style=for-the-badge"></a>
+  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.2" src="https://img.shields.io/badge/version-1.4.2-1F6FEB?style=for-the-badge"></a>
   <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-2F6FB0?style=for-the-badge"></a>
   <a href="https://www.buymeacoffee.com/roxsmb"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
 </p>

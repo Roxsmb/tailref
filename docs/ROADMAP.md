@@ -5,7 +5,7 @@ ready and tested. Nothing here is promised for a specific date.
 
 ## Current state
 
-TailRef 1.4.1 is a Windows x64 desktop app with:
+TailRef 1.4.2 is a Windows x64 desktop app with:
 
 - a reference board, a drawing engine, a brush library with `.abr` import/export,
   layers and effects;
