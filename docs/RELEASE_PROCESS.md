@@ -24,12 +24,14 @@ means no release is created.
 
 The tag must be `v` + the exact `package.json` version: `v1.4.3` for
 `"version": "1.4.3"`. `prepare` rejects anything else. It also requires a
-`## [1.4.3]` section in `CHANGELOG.md`.
+`## [1.4.3]` section in `CHANGELOG.md` and an English `## [1.4.3]` section in
+`CHANGELOG.en.md`.
 
 To prepare a release:
 
 1. Move the `## [Unreleased]` entries in `CHANGELOG.md` into a new
-   `## [X.Y.Z] — YYYY-MM-DD` section.
+   `## [X.Y.Z] — YYYY-MM-DD` section, and add the same version section to
+   `CHANGELOG.en.md` **in English**. GitHub release notes are always English.
 2. Update `"version"` in `package.json` **and** the root entry in
    `package-lock.json` (`npm version X.Y.Z --no-git-tag-version` does both).
 3. Update the version assertion in `tests/update-static-test.js`
@@ -79,8 +81,13 @@ list.
 
 The release notes come from `scripts/release-notes.js`, which writes
 `dist/RELEASE_NOTES.md` with sections for downloads by operating system,
-requirements, checksums, known limitations, upgrading and troubleshooting. The
-`Changelog` section is copied verbatim from the matching `CHANGELOG.md` heading.
+requirements, checksums, known limitations, upgrading and troubleshooting.
+
+**Release notes are always English.** The `Changelog` section is copied
+verbatim from the matching heading in `CHANGELOG.en.md`, never from the
+Turkish `CHANGELOG.md`. The generator exits with an error if the English
+section is missing or if the result contains a Turkish letter, so a release
+cannot publish mixed-language notes.
 
 ## Prereleases
 

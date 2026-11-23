@@ -335,17 +335,39 @@ ok('release notes name the Linux artifacts',
   /tailref-\$\{version\}\.x86_64\.rpm/.test(notes));
 ok('release notes state Linux auto-update is unavailable',
   /Automatic in-app updates are Windows-only/.test(notes));
+ok('release notes read the English changelog only',
+  notes.includes("'CHANGELOG.en.md'") && !notes.includes("'CHANGELOG.md'"));
+ok('release notes reject a missing English section',
+  /No English changelog section/.test(notes));
+ok('release notes reject Turkish letters', /TURKISH_LETTERS/.test(notes));
 
-/* Üretici, geçerli sürümün CHANGELOG bölümünü gerçekten bulmalı. */
+/* Üretici, geçerli sürümün İngilizce CHANGELOG bölümünü bulmalı ve
+   sonuçta tek bir Türkçe harf bile kalmamalı. */
 const { execFileSync } = require('child_process');
 const notesText = execFileSync(process.execPath,
   ['scripts/release-notes.js', '--version', pkg.version],
   { cwd: ROOT, encoding: 'utf8' });
-ok('release notes embed the CHANGELOG section for the current version',
-  !notesText.includes('No CHANGELOG.md section was found'));
+ok('release notes embed the English changelog section for the current version',
+  notesText.includes('### Added — Linux support') &&
+  !notesText.includes('No English changelog section'));
+ok('release notes are English-only',
+  !/[çğışöüÇĞİŞÖÜ]/.test(notesText), 'no Turkish letters');
 ok('release notes use the current version in the Linux file names',
   notesText.includes(`TailRef-${pkg.version}.AppImage`) &&
   notesText.includes(`tailref_${pkg.version}_amd64.deb`));
+
+let missingSectionFailed = false;
+try {
+  execFileSync(process.execPath,
+    ['scripts/release-notes.js', '--version', '0.0.0'],
+    { cwd: ROOT, encoding: 'utf8', stdio: 'pipe' });
+} catch {
+  missingSectionFailed = true;
+}
+ok('release notes fail instead of publishing untranslated notes',
+  missingSectionFailed);
+ok('release workflow requires an English changelog section',
+  /CHANGELOG\.en\.md has no English section/.test(release));
 
 /* --- required documentation --- */
 for (const doc of ['docs/LINUX_BUILD.md', 'docs/LINUX_INSTALLATION.md',

@@ -96,6 +96,10 @@ jobs:
             echo "CHANGELOG.md has no section for $VERSION" >&2
             exit 1
           fi
+          if ! grep -q "^## \[$VERSION\]" CHANGELOG.en.md; then
+            echo "CHANGELOG.en.md has no English section for $VERSION (release notes are always English)" >&2
+            exit 1
+          fi
           PRERELEASE=false
           case "$TAG" in *-*) PRERELEASE=true ;; esac
           {

@@ -1,17 +1,18 @@
 'use strict';
 
-/* TailRef — GitHub Release notes üreticisi (saf Node, bağımlılık yok).
+/* TailRef — GitHub Release notes generator (plain Node, no dependencies).
    ------------------------------------------------------------------
-   Etiketli bir sürüm için tek biçimli, platforma göre ayrılmış sürüm notu
-   üretir. CI bu dosyayı `gh release create --notes-file` ile kullanır;
-   yerelde de aynı metni görebilirsiniz:
+   Produces one English release-note document per tagged release. CI feeds
+   this file to `gh release create --notes-file`; locally:
 
      node scripts/release-notes.js                 # stdout
      node scripts/release-notes.js --out dist/RELEASE_NOTES.md
      node scripts/release-notes.js --version 1.4.3
 
-   Sürüm notu uydurmaz: "Changelog" bölümü CHANGELOG.md'deki ilgili
-   sürüm başlığından aynen alınır. Başlık yoksa bunu açıkça söyler. */
+   Release notes are ALWAYS English. The changelog section is taken verbatim
+   from CHANGELOG.en.md, never from the Turkish CHANGELOG.md. A missing English
+   section, or a Turkish character in the result, is a hard error so a release
+   can never publish mixed-language notes. */
 
 const fs = require('fs');
 const path = require('path');
@@ -24,8 +25,12 @@ function readVersion(argv) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
 }
 
+/* Release notes are English-only by policy. These letters do not occur in
+   English text and their presence means the Turkish changelog leaked in. */
+const TURKISH_LETTERS = /[çğışöüÇĞİŞÖÜ]/;
+
 function changelogSection(version) {
-  const file = path.join(ROOT, 'CHANGELOG.md');
+  const file = path.join(ROOT, 'CHANGELOG.en.md');
   if (!fs.existsSync(file)) return null;
   const text = fs.readFileSync(file, 'utf8');
   const heading = new RegExp(
@@ -36,6 +41,17 @@ function changelogSection(version) {
   const rest = text.slice(start);
   const next = /^##\s+/m.exec(rest);
   return (next ? rest.slice(0, next.index) : rest).trim();
+}
+
+function assertEnglish(notes) {
+  const lines = notes.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const match = TURKISH_LETTERS.exec(lines[i]);
+    if (match) {
+      throw new Error(
+        `Release notes must be English, but line ${i + 1} contains "${match[0]}": ${lines[i].trim()}`);
+    }
+  }
 }
 
 function buildNotes(version) {
@@ -152,11 +168,12 @@ function buildNotes(version) {
   lines.push('');
   lines.push('## Changelog');
   lines.push('');
-  if (changelog) {
-    lines.push(changelog);
-  } else {
-    lines.push(`No CHANGELOG.md section was found for ${version}.`);
+  if (!changelog) {
+    throw new Error(
+      `No English changelog section for ${version} in CHANGELOG.en.md. ` +
+      'Add one before releasing: release notes are always English.');
   }
+  lines.push(changelog);
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -170,12 +187,13 @@ function main() {
   const argv = process.argv.slice(2);
   const version = readVersion(argv);
   const notes = buildNotes(version);
+  assertEnglish(notes);
   const outIndex = argv.indexOf('--out');
   if (outIndex > -1 && argv[outIndex + 1]) {
     const target = path.resolve(argv[outIndex + 1]);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, notes, 'utf8');
-    console.log(`[release-notes] yazıldı: ${path.relative(ROOT, target)} (${Buffer.byteLength(notes, 'utf8')} bayt)`);
+    console.log(`[release-notes] wrote ${path.relative(ROOT, target)} (${Buffer.byteLength(notes, 'utf8')} bytes)`);
   } else {
     process.stdout.write(notes);
   }
@@ -184,6 +202,6 @@ function main() {
 try {
   main();
 } catch (error) {
-  console.error('[release-notes] hata:', error && error.message || error);
+  console.error('[release-notes] error:', error && error.message || error);
   process.exit(1);
 }
