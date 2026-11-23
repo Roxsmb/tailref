@@ -6,6 +6,9 @@
 #
 # Build locally (Linux, flatpak-builder installed):
 #
+#   flatpak install flathub org.freedesktop.Sdk//26.08 \
+#     org.freedesktop.Sdk.Extension.node22//26.08 \
+#     org.electronjs.Electron2.BaseApp//26.08
 #   flatpak-builder --user --install --force-clean build-dir flatpak/com.tailref.studio.yml
 #   flatpak run com.tailref.studio
 #
@@ -19,16 +22,17 @@
 
 app-id: com.tailref.studio
 runtime: org.freedesktop.Platform
-runtime-version: '24.08'
+runtime-version: '26.08'
 sdk: org.freedesktop.Sdk
+separate-locales: false
+command: tailref
+base: org.electronjs.Electron2.BaseApp
+base-version: '26.08'
 sdk-extensions:
   # npm/node are not part of the Freedesktop SDK; the Electron base app does not
-  # provide the npm toolchain either. Node 20 matches package.json / CI.
-  - org.freedesktop.Sdk.Extension.node20
-base: org.electronjs.Electron2.BaseApp
-base-version: '24.08'
-command: tailref
-separate-locales: false
+  # provide the npm toolchain either. node22 is the extension Flathub publishes
+  # for the 26.08 runtime.
+  - org.freedesktop.Sdk.Extension.node22
 
 finish-args:
   # Electron/Chromium requirements.
@@ -40,22 +44,18 @@ finish-args:
   - --share=network
   # Audio playback inside the YouTube Music panel.
   - --socket=pulseaudio
-  # Desktop notifications and the system file chooser.
+  # Desktop notifications (libnotify) from the app itself.
   - --talk-name=org.freedesktop.Notifications
-  # Boards and reference images are opened from anywhere in the home
-  # directory and saved back there. Electron's GTK file dialog runs inside
-  # the sandbox, so the portal alone is not enough.
-  - --filesystem=home
-  # External drives used for reference material.
-  - --filesystem=/media
-  - --filesystem=/run/media
+  # File open/save goes through xdg-desktop-portal. Without this, GTK opens its
+  # own dialog inside the sandbox and can only see the sandboxed home directory.
+  - --env=GTK_USE_PORTAL=1
 
 modules:
   - name: tailref
     buildsystem: simple
     build-options:
       env:
-        PATH: /usr/lib/sdk/node20/bin:/app/bin:/usr/bin
+        PATH: /usr/lib/sdk/node22/bin:/app/bin:/usr/bin
         npm_config_cache: /run/build/tailref/flatpak-node/npm-cache
         npm_config_offline: 'true'
         npm_config_audit: 'false'
@@ -67,6 +67,10 @@ modules:
         # node-gyp builds against the declared Electron headers archive.
         TAILREF_NODEDIR: /run/build/tailref/flatpak-node/cache/node-gyp/45.4.1
     build-commands:
+      # generated-sources.json drops the headers tarball as a file; node-gyp
+      # needs the extracted include/ tree.
+      - tar -xzf flatpak-node/cache/node-gyp/45.4.1/node-v45.4.1-headers.tar.gz
+        -C flatpak-node/cache/node-gyp/45.4.1 --strip-components=1
       - npm ci --no-audit --no-fund
       - node scripts/build-app.js
       - node scripts/build-native.js
@@ -78,6 +82,7 @@ modules:
       - install -Dm644 flatpak/com.tailref.studio.metainfo.xml /app/share/metainfo/com.tailref.studio.metainfo.xml
       - install -Dm644 build/icon.png /app/share/icons/hicolor/512x512/apps/com.tailref.studio.png
       - install -Dm644 build/linux/tailref-mime.xml /app/share/mime/packages/com.tailref.studio.xml
+      - install -Dm644 LICENSE $FLATPAK_DEST/share/licenses/$FLATPAK_ID/LICENSE
     sources:
       - type: git
         url: https://github.com/Roxsmb/tailref.git

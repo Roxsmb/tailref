@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
 
 jobs:
   gates:
@@ -122,21 +122,23 @@ jobs:
           RPM="dist/tailref-${VERSION}.x86_64.rpm"
           APPIMAGE="dist/TailRef-${VERSION}.AppImage"
           test -f "$DEB" && test -f "$RPM" && test -f "$APPIMAGE"
-          dpkg-deb -c "$DEB" | grep -q 'usr/share/mime/packages/tailref\.xml'
-          dpkg-deb -c "$DEB" | grep -q 'usr/share/applications/tailref\.desktop'
-          if dpkg-deb -c "$DEB" | grep -qE '\.(exe|dll|ico)$'; then
+          DEB_LIST="$(dpkg-deb -c "$DEB")"
+          RPM_LIST="$(rpm -qlp "$RPM")"
+          grep -q 'usr/share/mime/packages/tailref\.xml' <<< "$DEB_LIST"
+          grep -q 'usr/share/applications/tailref\.desktop' <<< "$DEB_LIST"
+          if grep -qE '\.(exe|dll|ico)$' <<< "$DEB_LIST"; then
             echo "Windows files leaked into the deb" >&2
             exit 1
           fi
-          rpm -qlp "$RPM" | grep -q 'usr/share/mime/packages/tailref\.xml'
-          if rpm -qlp "$RPM" | grep -qE '\.(exe|dll|ico)$'; then
+          grep -q 'usr/share/mime/packages/tailref\.xml' <<< "$RPM_LIST"
+          if grep -qE '\.(exe|dll|ico)$' <<< "$RPM_LIST"; then
             echo "Windows files leaked into the rpm" >&2
             exit 1
           fi
           rm -rf squashfs-root
           "$APPIMAGE" --appimage-extract >/dev/null
           test -f squashfs-root/usr/share/mime/packages/tailref.xml
-          desktop="$(ls squashfs-root/*.desktop | head -n 1)"
+          desktop="$(find squashfs-root -maxdepth 1 -name '*.desktop' | sed -n '1p')"
           grep -q '^MimeType=application/x-tailref-board;$' "$desktop"
           rm -rf squashfs-root
 

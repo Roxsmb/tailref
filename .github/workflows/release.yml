@@ -52,7 +52,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
 
 jobs:
   prepare:
@@ -286,17 +286,21 @@ jobs:
 
           echo "--- deb control ---"
           dpkg-deb -I "$DEB"
-          dpkg-deb -c "$DEB" | grep -qE '/opt/.*/tailref$'
-          dpkg-deb -c "$DEB" | grep -q 'usr/share/applications/tailref\.desktop'
-          dpkg-deb -c "$DEB" | grep -q 'usr/share/mime/packages/tailref\.xml'
-          dpkg-deb -c "$DEB" | grep -q 'icons/hicolor/512x512/apps/tailref\.png'
+          # Collect the listings first: `dpkg-deb -c | grep -q` makes grep exit
+          # early, the tar writer gets SIGPIPE and `set -o pipefail` fails the
+          # step (or, worse, hides a real match in the leak check).
+          DEB_LIST="$(dpkg-deb -c "$DEB")"
+          grep -qE '/opt/.*/tailref$' <<< "$DEB_LIST"
+          grep -q 'usr/share/applications/tailref\.desktop' <<< "$DEB_LIST"
+          grep -q 'usr/share/mime/packages/tailref\.xml' <<< "$DEB_LIST"
+          grep -q 'icons/hicolor/512x512/apps/tailref\.png' <<< "$DEB_LIST"
           DEB_DIR="$(mktemp -d)"
           dpkg-deb -x "$DEB" "$DEB_DIR"
           grep -q '^MimeType=application/x-tailref-board;$' "$DEB_DIR/usr/share/applications/tailref.desktop"
           grep -qE '^Exec="?/opt/.*/tailref"? %U$' "$DEB_DIR/usr/share/applications/tailref.desktop"
           grep -q '^StartupWMClass=tailref$' "$DEB_DIR/usr/share/applications/tailref.desktop"
           grep -q 'application/x-tailref-board' "$DEB_DIR/usr/share/mime/packages/tailref.xml"
-          if dpkg-deb -c "$DEB" | grep -qE '\.(exe|dll|ico)$'; then
+          if grep -qE '\.(exe|dll|ico)$' <<< "$DEB_LIST"; then
             echo "Windows files leaked into the deb" >&2
             exit 1
           fi
@@ -304,10 +308,11 @@ jobs:
 
           echo "--- rpm metadata ---"
           rpm -qip "$RPM"
-          rpm -qlp "$RPM" | grep -qE '/opt/.*/tailref$'
-          rpm -qlp "$RPM" | grep -q 'usr/share/applications/tailref\.desktop'
-          rpm -qlp "$RPM" | grep -q 'usr/share/mime/packages/tailref\.xml'
-          if rpm -qlp "$RPM" | grep -qE '\.(exe|dll|ico)$'; then
+          RPM_LIST="$(rpm -qlp "$RPM")"
+          grep -qE '/opt/.*/tailref$' <<< "$RPM_LIST"
+          grep -q 'usr/share/applications/tailref\.desktop' <<< "$RPM_LIST"
+          grep -q 'usr/share/mime/packages/tailref\.xml' <<< "$RPM_LIST"
+          if grep -qE '\.(exe|dll|ico)$' <<< "$RPM_LIST"; then
             echo "Windows files leaked into the rpm" >&2
             exit 1
           fi
@@ -315,7 +320,7 @@ jobs:
           echo "--- AppImage payload ---"
           rm -rf squashfs-root
           "$APPIMAGE" --appimage-extract >/dev/null
-          desktop="$(ls squashfs-root/*.desktop | head -n 1)"
+          desktop="$(find squashfs-root -maxdepth 1 -name '*.desktop' | sed -n '1p')"
           grep -q '^MimeType=application/x-tailref-board;$' "$desktop"
           grep -qE '^Exec=AppRun( |$)' "$desktop"
           test -f squashfs-root/usr/share/icons/hicolor/512x512/apps/tailref.png
@@ -328,10 +333,10 @@ jobs:
           set -euo pipefail
           VERSION="${{ needs.prepare.outputs.version }}"
           sudo apt-get install -y "./dist/tailref_${VERSION}_amd64.deb"
-          find /opt -maxdepth 3 -name tailref -type f | head -n 1
+          find /opt -maxdepth 3 -name tailref -type f | sed -n '1p'
           test -f /usr/share/mime/packages/tailref.xml
           grep -q 'application/x-tailref-board' /usr/share/mime/packages/tailref.xml
-          grep -rl 'MimeType=application/x-tailref-board' /usr/share/applications/ | head -n 1
+          grep -rl 'MimeType=application/x-tailref-board' /usr/share/applications/ | sed -n '1p'
           printf '{"probe":true}' > /tmp/tailref-association-probe.tail
           test "$(xdg-mime query filetype /tmp/tailref-association-probe.tail)" = "application/x-tailref-board"
           sudo apt-get remove -y tailref

@@ -81,7 +81,7 @@ To start completely fresh, close TailRef and rename or remove
 
 ### Prerequisites
 
-- **Node.js 20 LTS** (18+ should work; CI uses 20).
+- **Node.js 22 LTS** (required; CI uses 22 and the CDP tests use the global `WebSocket`).
 - **npm** (ships with Node).
 - Windows 10/11 or Linux x64 for packaging. Windows produces the NSIS installer
   and the portable executable; Linux produces the AppImage, deb and rpm. The

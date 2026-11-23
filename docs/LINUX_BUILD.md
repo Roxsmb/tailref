@@ -68,7 +68,7 @@ sudo apt-get install -y --no-install-recommends \
 `rpm` is only needed for the rpm target. `xvfb` and `libfuse2` are only needed
 for the smoke test.
 
-You also need Node.js 20 or newer (`node --version`) and npm.
+You also need Node.js 22 or newer (`node --version`) and npm.
 
 ## Build
 

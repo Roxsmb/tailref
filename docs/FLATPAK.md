@@ -29,16 +29,18 @@ The `tailref` module is a `simple` build:
 
 1. `npm ci --offline` installs from the npm cache declared in
    `generated-sources.json`. npm and Node come from the
-   `org.freedesktop.Sdk.Extension.node20` SDK extension, because neither the
+   `org.freedesktop.Sdk.Extension.node22` SDK extension, because neither the
    Freedesktop SDK nor the Electron base app ships the npm toolchain.
 2. `node scripts/build-app.js` builds the renderer bundle.
 3. `node scripts/build-native.js` compiles the optional `inkcore` addon. It
    reads the Electron headers from `TAILREF_NODEDIR` instead of downloading
-   them.
+   them; the manifest extracts the pinned headers archive into that directory
+   first.
 4. `electron-builder --linux dir` produces `dist/linux-unpacked`. It reads the
    Electron zip from `ELECTRON_CACHE`, so no network access is needed.
 5. The unpacked app is copied to `/app/tailref`, and the desktop entry, icon,
-   MIME type and AppStream metadata are installed into `/app/share`.
+   MIME type, AppStream metadata and the license are installed into
+   `/app/share`.
 
 Nothing is downloaded during the build. That is a Flathub requirement and also
 why `generated-sources.json` exists.
@@ -62,26 +64,30 @@ the window keeps `tailref.desktop` from `package.json`.
 | `--share=network` | Pinterest, ArtStation and YouTube Music panels |
 | `--socket=pulseaudio` | Audio in the YouTube Music panel |
 | `--talk-name=org.freedesktop.Notifications` | Desktop notifications |
-| `--filesystem=home` | Opening and saving `.tail` files and reference images anywhere in the home directory |
-| `--filesystem=/media`, `--filesystem=/run/media` | External drives used for reference material |
+| `--env=GTK_USE_PORTAL=1` | File open/save through `xdg-desktop-portal` instead of a static home-directory grant |
 
-Electron's file dialog is a GTK dialog running inside the sandbox, so the
-document portal alone cannot browse the filesystem. That is why the home
-directory is shared instead of relying only on portals. If Flathub review asks
-for narrower permissions, the alternative is to implement the
-`org.freedesktop.portal.FileChooser` API in the main process; that is a larger
-change and is not done yet.
+There is **no** `--filesystem=home`, `--filesystem=/media` or `--filesystem=host`.
+Flathub requires portals wherever one exists, and a file chooser portal exists.
+With `GTK_USE_PORTAL=1`, Electron's GTK file dialog asks the portal, so the user
+can open and save `.tail` projects and reference images anywhere they have
+access. Files passed on the command line (double-clicking a `.tail` in the file
+manager) reach the app through Flatpak's document portal, because the exported
+desktop entry forwards `%U`.
+
+If a portal is missing on a minimal desktop, the fallback is to add
+`--filesystem=home` again; that is a one-line change but it weakens the sandbox
+and should be discussed with the reviewers first.
 
 ## Building locally
 
 Requirements: `flatpak`, `flatpak-builder`, and the `org.freedesktop.Sdk`,
-`org.freedesktop.Sdk.Extension.node20` and `org.electronjs.Electron2.BaseApp`
-runtimes for 24.08:
+`org.freedesktop.Sdk.Extension.node22` and `org.electronjs.Electron2.BaseApp`
+runtimes for 26.08:
 
 ```bash
-flatpak install flathub org.freedesktop.Sdk//24.08 \
-  org.freedesktop.Sdk.Extension.node20//24.08 \
-  org.electronjs.Electron2.BaseApp//24.08
+flatpak install flathub org.freedesktop.Sdk//26.08 \
+  org.freedesktop.Sdk.Extension.node22//26.08 \
+  org.electronjs.Electron2.BaseApp//26.08
 ```
 
 Build and run:
@@ -134,31 +140,46 @@ headers archive and the npm cache entries.
 
 ## Tag to build
 
-`flatpak/com.tailref.studio.yml` targets `tag: v1.4.3`. That tag does not exist
-yet: it is created by the release process
-([`RELEASE_PROCESS.md`](RELEASE_PROCESS.md)). The v1.4.2 tag predates
-`build/icon.png`, `build/linux/` and `flatpak/`, so it cannot build this
-manifest. Update `tag:` when the release tag is pushed.
+`flatpak/com.tailref.studio.yml` targets `tag: v1.4.3`, which was pushed on
+2026-11-23. The tag contains `build/icon.png`, `build/linux/`, `flatpak/` and
+`LICENSE`, so the manifest can build from it. Update `tag:` when a newer release
+is published; `x-checker-data` also opens an automatic PR when a new tag
+appears.
+
+The Flathub copy of the manifest must match the repository copy. The manifest
+itself is not read from the tag; only the application sources are.
 
 ## Flathub submission checklist
 
 Before opening a pull request against
 [flathub/flathub](https://github.com/flathub/flathub):
 
-- [ ] The release tag exists and contains `flatpak/`, `build/icon.png` and
-      `build/linux/tailref-mime.xml`.
+- [ ] The release tag exists, is **public** (a draft release is not enough) and
+      contains `flatpak/`, `build/icon.png` and `build/linux/tailref-mime.xml`.
 - [ ] `tag:` in the manifest matches that tag.
 - [ ] `generated-sources.json` was regenerated from the same commit.
 - [ ] `appstreamcli validate --no-net` passes with no errors.
 - [ ] `flatpak-builder-lint manifest` and `flatpak-builder-lint repo` pass.
-- [ ] The app launches in the sandbox and `.tail` files open from the file
-      manager.
+- [ ] `flatpak/flathub.json` limits the build to `x86_64`; Flathub would
+      otherwise try aarch64 and fail on the native module.
+- [ ] The manifest installs the license to
+      `$FLATPAK_DEST/share/licenses/$FLATPAK_ID`.
+- [ ] The app launches in the sandbox, and `.tail` files open from the file
+      manager through the document portal.
 - [ ] Screenshots are public HTTPS URLs (they point at `docs/screenshots/` on
       `main`).
 - [ ] The AppStream `<releases>` entry matches the tag.
 - [ ] The repository has a `LICENSE` (GPL-3.0-or-later) and the metainfo
       declares the same license.
 - [ ] No network access is needed during the build.
+
+The pull request goes to a branch of your own fork named after the app ID
+(`com.tailref.studio`), with the manifest at the top level, next to
+`generated-sources.json` and `flathub.json`.
+
+Flathub's requirements state that AI tools must not open or automate
+submissions, and that manifests, commit messages and PR text must not be
+AI-generated. Write and open the pull request yourself.
 
 Do not describe TailRef as available on Flathub until the submission is merged
 and the app appears on <https://flathub.org>.
@@ -170,11 +191,13 @@ and the app appears on <https://flathub.org>.
   Projects (`.tail` files) are unaffected.
 - **No in-app updates.** The updater is disabled on Linux. Update with
   `flatpak update com.tailref.studio` once published.
-- **File dialogs.** They browse the sandbox, which is why `--filesystem=home`
-  is requested.
-- **ARM64.** The Electron zips for x86_64 and aarch64 are both pinned in
-  `generated-sources.json`, but only x86_64 is built and tested. An aarch64
-  build also needs the native `inkcore` module compiled for that architecture.
+- **File dialogs.** They go through `xdg-desktop-portal` (`GTK_USE_PORTAL=1`).
+  On a desktop without a file chooser portal, opening and saving outside the
+  sandbox will not work.
+- **ARM64.** Only `x86_64` is built; `flatpak/flathub.json` restricts the
+  Flathub build to that architecture. `generated-sources.json` also pins the
+  aarch64 Electron zip, but the native `inkcore` module would have to be
+  compiled for aarch64 before an ARM build is possible.
 - **Native module.** `inkcore` is optional; if the Flatpak build cannot compile
   it, the app uses the JavaScript fallback.
 

@@ -244,8 +244,17 @@ ok('Flatpak installs the launcher and metadata',
   /com\.tailref\.studio\.desktop/.test(manifest) &&
   /com\.tailref\.studio\.metainfo\.xml/.test(manifest) &&
   /build\/linux\/tailref-mime\.xml/.test(manifest));
-ok('Flatpak requests home access for .tail files', /--filesystem=home/.test(manifest));
+ok('Flatpak targets the current Freedesktop runtime',
+  /^runtime-version: '26\.08'$/m.test(manifest) && /^base-version: '26\.08'$/m.test(manifest));
+ok('Flatpak uses the node22 SDK extension',
+  /- org\.freedesktop\.Sdk\.Extension\.node22/.test(manifest));
+ok('Flatpak uses the file chooser portal instead of home access',
+  /--env=GTK_USE_PORTAL=1/.test(manifest) && !/--filesystem=/.test(manifest));
+ok('Flatpak installs the license', /share\/licenses\/\$FLATPAK_ID/.test(manifest));
+ok('Flatpak extracts the pinned Electron headers', /--strip-components=1/.test(manifest));
 
+const flathubJson = JSON.parse(read('flatpak/flathub.json'));
+ok('Flathub build is limited to x86_64', flathubJson['only-arches'].join(',') === 'x86_64');
 const sources = JSON.parse(read('flatpak/generated-sources.json'));
 const electronZip = sources.find((s) => s['dest-filename'] === 'electron-v45.4.1-linux-x64.zip');
 ok('pinned sources include the Electron x64 zip',
@@ -289,6 +298,9 @@ ok('release workflow writes SHA256SUMS.txt', /sha256sum \\/.test(release) && /SH
 ok('release workflow generates release notes', /release-notes\.js --version/.test(release));
 ok('release workflow publishes only from the release job',
   /gh release create/.test(release) && /--verify-tag/.test(release));
+ok('release workflow does not pipe dpkg-deb or rpm listings into grep -q',
+  !/dpkg-deb -c "\$DEB" \| grep/.test(release) && !/rpm -qlp "\$RPM" \| grep/.test(release));
+ok('release workflow runs on Node 22', /NODE_VERSION: "22"/.test(release));
 ok('release workflow rejects latest-linux.yml instead of uploading it',
   /if \[ -e latest-linux\.yml \]; then/.test(release) &&
   !/dist\/latest-linux\.yml/.test(release));

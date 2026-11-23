@@ -7,7 +7,7 @@ This guide is for people changing TailRef's code. For the big picture, read
 
 | Tool | Version | Needed for |
 |---|---|---|
-| Node.js | 20 LTS (18+ works) | everything |
+| Node.js | 22 LTS (required: the CDP tests use the global `WebSocket`) | everything |
 | npm | bundled with Node | dependencies, scripts |
 | Windows 10/11 x64 | — | Windows packaging and the Electron gates |
 | Linux x64 | glibc 2.25+ | Linux packaging, AppImage/deb/rpm gates |

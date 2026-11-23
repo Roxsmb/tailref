@@ -439,7 +439,7 @@ in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Development
 
-Requirements: **Node.js 20 LTS** (18+ works) and npm. Packaging targets Windows
+Requirements: **Node.js 22 LTS** and npm. Packaging targets Windows
 and Linux; the Linux build needs a Linux host (see
 [`docs/LINUX_BUILD.md`](docs/LINUX_BUILD.md)).
 

@@ -12,8 +12,9 @@ checklist, is in [`../docs/FLATPAK.md`](../docs/FLATPAK.md).
 
 | File | Purpose |
 |---|---|
-| `com.tailref.studio.yml` | Manifest (`org.electronjs.Electron2.BaseApp` 24.08, offline build) |
+| `com.tailref.studio.yml` | Manifest (`org.electronjs.Electron2.BaseApp` 26.08, offline build) |
 | `generated-sources.json` | Pinned npm tarballs, Electron zips and Electron headers |
+| `flathub.json` | Limits the Flathub build to `x86_64` |
 | `com.tailref.studio.desktop` | Desktop entry installed as `/app/share/applications/com.tailref.studio.desktop` |
 | `com.tailref.studio.metainfo.xml` | AppStream metadata |
 | `tailref.sh` | `zypak-wrapper` launcher installed as `/app/bin/tailref` |

@@ -16,7 +16,7 @@
     "electron"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "scripts": {
     "bundle": "node scripts/build-app.js",
