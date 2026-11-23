@@ -3,8 +3,12 @@
 TailRef Studio has a Flatpak manifest prepared for a Flathub submission. It is
 **not published**: there is no `com.tailref.studio` entry on Flathub, no Flatpak
 bundle attached to a GitHub release, and `flatpak install com.tailref.studio`
-does not work yet. This document describes what exists and what is still
-required.
+does not work yet. This document describes what exists, what is still required,
+and why the submission has to wait.
+
+> **Not ready to submit yet.** Flathub does not accept AI-written manifests or
+> AI-opened pull requests, and it rejects projects with a very short history.
+> See [Why not now, and when](#why-not-now-and-when) before starting.
 
 ## Files
 
@@ -149,6 +153,65 @@ appears.
 The Flathub copy of the manifest must match the repository copy. The manifest
 itself is not read from the tag; only the application sources are.
 
+## Why not now, and when
+
+The manifest is technically ready, but a submission today would fail for two
+reasons that have nothing to do with the build.
+
+### 1. Flathub rejects AI-written manifests and AI-opened pull requests
+
+Flathub's requirements state, verbatim:
+
+> Flathub manifests must not contain AI-generated or AI-assisted content.
+> Disclosure does not exempt manifests from this restriction.
+
+> AI tools or agents must not open or automate Flathub submission pull
+> requests, or generate their commit messages, descriptions, review comments,
+> or replies.
+
+The files under `flatpak/` were drafted with AI assistance, so **they cannot be
+submitted as they are**. Before a submission, the maintainer has to write the
+manifest, the dependency-source handling, the commit message and the pull
+request text personally. AI may still be used for research, discussion and
+debugging, but not to produce the submitted material. Submitting anyway risks
+rejection and, for repeat violations, a permanent ban.
+
+### 2. The project history is too short
+
+Flathub also rejects submissions with "insufficient development history": it
+looks for evidence of real-world use and a commitment to ongoing maintenance.
+At the time of writing, the public history is only a few days old.
+
+| Signal | Now |
+|---|---|
+| First public commit | 2026-11-21 |
+| Releases | `v1.4.1`, `v1.4.2`, `v1.4.3` within three days |
+| Users outside the project | not yet established |
+
+Reviewers decide case by case, but a brand-new project is a common rejection
+reason. A few months of regular tagged releases, issue reports and download
+numbers make the same submission far more likely to be accepted.
+
+### When to come back
+
+Submit once all of these are true:
+
+- [ ] At least a few months of public history with regular releases.
+- [ ] Real users: downloads, issues or feedback from outside the project.
+- [ ] The runtime in the manifest is still a supported Flathub runtime.
+- [ ] The maintainer wrote the manifest and the submission text personally.
+- [ ] Everything in the checklist below still passes.
+
+### In the meantime
+
+Linux users already have supported ways to install TailRef:
+
+- AppImage, deb and rpm from the [GitHub releases](https://github.com/Roxsmb/tailref/releases).
+- AUR, if someone packages it; Arch users can run the AppImage today.
+- A self-hosted Flatpak repository built from this manifest. Flathub's
+  submission rules do not apply outside Flathub, but the manifest still has to
+  be maintained by the project.
+
 ## Flathub submission checklist
 
 Before opening a pull request against
@@ -177,9 +240,9 @@ The pull request goes to a branch of your own fork named after the app ID
 (`com.tailref.studio`), with the manifest at the top level, next to
 `generated-sources.json` and `flathub.json`.
 
-Flathub's requirements state that AI tools must not open or automate
-submissions, and that manifests, commit messages and PR text must not be
-AI-generated. Write and open the pull request yourself.
+Flathub's requirements forbid AI-generated manifests and AI-opened pull
+requests, and reject projects with a very short history. Write and open the pull
+request yourself; see [Why not now, and when](#why-not-now-and-when).
 
 Do not describe TailRef as available on Flathub until the submission is merged
 and the app appears on <https://flathub.org>.
