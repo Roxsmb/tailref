@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AppStream metadata for TailRef Studio.
+
+  Prepared for the Flathub submission (docs/FLATPAK.md). Add a new <release>
+  entry for every tagged release; `flatpak-builder` and `appstreamcli validate`
+  both read this file.
+
+  Validate with:
+    appstreamcli validate flatpak/com.tailref.studio.metainfo.xml
+-->
+<component type="desktop-application">
+  <id>com.tailref.studio</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>TailRef Studio</name>
+  <summary>Reference board, drawing workspace and 3D posing tool for artists</summary>
+
+  <developer id="com.tailref">
+    <name>Emre Melik Nameli</name>
+  </developer>
+
+  <description>
+    <p>
+      TailRef Studio is a free, open-source desktop workspace for artists who
+      work from references. Everything lives in one offline project file.
+    </p>
+    <p>What you can do:</p>
+    <ul>
+      <li>Collect reference images on an infinite board and arrange them freely.</li>
+      <li>Draw over references with a pressure-sensitive ink engine, layers and a brush library.</li>
+      <li>Pose 3D models and match them against your reference.</li>
+      <li>Keep boards, drawings and poses together in a single .tail project.</li>
+      <li>Open .tail files by double-clicking them in your file manager.</li>
+    </ul>
+    <p>
+      No account and no internet connection are required. The optional
+      Pinterest, ArtStation and YouTube Music panels use the network only while
+      they are open.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">com.tailref.studio.desktop</launchable>
+
+  <url type="homepage">https://github.com/Roxsmb/tailref</url>
+  <url type="bugtracker">https://github.com/Roxsmb/tailref/issues</url>
+  <url type="vcs-browser">https://github.com/Roxsmb/tailref</url>
+  <url type="donation">https://www.buymeacoffee.com/roxsmb</url>
+  <url type="help">https://github.com/Roxsmb/tailref/blob/main/docs/LINUX_INSTALLATION.md</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Reference board with collected images</caption>
+      <image type="source">https://raw.githubusercontent.com/Roxsmb/tailref/main/docs/screenshots/board.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Posing a 3D model next to a reference</caption>
+      <image type="source">https://raw.githubusercontent.com/Roxsmb/tailref/main/docs/screenshots/pose3d.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Brush library</caption>
+      <image type="source">https://raw.githubusercontent.com/Roxsmb/tailref/main/docs/screenshots/brush-library.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Starting a new canvas</caption>
+      <image type="source">https://raw.githubusercontent.com/Roxsmb/tailref/main/docs/screenshots/new-canvas.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="1.4.3" date="2026-11-23"/>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+
+  <categories>
+    <category>Graphics</category>
+    <category>2DGraphics</category>
+  </categories>
+
+  <keywords>
+    <keyword>art</keyword>
+    <keyword>drawing</keyword>
+    <keyword>reference</keyword>
+    <keyword>3d</keyword>
+    <keyword>pose</keyword>
+    <keyword>sketch</keyword>
+  </keywords>
+
+  <provides>
+    <binary>tailref</binary>
+  </provides>
+</component>

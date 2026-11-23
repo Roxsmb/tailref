@@ -5,6 +5,9 @@
 TailRef ships as a portable executable and as a standard Windows installer.
 Both are built from the same source.
 
+> **Linux?** See [`LINUX_INSTALLATION.md`](LINUX_INSTALLATION.md) for AppImage,
+> deb and rpm instructions, `.tail` file associations and data locations.
+
 ### Portable build (recommended)
 
 1. Download `TailRef_Studio.exe` from the release page.
@@ -80,10 +83,12 @@ To start completely fresh, close TailRef and rename or remove
 
 - **Node.js 20 LTS** (18+ should work; CI uses 20).
 - **npm** (ships with Node).
-- Windows for packaging. The app itself can be developed on other platforms,
-  but the release targets and packaging scripts are Windows-only.
-- Optional: **Visual Studio Build Tools** with the C++ workload, only if you
-  want to build the optional `native/inkcore` kernel. The app runs without it.
+- Windows 10/11 or Linux x64 for packaging. Windows produces the NSIS installer
+  and the portable executable; Linux produces the AppImage, deb and rpm. The
+  Linux build must run on Linux (see [`LINUX_BUILD.md`](LINUX_BUILD.md)).
+- Optional: **Visual Studio Build Tools** with the C++ workload (Windows) or
+  `build-essential`/`make`/`python3` (Linux), only if you want to build the
+  optional `native/inkcore` kernel. The app runs without it.
 
 ### Steps
 

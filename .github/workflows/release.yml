@@ -1,38 +1,126 @@
-name: Build artifacts (manual)
+name: Release
 
-# This workflow NEVER publishes a release.
-# It builds the Windows artifacts and uploads them as workflow artifacts so a
-# maintainer can inspect and attach them to a GitHub Release by hand.
+# Publishing is driven by version tags. A normal tag (v1.4.2) is a stable
+# release; a tag with a prerelease suffix (v1.5.0-beta.1) is published as a
+# GitHub prerelease and is never offered to stable installations.
 #
-# See docs/RELEASE.md for the release checklist.
+# The build never publishes by itself: Windows and Linux artifacts are built
+# in separate jobs, verified, and only then attached to a single GitHub
+# Release. Any failed job stops the release job.
+#
+# Manual runs (`workflow_dispatch`) build and verify by default. Set
+# `publish: true` to also create the GitHub Release for an existing tag.
+#
+# Manual runs create a DRAFT release by default (`draft: true`): the assets are
+# uploaded and can be downloaded by the maintainer, but the release is not
+# listed and anonymous users cannot download the files. This is how a build is
+# tested on a real machine before it goes public. Publishing a draft later
+# keeps the same tag and the same assets; nothing is rebuilt.
+#
+# The same hidden-draft behaviour can be forced for a tag push by setting the
+# repository variable `TAILREF_RELEASE_DRAFT` to `true` before pushing the tag
+# (Settings -> Secrets and variables -> Actions -> Variables). Remove the
+# variable once the draft has been published, otherwise every later tag push
+# also produces a draft.
 
 on:
+  push:
+    tags:
+      - "v*.*.*"
   workflow_dispatch:
     inputs:
-      target:
-        description: "What to build"
-        type: choice
-        options:
-          - portable
-          - setup
-          - both
-        default: portable
+      tag:
+        description: "Existing tag to build and publish (for example v1.4.2)"
+        required: true
+        type: string
+      publish:
+        description: "Create the GitHub Release after every build passes"
+        required: false
+        default: false
+        type: boolean
+      draft:
+        description: "With publish: upload the release as a hidden draft (not listed, not downloadable by the public)"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: read
 
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "20"
+
 jobs:
-  build:
-    name: Windows build
-    runs-on: windows-latest
+  prepare:
+    name: Validate tag and version
+    runs-on: ubuntu-22.04
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+          persist-credentials: false
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Validate tag and version
+        id: meta
+        shell: bash
+        env:
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release tag: $TAG" >&2
+            exit 1
+          fi
+          VERSION="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "v$VERSION" ]; then
+            echo "Tag $TAG does not match package.json version v$VERSION" >&2
+            exit 1
+          fi
+          if ! grep -q "^## \[$VERSION\]" CHANGELOG.md; then
+            echo "CHANGELOG.md has no section for $VERSION" >&2
+            exit 1
+          fi
+          PRERELEASE=false
+          case "$TAG" in *-*) PRERELEASE=true ;; esac
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+            echo "prerelease=$PRERELEASE"
+          } >> "$GITHUB_OUTPUT"
+          echo "Releasing $TAG (prerelease: $PRERELEASE)"
+
+  test:
+    name: Gates, tests and Linux native build
+    needs: prepare
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare.outputs.tag }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Install dependencies
@@ -41,38 +129,383 @@ jobs:
       - name: Build renderer bundle
         run: node scripts/build-app.js
 
-      - name: Pure gate chain
+      - name: Verify bundle is reproducible
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain src/renderer/app.js)" ]; then
+            echo "src/renderer/app.js is out of date. Run: node scripts/build-app.js"
+            git --no-pager diff --stat src/renderer/app.js
+            exit 1
+          fi
+
+      - name: Static gates and update policy
         run: node scripts/run-gates.js
 
-      - name: Build portable
-        if: ${{ inputs.target == 'portable' || inputs.target == 'both' }}
-        run: npm run build:portable
+      - name: Production dependency audit
+        run: npm audit --omit=dev
 
-      - name: Build installer
-        if: ${{ inputs.target == 'setup' || inputs.target == 'both' }}
-        run: npm run build:setup
+      - name: Build the Linux native inkcore module
+        run: node scripts/build-native.js
 
-      - name: Verify packaged app.asar
-        run: npm run test:package
+  windows:
+    name: Build Windows artifacts
+    needs: prepare
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare.outputs.tag }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: All application tests
+        run: npm test
+
+      - name: Build the native inkcore module
+        run: node scripts/build-native.js
+
+      - name: Build Windows installer and portable
+        run: npx electron-builder --win nsis portable --publish never
+
+      - name: Verify packaged app
+        run: node scripts/verify-package.js dist/win-unpacked
+
+      - name: Validate update metadata
+        shell: pwsh
+        run: |
+          $version = "${{ needs.prepare.outputs.version }}"
+          $required = @(
+            "dist/TailRef_Studio_Setup.exe",
+            "dist/TailRef_Studio_Setup.exe.blockmap",
+            "dist/TailRef_Studio.exe",
+            "dist/latest.yml",
+            "dist/win-unpacked/resources/app-update.yml"
+          )
+          foreach ($file in $required) {
+            if (-not (Test-Path $file)) { throw "Missing release artifact: $file" }
+          }
+          $latest = Get-Content dist/latest.yml -Raw
+          if ($latest -notmatch "(?m)^version:\s*$([regex]::Escape($version))\s*$") {
+            throw "latest.yml version does not match $version"
+          }
+          if ($latest -notmatch "TailRef_Studio_Setup\.exe") {
+            throw "latest.yml does not reference the NSIS installer"
+          }
+          $updateYml = Get-Content dist/win-unpacked/resources/app-update.yml -Raw
+          if ($updateYml -notmatch "provider:\s*github") { throw "app-update.yml provider is not github" }
+          if ($updateYml -notmatch "owner:\s*Roxsmb") { throw "app-update.yml owner is not Roxsmb" }
+          if ($updateYml -notmatch "repo:\s*tailref") { throw "app-update.yml repo is not tailref" }
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            dist/TailRef_Studio_Setup.exe
+            dist/TailRef_Studio_Setup.exe.blockmap
+            dist/TailRef_Studio.exe
+            dist/latest.yml
+
+  linux:
+    name: Build and validate Linux artifacts
+    needs: prepare
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare.outputs.tag }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential python3 make rpm xvfb libfuse2
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build renderer bundle
+        run: node scripts/build-app.js
+
+      - name: Build the native inkcore module
+        run: node scripts/build-native.js
+
+      - name: Build AppImage, deb and rpm
+        run: npx electron-builder --linux AppImage deb rpm --publish never
+
+      - name: Verify packaged app
+        run: node scripts/verify-package.js dist/linux-unpacked
+
+      - name: Reject Windows binaries in the Linux payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          leaked="$(find dist/linux-unpacked -type f \
+            \( -name '*.exe' -o -name '*.dll' -o -name '*.ico' \) || true)"
+          if [ -n "$leaked" ]; then
+            echo "Windows binaries found in the Linux package:" >&2
+            echo "$leaked" >&2
+            exit 1
+          fi
+          echo "Linux payload contains no Windows binaries."
+
+      - name: Validate Linux artifact names and metadata
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          APPIMAGE="dist/TailRef-${VERSION}.AppImage"
+          DEB="dist/tailref_${VERSION}_amd64.deb"
+          RPM="dist/tailref-${VERSION}.x86_64.rpm"
+          for f in "$APPIMAGE" "$DEB" "$RPM"; do
+            if [ ! -f "$f" ]; then echo "Missing artifact: $f" >&2; exit 1; fi
+            echo "OK $f ($(stat -c%s "$f") bytes)"
+          done
+
+          echo "--- deb control ---"
+          dpkg-deb -I "$DEB"
+          dpkg-deb -c "$DEB" | grep -qE '/opt/.*/tailref$'
+          dpkg-deb -c "$DEB" | grep -q 'usr/share/applications/tailref\.desktop'
+          dpkg-deb -c "$DEB" | grep -q 'usr/share/mime/packages/tailref\.xml'
+          dpkg-deb -c "$DEB" | grep -q 'icons/hicolor/512x512/apps/tailref\.png'
+          DEB_DIR="$(mktemp -d)"
+          dpkg-deb -x "$DEB" "$DEB_DIR"
+          grep -q '^MimeType=application/x-tailref-board;$' "$DEB_DIR/usr/share/applications/tailref.desktop"
+          grep -qE '^Exec="?/opt/.*/tailref"? %U$' "$DEB_DIR/usr/share/applications/tailref.desktop"
+          grep -q '^StartupWMClass=tailref$' "$DEB_DIR/usr/share/applications/tailref.desktop"
+          grep -q 'application/x-tailref-board' "$DEB_DIR/usr/share/mime/packages/tailref.xml"
+          if dpkg-deb -c "$DEB" | grep -qE '\.(exe|dll|ico)$'; then
+            echo "Windows files leaked into the deb" >&2
+            exit 1
+          fi
+          rm -rf "$DEB_DIR"
+
+          echo "--- rpm metadata ---"
+          rpm -qip "$RPM"
+          rpm -qlp "$RPM" | grep -qE '/opt/.*/tailref$'
+          rpm -qlp "$RPM" | grep -q 'usr/share/applications/tailref\.desktop'
+          rpm -qlp "$RPM" | grep -q 'usr/share/mime/packages/tailref\.xml'
+          if rpm -qlp "$RPM" | grep -qE '\.(exe|dll|ico)$'; then
+            echo "Windows files leaked into the rpm" >&2
+            exit 1
+          fi
+
+          echo "--- AppImage payload ---"
+          rm -rf squashfs-root
+          "$APPIMAGE" --appimage-extract >/dev/null
+          desktop="$(ls squashfs-root/*.desktop | head -n 1)"
+          grep -q '^MimeType=application/x-tailref-board;$' "$desktop"
+          grep -qE '^Exec=AppRun( |$)' "$desktop"
+          test -f squashfs-root/usr/share/icons/hicolor/512x512/apps/tailref.png
+          test -f squashfs-root/usr/share/mime/packages/tailref.xml
+          rm -rf squashfs-root
+          echo "Linux artifacts validated."
+
+      - name: Install, inspect and remove the deb package
+        run: |
+          set -euo pipefail
+          VERSION="${{ needs.prepare.outputs.version }}"
+          sudo apt-get install -y "./dist/tailref_${VERSION}_amd64.deb"
+          find /opt -maxdepth 3 -name tailref -type f | head -n 1
+          test -f /usr/share/mime/packages/tailref.xml
+          grep -q 'application/x-tailref-board' /usr/share/mime/packages/tailref.xml
+          grep -rl 'MimeType=application/x-tailref-board' /usr/share/applications/ | head -n 1
+          printf '{"probe":true}' > /tmp/tailref-association-probe.tail
+          test "$(xdg-mime query filetype /tmp/tailref-association-probe.tail)" = "application/x-tailref-board"
+          sudo apt-get remove -y tailref
+          test ! -f /usr/share/mime/packages/tailref.xml
+          echo "deb install, .tail association and removal verified."
+
+      - name: Smoke-launch the AppImage under Xvfb
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          APPIMAGE="dist/TailRef-${VERSION}.AppImage"
+          chmod +x "$APPIMAGE"
+          set +e
+          xvfb-run -a --server-args="-screen 0 1280x800x24" \
+            timeout 25s "$APPIMAGE" --appimage-extract-and-run --no-sandbox --disable-gpu \
+            > /tmp/tailref-appimage.log 2>&1
+          code=$?
+          set -e
+          cat /tmp/tailref-appimage.log
+          if [ "$code" -ne 124 ]; then
+            echo "AppImage exited before the timeout (exit $code)" >&2
+            exit 1
+          fi
+          echo "AppImage stayed alive for 25s."
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            dist/TailRef-*.AppImage
+            dist/tailref_*.deb
+            dist/tailref-*.rpm
+
+  release:
+    name: Create GitHub Release (draft or published)
+    needs: [prepare, test, windows, linux]
+    if: github.event_name == 'push' || inputs.publish
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare.outputs.tag }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Download all release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: "*-release"
+          merge-multiple: true
 
       - name: Write checksums
         shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
         run: |
+          set -euo pipefail
           cd dist
-          sha256sum *.exe > SHA256SUMS.txt || true
+          if [ -e latest-linux.yml ]; then
+            echo "latest-linux.yml must not be published: Linux has no in-app updater" >&2
+            exit 1
+          fi
+          ls -la
+          sha256sum \
+            TailRef_Studio_Setup.exe \
+            TailRef_Studio_Setup.exe.blockmap \
+            TailRef_Studio.exe \
+            latest.yml \
+            "TailRef-${VERSION}.AppImage" \
+            "tailref_${VERSION}_amd64.deb" \
+            "tailref-${VERSION}.x86_64.rpm" \
+            > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: tailref-windows
-          if-no-files-found: error
-          path: |
-            dist/*.exe
-            dist/SHA256SUMS.txt
+      - name: Generate release notes
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: node scripts/release-notes.js --version "$VERSION" --out dist/RELEASE_NOTES.md
 
-      - name: Reminder
+      - name: Create GitHub Release
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+          DRAFT: ${{ (github.event_name == 'workflow_dispatch' && inputs.draft) || vars.TAILREF_RELEASE_DRAFT == 'true' }}
+          EVENT: ${{ github.event_name }}
         run: |
-          echo "Artifacts uploaded. This workflow did not create or publish a release."
-          echo "Follow docs/RELEASE.md to create the GitHub Release manually."
+          set -euo pipefail
+          if [ "$DRAFT" = "true" ] && [ "$EVENT" != "workflow_dispatch" ]; then
+            echo "::warning::Draft release forced by repository variable TAILREF_RELEASE_DRAFT=true"
+          fi
+          args=(
+            "$TAG"
+            dist/TailRef_Studio_Setup.exe
+            dist/TailRef_Studio_Setup.exe.blockmap
+            dist/TailRef_Studio.exe
+            dist/latest.yml
+            "dist/TailRef-${VERSION}.AppImage"
+            "dist/tailref_${VERSION}_amd64.deb"
+            "dist/tailref-${VERSION}.x86_64.rpm"
+            dist/SHA256SUMS.txt
+          )
+          if [ "$DRAFT" = "true" ]; then
+            gh release create "${args[@]}" \
+              --title "TailRef Studio $TAG" \
+              --notes-file dist/RELEASE_NOTES.md \
+              --draft --verify-tag
+          elif [ "$PRERELEASE" = "true" ]; then
+            gh release create "${args[@]}" \
+              --title "TailRef Studio $TAG" \
+              --notes-file dist/RELEASE_NOTES.md \
+              --prerelease --verify-tag
+          else
+            gh release create "${args[@]}" \
+              --title "TailRef Studio $TAG" \
+              --notes-file dist/RELEASE_NOTES.md \
+              --latest --verify-tag
+          fi
+
+      - name: Verify release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+          DRAFT: ${{ (github.event_name == 'workflow_dispatch' && inputs.draft) || vars.TAILREF_RELEASE_DRAFT == 'true' }}
+        run: |
+          set -euo pipefail
+          expected=(
+            "TailRef_Studio_Setup.exe"
+            "TailRef_Studio_Setup.exe.blockmap"
+            "TailRef_Studio.exe"
+            "latest.yml"
+            "TailRef-${VERSION}.AppImage"
+            "tailref_${VERSION}_amd64.deb"
+            "tailref-${VERSION}.x86_64.rpm"
+            "SHA256SUMS.txt"
+          )
+          assets="$(gh release view "$TAG" --json assets --jq '.assets[].name')"
+          for name in "${expected[@]}"; do
+            if ! grep -qx "$name" <<< "$assets"; then
+              echo "Release is missing asset: $name" >&2
+              exit 1
+            fi
+          done
+          is_pre="$(gh release view "$TAG" --json isPrerelease --jq '.isPrerelease')"
+          if [ "$is_pre" != "$PRERELEASE" ]; then
+            echo "Prerelease flag mismatch: expected $PRERELEASE, got $is_pre" >&2
+            exit 1
+          fi
+          is_draft="$(gh release view "$TAG" --json isDraft --jq '.isDraft')"
+          if [ "$is_draft" != "$DRAFT" ]; then
+            echo "Draft flag mismatch: expected $DRAFT, got $is_draft" >&2
+            exit 1
+          fi
+          if [ "$is_draft" = "true" ]; then
+            echo "Release $TAG is a hidden draft: publish it from the GitHub UI when the test build is accepted."
+          fi
+          echo "Release $TAG verified with $(wc -l <<< "$assets") assets."

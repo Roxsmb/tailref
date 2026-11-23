@@ -1,21 +1,37 @@
 ﻿'use strict';
-/* Paketlenmiş .exe içindeki app.asar'ı yerel kaynaklarla karşılaştırır.
-   Uygulamayı başlatmadan, derlemenin güncel kodu içerdiğini doğrular.
-   Kullanım: node scripts/verify-package.js */
+/* Paketlenmiş uygulamadaki app.asar'ı yerel kaynaklarla karşılaştırır
+   (Windows, Linux ve macOS paketleri). Uygulamayı başlatmadan, derlemenin
+   güncel kodu içerdiğini doğrular.
+   Kullanım: node scripts/verify-package.js [app.asar | *-unpacked dizini] */
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const asar = require('@electron/asar');
 
 const ROOT = path.join(__dirname, '..');
-// Build dizin çıktısı: package.json `build.directories.output` = dist
-const archiveCandidates = ['dist']
-  .map(dir => path.join(ROOT, dir, 'win-unpacked', 'resources', 'app.asar'))
-  .filter(f => fs.existsSync(f));
+/* Build çıktısı: package.json `build.directories.output` = dist
+   Platforma göre paketlenmemiş dizin: Windows, Linux veya macOS.
+   İsteğe bağlı ilk argüman: app.asar ya da *-unpacked dizini. */
+const UNPACKED_DIRS = ['win-unpacked', 'linux-unpacked', 'mac', 'mac-arm64'];
+function candidateArchives() {
+  const explicit = process.argv[2];
+  if (explicit) {
+    const resolved = path.resolve(explicit);
+    const asarPath = fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()
+      ? path.join(resolved, 'resources', 'app.asar')
+      : resolved;
+    return [asarPath];
+  }
+  return UNPACKED_DIRS
+    .map(dir => path.join(ROOT, 'dist', dir, 'resources', 'app.asar'))
+    .filter(f => fs.existsSync(f));
+}
+const archiveCandidates = candidateArchives();
 if (!archiveCandidates.length) {
-  throw new Error('app.asar bulunamadi (dist)');
+  throw new Error('app.asar bulunamadi (dist/win-unpacked, dist/linux-unpacked veya dist/mac*)');
 }
 const ARCHIVE = archiveCandidates[0];
+console.log('paket: ' + path.relative(ROOT, ARCHIVE));
 // package.json electron-builder tarafından sadeleştirilir; ayrı doğrulanır.
 const FILES = [
   'src/renderer/app.js',
@@ -34,6 +50,27 @@ const sha = buf => crypto.createHash('sha256').update(buf).digest('hex');
 const read = file => fs.readFileSync(path.join(ROOT, file));
 /* @electron/asar Windows'ta ters eğik çizgili yollar ister */
 const archivePath = f => f.split('/').join(path.sep);
+
+/* Paket dizininden hedef platformun ikili biçimini çıkar. */
+function expectedFormat(unpackedDir) {
+  const base = path.basename(unpackedDir).toLowerCase();
+  if (base.startsWith('win')) return 'pe';
+  if (base.startsWith('linux')) return 'elf';
+  if (base.startsWith('mac')) return 'macho';
+  return null;
+}
+
+/* İlk baytlardan ikili biçim: PE (MZ), ELF, Mach-O. */
+function binaryFormat(head) {
+  if (head.length >= 2 && head[0] === 0x4d && head[1] === 0x5a) return 'pe';
+  if (head.length >= 4 && head[0] === 0x7f && head[1] === 0x45 &&
+      head[2] === 0x4c && head[3] === 0x46) return 'elf';
+  const magic = head.length >= 4 ? head.readUInt32BE(0) : 0;
+  if ([0xfeedface, 0xfeedfacf, 0xcefaedfe, 0xcffaedfe, 0xcafebabe].includes(magic)) {
+    return 'macho';
+  }
+  return null;
+}
 
 (async () => {
   if (!fs.existsSync(ARCHIVE)) throw new Error('app.asar bulunamadı: ' + ARCHIVE);
@@ -59,6 +96,26 @@ const archivePath = f => f.split('/').join(path.sep);
     }
     const same = sha(packed) === sha(read(file));
     console.log(`${same ? 'OK  ' : 'FAIL'} ${file} · ${(packed.length / 1024).toFixed(1)} KB`);
+    if (!same) fail += 1;
+  }
+
+  /* Yerel modül hedef platformun ikilisi mi?
+     Windows'ta üretilmiş bir inkcore.node Linux paketine girerse uygulama
+     sessizce JS yoluna düşer; bu kontrol onu paket hatası sayar.
+     Modül yoksa sorun değil: JS yedeği zaten desteklenen yol. */
+  const unpackedDir = path.dirname(path.dirname(ARCHIVE));
+  const nativePath = path.join(unpackedDir, 'resources', 'app.asar.unpacked',
+    'native', 'inkcore', 'build', 'Release', 'inkcore.node');
+  const expected = expectedFormat(unpackedDir);
+  if (!fs.existsSync(nativePath)) {
+    console.log('OK   native/inkcore · yok (JS yedeği kullanılır)');
+  } else if (!expected) {
+    console.log('OK   native/inkcore · platform tanınmadı, biçim denetlenmedi');
+  } else {
+    const actual = binaryFormat(fs.readFileSync(nativePath).subarray(0, 8));
+    const same = actual === expected;
+    console.log(`${same ? 'OK  ' : 'FAIL'} native/inkcore · ${actual || 'bilinmeyen'}`
+      + ` (beklenen ${expected})`);
     if (!same) fail += 1;
   }
 

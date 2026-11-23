@@ -3,6 +3,54 @@
 Format bu repo için sadeleştirilmiş Keep a Changelog'dur; sürümler
 [SemVer] mantığıyla (MAJOR.MINOR.PATCH) ilerler.
 
+## [Unreleased]
+
+## [1.4.3] — 2026-11-23
+
+### Added — Linux desteği
+
+- **Linux paketleri:** x86_64 için AppImage, deb ve rpm hedefleri
+  (`TailRef-<sürüm>.AppImage`, `tailref_<sürüm>_amd64.deb`,
+  `tailref-<sürüm>.x86_64.rpm`). electron-builder yapılandırması
+  `build.linux`, `build.appImage`, `build.deb` ve `build.rpm` altında.
+- **Masaüstü bütünleşmesi:** menü girdisi, 512×512 simge, `Graphics`
+  kategorisi ve `application/x-tailref-board` MIME türü. deb/rpm kurulumunda
+  `.tail` dosyaları çift tıkla açılır; `shared-mime-info` ve
+  `desktop-file-utils` paket tetikleyicileri kaydı otomatik yapar.
+- **Pencere ve dosya uyumu:** Linux'ta PNG simge kullanılır, Wayland için
+  `--ozone-platform-hint=auto` etkinleştirilir ve masaüstü girdisinin
+  gönderdiği `file://` URI'leri `.tail` yolu olarak çözülür.
+- **Yerel modül:** `scripts/build-native.js` Linux/macOS araç zincirini
+  (cc/gcc/clang, make, python3) algılar, `process.arch` ile derler ve
+  `TAILREF_NODEDIR` ile çevrimdışı başlık kullanımını destekler. Modül
+  derlenemezse JavaScript yedeği devreye girer.
+- **Güncelleme politikası:** Linux'ta uygulama içi güncelleme kapalıdır
+  (`reason = 'platform'`); Windows kurulum paketi Linux'a asla indirilmez.
+  Güncellemeler paket yöneticisi veya yeni AppImage ile yapılır.
+- **Yayın hattı:** `release.yml` artık `prepare`, `test`, `windows`, `linux`
+  ve `release` işlerine ayrıldı. Windows ve Linux ayrı koşucularda derlenir,
+  paket içerikleri doğrulanır, `SHA256SUMS.txt` üretilir ve ancak tüm işler
+  yeşilse GitHub Release oluşturulur. `latest-linux.yml` bilinçli olarak
+  yayınlanmaz.
+- **Sürüm notları:** `scripts/release-notes.js`, işletim sistemine göre
+  ayrılmış indirmeler, gereksinimler, sağlama toplamları, bilinen sınırlar,
+  yükseltme ve sorun giderme bölümleriyle `dist/RELEASE_NOTES.md` üretir.
+- **Flatpak hazırlığı:** `flatpak/` altında Flathub manifesti, AppStream
+  metadatası, masaüstü girdisi, `zypak` başlatıcısı ve sabitlenmiş npm/Electron
+  kaynakları. Flathub'a gönderim yapılmadı; yayınlanmış gibi gösterilmemeli.
+- **Belgeler:** `docs/LINUX_BUILD.md`, `docs/LINUX_INSTALLATION.md`,
+  `docs/RELEASE_PROCESS.md` ve `docs/FLATPAK.md`; README indirme tablosu ve
+  SSS Linux'u kapsayacak şekilde güncellendi.
+- **CI:** Ubuntu üzerinde saf kapılar, Linux paketleme ve AppImage/Xvfb
+  duman testi eklendi.
+
+### Changed
+
+- **`.tail` dosya türü açıklaması:** dosya ilişkilendirmesi artık
+  "TailRef Studio document" açıklamasını taşıyor. Windows Gezgini'nin
+  "Tür" sütunu ve Linux'un "Birlikte aç" listesi bu adı gösterir. Açma
+  komutu, simge ve uzantı kaydı değişmedi.
+
 ## [1.4.2] — 2026-11-21
 
 ### Added — otomatik güncelleme

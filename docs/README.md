@@ -7,7 +7,8 @@ material; some of it is historical and written in Turkish.
 
 | Document | What it covers |
 |---|---|
-| [`INSTALLATION.md`](INSTALLATION.md) | Installing the portable build or the installer, data locations, checksums, troubleshooting |
+| [`INSTALLATION.md`](INSTALLATION.md) | Installing the Windows portable build or installer, data locations, checksums, troubleshooting |
+| [`LINUX_INSTALLATION.md`](LINUX_INSTALLATION.md) | Installing the AppImage, deb or rpm on Linux, menu and `.tail` integration, data locations |
 | [`FEATURES.md`](FEATURES.md) | What the app actually does today, including known limitations |
 | [`DEVELOPMENT.md`](DEVELOPMENT.md) | Prerequisites, commands, testing, debugging, code style |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | How the main process, renderer, persistence and drawing engine fit together |
@@ -18,6 +19,9 @@ material; some of it is historical and written in Turkish.
 | Document | What it covers |
 |---|---|
 | [`RELEASE.md`](RELEASE.md) | Versioning, automatic updates, release pipeline, rollback |
+| [`RELEASE_PROCESS.md`](RELEASE_PROCESS.md) | The cross-platform tagged release pipeline: jobs, artifacts, checksums, manual test builds |
+| [`LINUX_BUILD.md`](LINUX_BUILD.md) | Building the AppImage, deb and rpm locally, native module, verification |
+| [`FLATPAK.md`](FLATPAK.md) | The Flathub-ready Flatpak manifest, sandbox permissions and submission checklist |
 | [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) | Short pre-flight list before a build |
 | [`PROJECT_AUDIT.md`](PROJECT_AUDIT.md) | The pre-publication audit: findings and resolutions |
 | [`LICENSE_MIGRATION.md`](LICENSE_MIGRATION.md) | The 2026 relicensing to GPL-3.0-or-later: audit, compatibility notes, open questions |

@@ -30,7 +30,7 @@ const html = read('src/renderer/index.html');
 const css = read('src/renderer/style.css');
 
 /* --- version / publisher agreement --- */
-ok('version is 1.4.2', pkg.version === '1.4.2', pkg.version);
+ok('version is 1.4.3', pkg.version === '1.4.3', pkg.version);
 ok('GitHub publisher configured',
   Array.isArray(pkg.build.publish) && pkg.build.publish.length === 1 &&
   pkg.build.publish[0].provider === 'github');

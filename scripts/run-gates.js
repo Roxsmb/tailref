@@ -55,6 +55,8 @@ const PURE = [
   'ui-package-validate.js',
   /* Belgeler: README/docs içindeki yerel bağlantılar gerçekten var mı? */
   'doc-links-test.js',
+  /* Linux paketleme: hedefler, ikon, MIME, Flatpak, yayın hattı. */
+  'linux-packaging-test.js',
   'verify-package.js',
 ];
 const FULL_EXTRA = [
@@ -149,13 +151,16 @@ function run(file) {
   const chain = full ? PURE.concat(FULL_EXTRA) : PURE;
   /* Paket kapısı derlenmiş bir app.asar ister. Temiz bir klonda (ve CI'da)
      dist/ yoktur; bu durumda kapıyı yalancı kırmızıya düşürmek yerine
-     açıkça atla. Yerelde paket varsa her zaman koşar. */
-  const PACKAGE_ASAR = path.join(ROOT, 'dist', 'win-unpacked', 'resources', 'app.asar');
+     açıkça atla. Yerelde paket varsa her zaman koşar. Platform dizini
+     Windows, Linux veya macOS olabilir. */
+  const PACKAGE_ASARS = ['win-unpacked', 'linux-unpacked', 'mac', 'mac-arm64']
+    .map(dir => path.join(ROOT, 'dist', dir, 'resources', 'app.asar'));
+  const PACKAGE_ASAR = PACKAGE_ASARS.find(p => fs.existsSync(p));
   let pass = 0;
   let skipped = 0;
   for (const gate of chain) {
-    if (gate === 'verify-package.js' && !fs.existsSync(PACKAGE_ASAR)) {
-      console.log('ATLANDI ' + gate + ' (dist/win-unpacked/resources/app.asar yok)');
+    if (gate === 'verify-package.js' && !PACKAGE_ASAR) {
+      console.log('ATLANDI ' + gate + ' (dist/*-unpacked/resources/app.asar yok)');
       skipped++;
       continue;
     }

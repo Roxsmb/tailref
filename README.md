@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download for Windows 10 and 11" src="https://img.shields.io/badge/Download-Windows%2010%20%7C%2011-2F6FB0?style=for-the-badge&logo=windows11&logoColor=white"></a>
-  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.2" src="https://img.shields.io/badge/version-1.4.2-1F6FEB?style=for-the-badge"></a>
+  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download TailRef Studio for Windows and Linux" src="https://img.shields.io/badge/Download-Windows%20%7C%20Linux-2F6FB0?style=for-the-badge&logo=linux&logoColor=white"></a>
+  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.2" src="https://img.shields.io/badge/version-1.4.3-1F6FEB?style=for-the-badge"></a>
   <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-2F6FB0?style=for-the-badge"></a>
   <a href="https://www.buymeacoffee.com/roxsmb"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
 </p>
@@ -15,7 +15,7 @@
 
 <p align="center">
   <strong>Collect references. Draw over them. Pose them in 3D.</strong><br>
-  Free for Windows 10/11 x64 · no account, no cloud, no telemetry.
+  Free for Windows 10/11 and Linux x64 · no account, no cloud, no telemetry.
 </p>
 
 <p align="center">
@@ -224,9 +224,12 @@ Get the latest build from the
 
 | File | What it is |
 |---|---|
-| `TailRef_Studio.exe` | Portable build. Run it from any folder; no installation or admin rights. |
+| `TailRef_Studio.exe` | Portable Windows build. Run it from any folder; no installation or admin rights. |
 | `TailRef_Studio_Setup.exe` | Windows installer with optional desktop and Start Menu shortcuts. |
-| `SHA256SUMS.txt` | SHA-256 checksums for both executables. |
+| `TailRef-<version>.AppImage` | Linux AppImage. One file, no installation. |
+| `tailref_<version>_amd64.deb` | Debian/Ubuntu package. Adds the menu entry and `.tail` association. |
+| `tailref-<version>.x86_64.rpm` | Fedora/openSUSE package. Adds the menu entry and `.tail` association. |
+| `SHA256SUMS.txt` | SHA-256 checksums for every file above. |
 
 Official builds are published on this repository's Releases page. Because
 TailRef is open source, other people may also build and share it under the GPL;
@@ -235,15 +238,22 @@ build you download.
 
 ### Run it
 
-1. Download the portable executable or the installer.
-2. For the portable build, put it anywhere you control and run it.
-3. For the installer, run the wizard and choose an install directory.
+1. Download the build for your system.
+2. **Windows:** run the portable `.exe`, or the installer and follow the wizard.
+3. **Linux:** `chmod +x TailRef-<version>.AppImage && ./TailRef-<version>.AppImage`,
+   or `sudo apt install ./tailref_<version>_amd64.deb`, or
+   `sudo dnf install ./tailref-<version>.x86_64.rpm`.
 
-Uninstalling does not delete your projects.
+Uninstalling does not delete your projects. Linux details, including AppImage
+menu integration and `.tail` associations, are in
+[`docs/LINUX_INSTALLATION.md`](docs/LINUX_INSTALLATION.md).
 
 ### Requirements
 
-- Windows 10 or 11, 64-bit.
+- **Windows:** Windows 10 or 11, 64-bit.
+- **Linux:** x86_64, glibc 2.25 or newer (Ubuntu 20.04+, Debian 11+,
+  Fedora 32+; Ubuntu 22.04 and 24.04 tested), GTK 3 and a working OpenGL
+  driver.
 - A GPU and driver that support the Chromium version bundled with Electron 45.
 - No internet connection required. The Pinterest, ArtStation and YouTube Music
   panels need internet only when you open them.
@@ -259,6 +269,11 @@ Verify a download before running it:
 Get-FileHash .\TailRef_Studio.exe -Algorithm SHA256
 ```
 
+```bash
+sha256sum TailRef-1.4.3.AppImage
+sha256sum -c SHA256SUMS.txt --ignore-missing   # the files you downloaded
+```
+
 Compare the result with `SHA256SUMS.txt` on the release page. If the values
 differ, do not run the file.
 
@@ -266,13 +281,17 @@ differ, do not run the file.
 
 | Data | Location |
 |---|---|
-| Settings, projects, brushes | `%APPDATA%\TailRef\` |
-| Automatic backups | `%APPDATA%\TailRef\Backups\` |
-| Known-good backup copy | `%APPDATA%\TailRef\Backups\good\` |
+| Settings, projects, brushes (Windows) | `%APPDATA%\TailRef\` |
+| Settings, projects, brushes (Linux) | `~/.config/TailRef/` |
+| Automatic backups (Windows) | `%APPDATA%\TailRef\Backups\` |
+| Automatic backups (Linux) | `~/.config/TailRef/Backups/` |
+| Known-good backup copy | `Backups/good/` inside the folder above |
 | Manual project files | wherever you save `.tail` files |
 
-Copying the `.exe` does not copy your work. Full details, including
-troubleshooting, are in [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
+Copying the `.exe` or the AppImage does not copy your work. Full details,
+including troubleshooting, are in [`docs/INSTALLATION.md`](docs/INSTALLATION.md)
+for Windows and [`docs/LINUX_INSTALLATION.md`](docs/LINUX_INSTALLATION.md) for
+Linux.
 
 ## Support TailRef
 
@@ -313,7 +332,7 @@ belong to the same project:
 | Draw on top of references | No | Ink engine, layers, masks, selection and `.abr` brushes |
 | 3D pose and lighting reference | No | Pose3D mannequin, FBX/GLTF/OBJ import, 8K captures |
 | Finish without leaving the app | No | Non-destructive FX stack and PDF/image export |
-| Platforms | Windows, macOS, Linux | Windows 10/11 x64 |
+| Platforms | Windows, macOS, Linux | Windows 10/11 and Linux x64 |
 
 In short: choose a dedicated reference board for a pure pinboard, and TailRef
 when you want the reference board, the drawing workspace and the 3D posing
@@ -323,9 +342,9 @@ studio to share one project and one file.
 
 ### What is TailRef?
 
-A Windows desktop app for collecting reference images, drawing over them and
-posing a 3D mannequin. It combines a reference board, an ink engine, a brush
-library and a 3D posing module in one project.
+A desktop app for Windows and Linux for collecting reference images, drawing
+over them and posing a 3D mannequin. It combines a reference board, an ink
+engine, a brush library and a 3D posing module in one project.
 
 ### Is TailRef free?
 
@@ -342,8 +361,10 @@ it. See [`LICENSE-FAQ.md`](LICENSE-FAQ.md).
 
 ### Does TailRef work on macOS or Linux?
 
-No. TailRef targets Windows 10/11 x64. macOS, Linux and ARM64 Windows builds are
-not planned.
+TailRef runs on Windows 10/11 and on Linux x86_64 (AppImage, deb, rpm). macOS
+and ARM64 builds are not planned. On Linux, automatic in-app updates are
+disabled; update through your package manager or by replacing the AppImage. See
+[`docs/LINUX_INSTALLATION.md`](docs/LINUX_INSTALLATION.md).
 
 ### Does TailRef need an internet connection?
 
@@ -376,7 +397,8 @@ checksum before running any build.
 ### How do I report a bug or request a feature?
 
 Open an issue using the bug report or feature request template. Include your
-TailRef version, Windows version and clear reproduction steps. Do not attach
+TailRef version, your operating system and version, and clear reproduction
+steps. Do not attach
 private artwork or project files unless they are required to reproduce the
 problem. Security issues should be reported privately — see
 [`SECURITY.md`](SECURITY.md).
@@ -390,7 +412,7 @@ their work. Contributions are accepted under GPL-3.0-or-later
 
 ## Roadmap
 
-TailRef 1.4.2 is the current release. The near-term work is:
+TailRef 1.4.3 is the current release. The near-term work is:
 
 - ink-engine polish and the remaining parity items tracked in
   [`docs/INK_STATUS.md`](docs/INK_STATUS.md);
@@ -400,21 +422,26 @@ TailRef 1.4.2 is the current release. The near-term work is:
 - closing the remaining localization gaps.
 
 The installed NSIS build updates itself from GitHub Releases; the portable
-`.exe` stays a manual download. Update checks never block startup, downloads
-only start when you ask, and the app saves your work before restarting.
-See [`docs/RELEASE.md`](docs/RELEASE.md) for the channel and release rules.
+`.exe` stays a manual download. Linux builds do not update themselves: the
+updater is disabled instead of installing a Windows package, and updates come
+from the package manager or a fresh AppImage. Update checks never block
+startup, downloads only start when you ask, and the app saves your work before
+restarting. See [`docs/RELEASE.md`](docs/RELEASE.md) for the channel and
+release rules.
 
 Under consideration: code signing, enabling the native
 ink kernel by default, more Pose3D capture passes, and community themes and UI
-packages. Not planned: macOS/Linux builds, cloud sync, accounts, telemetry, a
-plugin marketplace, mobile/web builds, paid tiers or ads.
+packages. Not planned: macOS and ARM64 builds, cloud sync, accounts, telemetry,
+a plugin marketplace, mobile/web builds, paid tiers or ads.
 
 The full list, with the difference between next, considering and not planned, is
 in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Development
 
-Requirements: **Node.js 20 LTS** (18+ works) and npm. Packaging targets Windows.
+Requirements: **Node.js 20 LTS** (18+ works) and npm. Packaging targets Windows
+and Linux; the Linux build needs a Linux host (see
+[`docs/LINUX_BUILD.md`](docs/LINUX_BUILD.md)).
 
 ```bash
 git clone https://github.com/Roxsmb/tailref.git
@@ -428,10 +455,11 @@ npm start
 hand.
 
 ```bash
-npm run gates        # fast chain: 19 pure gates
+npm run gates        # fast chain: 20 pure gates
 npm run gates:full   # full chain: 74 gates (Electron + CDP, slow)
 npm run build:portable
 npm run build:setup
+npm run build:linux  # AppImage + deb + rpm (Linux host)
 npm run test:package # verifies app.asar against the working tree
 ```
 

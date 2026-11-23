@@ -1,0 +1,89 @@
+# TailRef Studio — Flatpak manifest
+#
+# This manifest is prepared for a Flathub submission. It is NOT published on
+# Flathub: until a submission is accepted, no Flatpak bundle is attached to a
+# GitHub release and `flatpak install com.tailref.studio` does not work.
+#
+# Build locally (Linux, flatpak-builder installed):
+#
+#   flatpak-builder --user --install --force-clean build-dir flatpak/com.tailref.studio.yml
+#   flatpak run com.tailref.studio
+#
+# See docs/FLATPAK.md for the submission checklist.
+#
+# IMPORTANT: `tag:` must point at a release tag that contains the Linux
+# packaging files (build/icon.png, build/linux/, flatpak/). The v1.4.2 tag
+# predates them, so this manifest targets v1.4.3 or later. Update the tag when
+# a newer release exists (the sha256 values in flatpak/generated-sources.json
+# are already pinned to the Electron and npm versions in package-lock.json).
+
+app-id: com.tailref.studio
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  # npm/node are not part of the Freedesktop SDK; the Electron base app does not
+  # provide the npm toolchain either. Node 20 matches package.json / CI.
+  - org.freedesktop.Sdk.Extension.node20
+base: org.electronjs.Electron2.BaseApp
+base-version: '24.08'
+command: tailref
+separate-locales: false
+
+finish-args:
+  # Electron/Chromium requirements.
+  - --share=ipc
+  - --device=dri
+  - --socket=wayland
+  - --socket=fallback-x11
+  # Online reference panels (Pinterest, ArtStation, YouTube Music).
+  - --share=network
+  # Audio playback inside the YouTube Music panel.
+  - --socket=pulseaudio
+  # Desktop notifications and the system file chooser.
+  - --talk-name=org.freedesktop.Notifications
+  # Boards and reference images are opened from anywhere in the home
+  # directory and saved back there. Electron's GTK file dialog runs inside
+  # the sandbox, so the portal alone is not enough.
+  - --filesystem=home
+  # External drives used for reference material.
+  - --filesystem=/media
+  - --filesystem=/run/media
+
+modules:
+  - name: tailref
+    buildsystem: simple
+    build-options:
+      env:
+        PATH: /usr/lib/sdk/node20/bin:/app/bin:/usr/bin
+        npm_config_cache: /run/build/tailref/flatpak-node/npm-cache
+        npm_config_offline: 'true'
+        npm_config_audit: 'false'
+        npm_config_fund: 'false'
+        # electron-builder reads the Electron zip from here instead of
+        # downloading it; the zip is declared in generated-sources.json.
+        ELECTRON_CACHE: /run/build/tailref/flatpak-node/cache/electron
+        ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+        # node-gyp builds against the declared Electron headers archive.
+        TAILREF_NODEDIR: /run/build/tailref/flatpak-node/cache/node-gyp/45.4.1
+    build-commands:
+      - npm ci --no-audit --no-fund
+      - node scripts/build-app.js
+      - node scripts/build-native.js
+      - ./node_modules/.bin/electron-builder --linux dir --publish never
+      - install -d /app/tailref
+      - cp -a dist/linux-unpacked/. /app/tailref/
+      - install -Dm755 flatpak/tailref.sh /app/bin/tailref
+      - install -Dm644 flatpak/com.tailref.studio.desktop /app/share/applications/com.tailref.studio.desktop
+      - install -Dm644 flatpak/com.tailref.studio.metainfo.xml /app/share/metainfo/com.tailref.studio.metainfo.xml
+      - install -Dm644 build/icon.png /app/share/icons/hicolor/512x512/apps/com.tailref.studio.png
+      - install -Dm644 build/linux/tailref-mime.xml /app/share/mime/packages/com.tailref.studio.xml
+    sources:
+      - type: git
+        url: https://github.com/Roxsmb/tailref.git
+        tag: v1.4.3
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([\d.]+)$
+          is-main-source: true
+      - generated-sources.json

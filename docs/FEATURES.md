@@ -139,13 +139,18 @@ strings fall back to English.
 
 ## Platform and packaging
 
-- Windows x64 portable executable and NSIS installer.
-- No installation required for the portable build.
+- Windows x64 portable executable and NSIS installer; the installed build
+  updates itself from GitHub Releases.
+- Linux x64 AppImage, deb and rpm packages with a menu entry, a 512×512 icon and
+  the `.tail` MIME association. Linux has no in-app updater.
+- No installation required for the portable build or the AppImage.
 - No telemetry. Network calls are limited to the web panels you open and the
-  GitHub Releases update check (which can be turned off).
+  GitHub Releases update check (Windows only, and it can be turned off).
 - Data stays on the local machine.
 
-macOS and Linux are **not** currently supported or planned as release targets.
+macOS and ARM64 are **not** currently supported or planned as release targets.
+The Flatpak manifest for Flathub is prepared but not published; see
+[`FLATPAK.md`](FLATPAK.md).
 
 ## Known limitations
 

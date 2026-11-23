@@ -1,7 +1,8 @@
 {
   "name": "tailref",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "TailRef — a free and open-source reference board, drawing workspace and 3D posing tool for artists.",
+  "desktopName": "tailref.desktop",
   "main": "src/main/main.js",
   "author": "Emre Melik Nameli",
   "license": "GPL-3.0-or-later",
@@ -25,6 +26,9 @@
     "build:portable": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win portable",
     "build:setup": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win nsis",
     "build:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win dir",
+    "build:linux": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --linux --publish never",
+    "build:linux:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --linux dir",
+    "release:notes": "node scripts/release-notes.js",
     "gates": "node scripts/run-gates.js",
     "gates:full": "node scripts/run-gates.js --full",
     "test": "node scripts/build-app.js && node tests/update-policy-test.js && node tests/update-manager-test.js && node tests/update-static-test.js && node tests/pose3d-unit.js && node tests/smoke-test.js && node tests/pinterest-test.js && node tests/artstation-test.js",
@@ -61,7 +65,9 @@
       {
         "ext": "tail",
         "name": "TailRef Board",
-        "role": "Editor"
+        "description": "TailRef Studio document",
+        "role": "Editor",
+        "mimeType": "application/x-tailref-board"
       }
     ],
     "files": [
@@ -79,12 +85,6 @@
     "asarUnpack": [
       "native/inkcore/build/Release/inkcore.node"
     ],
-    "extraResources": [
-      {
-        "from": "build/icon.ico",
-        "to": "icon.ico"
-      }
-    ],
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -101,6 +101,12 @@
       "icon": "build/icon.ico",
       "signAndEditExecutable": true,
       "requestedExecutionLevel": "asInvoker",
+      "extraResources": [
+        {
+          "from": "build/icon.ico",
+          "to": "icon.ico"
+        }
+      ],
       "target": [
         {
           "target": "portable",
@@ -136,6 +142,88 @@
       "installerHeaderIcon": "build/icon.ico",
       "runAfterFinish": true,
       "include": "build/installer.nsh"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "executableName": "tailref",
+      "category": "Graphics",
+      "synopsis": "Reference board, drawing workspace and 3D posing tool for artists",
+      "description": "TailRef Studio is a free, open-source desktop workspace for artists who work from references. Collect reference images on an infinite board, draw over them with a pressure-sensitive ink engine, and pose 3D models in one offline project.",
+      "maintainer": "Emre Melik Nameli <tailrefstudio@gmail.com>",
+      "vendor": "Emre Melik Nameli",
+      "syncDesktopName": true,
+      "extraResources": [
+        {
+          "from": "build/icon.png",
+          "to": "icon.png"
+        }
+      ],
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "rpm",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "desktop": {
+        "entry": {
+          "Name": "TailRef Studio",
+          "GenericName": "Reference board and drawing workspace",
+          "Comment": "Collect references, draw over them and pose 3D models in one window.",
+          "Keywords": "art;drawing;reference;3d;pose;sketch;"
+        }
+      }
+    },
+    "appImage": {
+      "artifactName": "TailRef-${version}.${ext}"
+    },
+    "deb": {
+      "artifactName": "tailref_${version}_${arch}.${ext}",
+      "packageName": "tailref",
+      "priority": "optional",
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0",
+        "shared-mime-info",
+        "desktop-file-utils"
+      ]
+    },
+    "rpm": {
+      "artifactName": "tailref-${version}.${arch}.${ext}",
+      "packageName": "tailref",
+      "depends": [
+        "gtk3",
+        "libnotify",
+        "nss",
+        "libXScrnSaver",
+        "(libXtst or libXtst6)",
+        "xdg-utils",
+        "at-spi2-core",
+        "(libuuid or libuuid1)",
+        "(libsecret or libsecret-1-0)",
+        "shared-mime-info",
+        "desktop-file-utils"
+      ]
     },
     "compression": "normal",
     "electronFuses": {

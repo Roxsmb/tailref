@@ -1479,6 +1479,7 @@
   "Development build - automatic updates are available in the installed release.": "Geliştirme derlemesi - otomatik güncellemeler kurulu sürümde kullanılabilir.",
   "Portable build - download the new version from GitHub to update.": "Taşınabilir derleme - güncellemek için yeni sürümü GitHub'dan indirin.",
   "Automatic updates are not available on this platform.": "Bu platformda otomatik güncellemeler kullanılamıyor.",
+  "Automatic updates are Windows-only. On Linux, update through your package manager or download the new AppImage.": "Otomatik güncellemeler yalnızca Windows'ta çalışır. Linux'ta paket yöneticinizle güncelleyin veya yeni AppImage dosyasını indirin.",
   "This version is skipped. A manual check still shows it.": "Bu sürüm atlandı. Elle denetimde yine görünür.",
   "Portable builds cannot replace themselves. Download the installer from GitHub and run it over this copy.": "Taşınabilir derlemeler kendini değiştiremez. Yükleyiciyi GitHub'dan indirip bu kopyanın üzerine çalıştırın.",
   "Run the installed NSIS build to receive automatic updates.": "Otomatik güncellemeler için kurulu NSIS sürümünü çalıştırın.",

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=TailRef Studio
+GenericName=Reference board and drawing workspace
+Comment=Collect references, draw over them and pose 3D models in one window.
+Exec=tailref %U
+Icon=com.tailref.studio
+Terminal=false
+Categories=Graphics;2DGraphics;
+Keywords=art;drawing;reference;3d;pose;sketch;
+MimeType=application/x-tailref-board;
+StartupNotify=true
+StartupWMClass=com.tailref.studio

@@ -35,7 +35,23 @@ app.commandLine.appendSwitch('enable-features', 'ParallelDownloading');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('enable-gpu-rasterization');
 app.commandLine.appendSwitch('enable-native-gpu-rasterization');
+/* Linux: Wayland oturumunda yerel Wayland arka ucunu kullan; X11 oturumunda
+   XWayland'e düşer. Fedora/openSUSE gibi dağıtımlarda varsayılan X11'de
+   kalındığı için açıkça istiyoruz. Diğer platformlarda etkisizdir. */
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
+}
+
+/* Flatpak: masaüstü girdisi com.tailref.studio.desktop olarak kurulur.
+   Pencerenin Wayland app_id'si / X11 WM_CLASS'ı aynı ada uymazsa dock ve
+   görev çubuğu simgeyi eşleştiremez. FLATPAK_ID yalnızca sandbox içinde
+   tanımlıdır; deb, rpm ve AppImage davranışı değişmez. */
+if (process.platform === 'linux' && process.env.FLATPAK_ID &&
+    typeof app.setDesktopName === 'function') {
+  app.setDesktopName(`${process.env.FLATPAK_ID}.desktop`);
+}
 const path = require('path');
+const { fileURLToPath } = require('url');
 const fs   = require('fs');
 const zlib = require('zlib');
 const { startStaticServer } = require('./static-server');
@@ -351,10 +367,12 @@ function createWindow() {
     },
   });
 
-  // pencere ikonu (paketli sürümde extraResources/icon.ico, geliştirmede build/icon.ico)
+  // Pencere ikonu: Windows .ico, Linux .png (Electron Linux'ta .ico okumaz).
+  // Paketli sürümde extraResources/icon.*, geliştirmede depo kökü build/.
+  const iconFile = process.platform === 'linux' ? 'icon.png' : 'icon.ico';
   const iconPath = app.isPackaged
-    ? path.join(process.resourcesPath, 'icon.ico')
-    : path.join(__dirname, 'build', 'icon.ico');
+    ? path.join(process.resourcesPath, iconFile)
+    : path.join(__dirname, '..', '..', 'build', iconFile);
   if (fs.existsSync(iconPath)) {
     try { win.setIcon(iconPath); } catch { /* sessiz */ }
   }
@@ -1180,11 +1198,19 @@ ipcMain.handle('open-tail-path', async (_e, filePath) => {
    Portable kurulumda uzantı kaydı yapılmaz; kullanıcı dosyayı bir kez
    "Birlikte aç → Her zaman" ile exe'ye bağlar. Windows exe'yi
    `TailRef Studio.exe "C:\...\pano.tail"` ile başlatır; o yol burada
-   yakalanır. Açılışta renderer tüketir (consume), çalışırken ikinci
-   başlatma push ile canlı pencereye devredilir. */
+   yakalanır. Linux masaüstü girdisi `%U` kullanır: dosya yöneticisi
+   `file:///home/.../pano.tail` biçiminde bir URI de gönderebilir.
+   Açılışta renderer tüketir (consume), çalışırken ikinci başlatma push
+   ile canlı pencereye devredilir. */
 function extractBoardPath(argv) {
   for (const arg of argv || []) {
-    if (typeof arg === 'string' && /\.tail$/i.test(arg)) return arg;
+    if (typeof arg !== 'string') continue;
+    let candidate = arg.trim();
+    if (!candidate) continue;
+    if (/^file:\/\//i.test(candidate)) {
+      try { candidate = fileURLToPath(candidate); } catch { continue; }
+    }
+    if (/\.tail$/i.test(candidate)) return candidate;
   }
   return null;
 }

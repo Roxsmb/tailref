@@ -5,7 +5,7 @@ ready and tested. Nothing here is promised for a specific date.
 
 ## Current state
 
-TailRef 1.4.2 is a Windows x64 desktop app with:
+TailRef 1.4.3 is a Windows and Linux x64 desktop app with:
 
 - a reference board, a drawing engine, a brush library with `.abr` import/export,
   layers and effects;
@@ -44,7 +44,8 @@ These are ideas under evaluation, not commitments:
 
 ## Not planned
 
-- macOS or Linux release builds. The project targets Windows x64.
+- macOS release builds. The project targets Windows and Linux x64.
+- ARM64 builds for any platform.
 - Cloud sync, accounts, telemetry or an online service.
 - A plugin API or third-party extension marketplace.
 - Mobile or web builds.

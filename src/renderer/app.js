@@ -10426,7 +10426,7 @@ window.TailRefLocales = {
   "⟲ Reset everything": "⟲ Сбросить всё",
   "⟳ Rotate gizmo": "⟳ Поворот гизмо",
   },
-  /* tr — 1494 anahtar */
+  /* tr — 1495 anahtar */
   "tr": {
   " (Ctrl+Shift+S also works). Choose size and background in the dialog,": "'ya bas (Ctrl+Shift+S de çalışır). Pencerede ölçü ve arka plan seç,",
   " hardness": " sertlik",
@@ -10570,6 +10570,7 @@ window.TailRefLocales = {
   "Auto → ": "Otomatik → ",
   "Automatic update checks": "Otomatik güncelleme denetimi",
   "Automatic update checks are off.": "Otomatik güncelleme denetimi kapalı.",
+  "Automatic updates are Windows-only. On Linux, update through your package manager or download the new AppImage.": "Otomatik güncellemeler yalnızca Windows'ta çalışır. Linux'ta paket yöneticinizle güncelleyin veya yeni AppImage dosyasını indirin.",
   "Automatic updates are not available on this platform.": "Bu platformda otomatik güncellemeler kullanılamıyor.",
   "Automatic updates are unavailable.": "Otomatik güncellemeler kullanılamıyor.",
   "Available when lineart is off": "Lineart kapalıyken kullanılabilir",
@@ -67774,6 +67775,9 @@ try {
       }
       if (s.reason === 'portable') {
         return t('Portable build - download the new version from GitHub to update.');
+      }
+      if (s.reason === 'platform') {
+        return t('Automatic updates are Windows-only. On Linux, update through your package manager or download the new AppImage.');
       }
       return t('Automatic updates are not available on this platform.');
     }

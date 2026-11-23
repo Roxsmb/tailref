@@ -30,6 +30,9 @@
       if (s.reason === 'portable') {
         return t('Portable build - download the new version from GitHub to update.');
       }
+      if (s.reason === 'platform') {
+        return t('Automatic updates are Windows-only. On Linux, update through your package manager or download the new AppImage.');
+      }
       return t('Automatic updates are not available on this platform.');
     }
     switch (s.status) {

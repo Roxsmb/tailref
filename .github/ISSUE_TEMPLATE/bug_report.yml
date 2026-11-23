@@ -22,12 +22,22 @@ body:
       required: true
 
   - type: input
-    id: windows
+    id: os
     attributes:
-      label: Windows version
-      placeholder: "Windows 11 24H2"
+      label: Operating system and version
+      description: Windows or Linux, including the distribution and desktop session (X11 or Wayland).
+      placeholder: "Windows 11 24H2 / Ubuntu 24.04, Wayland"
     validations:
       required: true
+
+  - type: input
+    id: package
+    attributes:
+      label: Package
+      description: How you installed TailRef.
+      placeholder: "Installer, portable .exe, AppImage, deb, rpm"
+    validations:
+      required: false
 
   - type: dropdown
     id: area

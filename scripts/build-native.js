@@ -17,8 +17,30 @@ const ROOT = path.join(__dirname, '..');
 const CORE_DIR = path.join(ROOT, 'native', 'inkcore');
 const OUT = path.join(CORE_DIR, 'build', 'Release', 'inkcore.node');
 
-/* --- derleyici durumu: vswhere + standart yol sırası --- */
+/* --- derleyici durumu ---
+   Windows: vswhere + standart Visual Studio yolu.
+   Linux/macOS: make + C/C++ derleyici + python3 (node-gyp gereksinimleri). */
+function commandExists(cmd) {
+  try {
+    if (process.platform === 'win32') {
+      execFileSync('where', [cmd], { stdio: 'ignore' });
+    } else {
+      execFileSync('sh', ['-c', `command -v ${cmd}`], { stdio: 'ignore' });
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function hasPosixToolchain() {
+  const compiler = commandExists('cc') || commandExists('gcc') || commandExists('clang');
+  const python = commandExists('python3') || commandExists('python');
+  return compiler && commandExists('make') && python;
+}
+
 function hasToolchain() {
+  if (process.platform !== 'win32') return hasPosixToolchain();
   const vswhere = path.join(
     process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)',
     'Microsoft Visual Studio', 'Installer', 'vswhere.exe');
@@ -57,12 +79,16 @@ function findNodeGyp() {
       'node-gyp.js'));
     cands.push(path.join(raw, 'node-gyp', 'bin', 'node-gyp.js'));
   } catch { /* global dizin yoksa atla */ }
-  const np = execSync('npm prefix -g', { encoding: 'utf8' }).trim();
-  cands.push(path.join(np, 'node_modules', 'npm', 'node_modules', 'node-gyp',
-    'bin', 'node-gyp.js'));
-  cands.push(path.join(np, 'node-gyp', 'bin', 'node-gyp.js'));
-  cands.push('C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules' +
-    '\\node-gyp\\bin\\node-gyp.js');
+  try {
+    const np = execSync('npm prefix -g', { encoding: 'utf8' }).trim();
+    cands.push(path.join(np, 'node_modules', 'npm', 'node_modules', 'node-gyp',
+      'bin', 'node-gyp.js'));
+    cands.push(path.join(np, 'node-gyp', 'bin', 'node-gyp.js'));
+  } catch { /* npm prefix okunamazsa atla */ }
+  if (process.platform === 'win32') {
+    cands.push('C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules' +
+      '\\node-gyp\\bin\\node-gyp.js');
+  }
   cands.push(path.join(ROOT, 'node_modules', 'node-gyp', 'bin', 'node-gyp.js'));
   for (const c of cands) {
     if (fs.existsSync(c)) return c;
@@ -84,13 +110,17 @@ function main() {
   /* Electron ABI: paketin kendi sürümüne göre derle. */
   const electron = require(path.join(ROOT, 'node_modules', 'electron',
     'package.json')).version;
-  console.log(`[inkcore] derleme: electron ${electron}`);
+  console.log(`[inkcore] derleme: electron ${electron} · ${process.platform}/${process.arch}`);
   const args = [
     gyp, 'rebuild',
     `--runtime=electron`, `--target=${electron}`,
     '--dist-url=https://electronjs.org/headers',
-    '--arch=x64',
+    `--arch=${process.arch}`,
   ];
+  /* Çevrimdışı derleme (ör. Flatpak sandbox): Electron başlıkları hazır
+     açılmış bir dizinden kullanılır; ağdan indirme yapılmaz. */
+  const nodedir = process.env.TAILREF_NODEDIR || '';
+  if (nodedir) args.push(`--nodedir=${nodedir}`);
   execFileSync(process.execPath, args, {
     cwd: CORE_DIR,
     stdio: 'inherit',

@@ -9,7 +9,8 @@ This guide is for people changing TailRef's code. For the big picture, read
 |---|---|---|
 | Node.js | 20 LTS (18+ works) | everything |
 | npm | bundled with Node | dependencies, scripts |
-| Windows 10/11 x64 | — | packaging and the Electron gates |
+| Windows 10/11 x64 | — | Windows packaging and the Electron gates |
+| Linux x64 | glibc 2.25+ | Linux packaging, AppImage/deb/rpm gates |
 | Visual Studio Build Tools (C++) | optional | building `native/inkcore` |
 | Python + Pillow/NumPy | optional | regenerating brand assets |
 
@@ -30,9 +31,10 @@ npm start
 ```bash
 npm run bundle        # regenerate src/renderer/app.js only
 npm start             # bundle + launch the app
-npm run gates         # fast chain: 19 pure gates
+npm run gates         # fast chain: 20 pure gates
 npm run gates:full    # full chain: 74 gates (Electron + CDP, slow)
-npm run build:dir     # unpacked build in dist/win-unpacked
+npm run build:dir     # unpacked Windows build in dist/win-unpacked
+npm run build:linux   # AppImage + deb + rpm (Linux host)
 npm run test:package  # verify app.asar matches the working tree
 npm run build:portable
 npm run build:setup
