@@ -240,7 +240,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            build-essential python3 make rpm xvfb libfuse2
+            build-essential python3 make rpm xvfb xauth libfuse2 libglib2.0-bin \
+            libgtk-3-0 libnss3 libasound2 libgbm1 libatk-bridge2.0-0 \
+            libxss1 libxtst6 xdg-utils
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
@@ -329,6 +331,7 @@ jobs:
           echo "Linux artifacts validated."
 
       - name: Install, inspect and remove the deb package
+        shell: bash
         run: |
           set -euo pipefail
           VERSION="${{ needs.prepare.outputs.version }}"
@@ -336,9 +339,18 @@ jobs:
           find /opt -maxdepth 3 -name tailref -type f | sed -n '1p'
           test -f /usr/share/mime/packages/tailref.xml
           grep -q 'application/x-tailref-board' /usr/share/mime/packages/tailref.xml
+          grep -q '<glob pattern="\*\.tail"/>' /usr/share/mime/packages/tailref.xml
           grep -rl 'MimeType=application/x-tailref-board' /usr/share/applications/ | sed -n '1p'
           printf '{"probe":true}' > /tmp/tailref-association-probe.tail
-          test "$(xdg-mime query filetype /tmp/tailref-association-probe.tail)" = "application/x-tailref-board"
+          # gio resolves the shared-mime-info glob installed by the package.
+          # Plain `xdg-mime` falls back to libmagic on images without gio, and
+          # libmagic does not know shared-mime-info globs, so the association
+          # has to be checked through gio (libglib2.0-bin).
+          gio_type="$(gio info -a standard::content-type /tmp/tailref-association-probe.tail \
+            | sed -n 's/^[[:space:]]*standard::content-type:[[:space:]]*//p')"
+          echo "gio content type: $gio_type"
+          test "$gio_type" = "application/x-tailref-board"
+          echo "xdg-mime: $(xdg-mime query filetype /tmp/tailref-association-probe.tail || true)"
           sudo apt-get remove -y tailref
           test ! -f /usr/share/mime/packages/tailref.xml
           echo "deb install, .tail association and removal verified."

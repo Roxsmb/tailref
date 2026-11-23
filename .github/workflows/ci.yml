@@ -81,7 +81,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            build-essential python3 make rpm xvfb libfuse2 \
+            build-essential python3 make rpm xvfb xauth libfuse2 libglib2.0-bin \
             libgtk-3-0 libnss3 libasound2 libgbm1 libatk-bridge2.0-0 \
             libxss1 libxtst6 xdg-utils
 
@@ -141,6 +141,23 @@ jobs:
           desktop="$(find squashfs-root -maxdepth 1 -name '*.desktop' | sed -n '1p')"
           grep -q '^MimeType=application/x-tailref-board;$' "$desktop"
           rm -rf squashfs-root
+
+      - name: Install the deb and verify the .tail association
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          sudo apt-get install -y "./dist/tailref_${VERSION}_amd64.deb"
+          test -f /usr/share/mime/packages/tailref.xml
+          grep -q '<glob pattern="\*\.tail"/>' /usr/share/mime/packages/tailref.xml
+          grep -rl 'MimeType=application/x-tailref-board' /usr/share/applications/ | sed -n '1p'
+          printf '{"probe":true}' > /tmp/tailref-association-probe.tail
+          gio_type="$(gio info -a standard::content-type /tmp/tailref-association-probe.tail \
+            | sed -n 's/^[[:space:]]*standard::content-type:[[:space:]]*//p')"
+          echo "gio content type: $gio_type"
+          test "$gio_type" = "application/x-tailref-board"
+          sudo apt-get remove -y tailref
+          test ! -f /usr/share/mime/packages/tailref.xml
 
       - name: Smoke-launch the AppImage under Xvfb
         shell: bash

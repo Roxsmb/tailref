@@ -55,13 +55,21 @@ function hasToolchain() {
     } catch { /* asagi yoldaki taramaya dus */ }
   }
   /* vswhere örnek kaydını her zaman görmeyebilir (kurulu derleyici bile
-     kayıt gecikmelidir). Standart dizin varsa derleyici vardir. */
-  const msvcRoot = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2022';
-  if (fs.existsSync(msvcRoot)) {
+     kayıt gecikmelidir). Standart dizin varsa derleyici vardir.
+     Visual Studio 2022 x86 "Program Files (x86)" altında, 2026 ise
+     "Program Files" altında 18\ klasöründe kurulur. */
+  const roots = [
+    'C:\\Program Files (x86)\\Microsoft Visual Studio\\2022',
+    'C:\\Program Files\\Microsoft Visual Studio\\2022',
+    'C:\\Program Files\\Microsoft Visual Studio\\18',
+    'C:\\Program Files (x86)\\Microsoft Visual Studio\\18',
+  ];
+  for (const root of roots) {
+    if (!fs.existsSync(root)) continue;
     try {
-      const variants = fs.readdirSync(msvcRoot);
+      const variants = fs.readdirSync(root);
       for (const variant of variants) {
-        const msvc = path.join(msvcRoot, variant, 'VC', 'Tools', 'MSVC');
+        const msvc = path.join(root, variant, 'VC', 'Tools', 'MSVC');
         if (fs.existsSync(msvc)) return true;
       }
     } catch { /* okuma hatası = yok say */ }
@@ -69,9 +77,15 @@ function hasToolchain() {
   return false;
 }
 
-/* --- node-gyp: npm'in kendi paketi yeterli --- */
+/* --- node-gyp ---
+   Proje içindeki node-gyp her zaman önce denenir. npm'in paketlediği
+   sürüm eski kalabilir: node-gyp 11, Visual Studio 2026 (18.x) sürümünü
+   tanımaz ve CI'daki windows-latest imajında derleme düşer. Bu yüzden
+   node-gyp package.json devDependencies içinde sabitlenmiştir. */
 function findNodeGyp() {
-  const cands = [];
+  const cands = [
+    path.join(ROOT, 'node_modules', 'node-gyp', 'bin', 'node-gyp.js'),
+  ];
   try {
     const raw = fs.realpathSync(
       execSync('npm root -g', { encoding: 'utf8' }).trim());
@@ -89,11 +103,19 @@ function findNodeGyp() {
     cands.push('C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules' +
       '\\node-gyp\\bin\\node-gyp.js');
   }
-  cands.push(path.join(ROOT, 'node_modules', 'node-gyp', 'bin', 'node-gyp.js'));
   for (const c of cands) {
     if (fs.existsSync(c)) return c;
   }
   return null;
+}
+
+function nodeGypVersion(gypJs) {
+  try {
+    const pkg = path.join(path.dirname(gypJs), '..', 'package.json');
+    return JSON.parse(fs.readFileSync(pkg, 'utf8')).version || 'unknown';
+  } catch {
+    return 'unknown';
+  }
 }
 
 function main() {
@@ -107,6 +129,7 @@ function main() {
     console.warn('[inkcore] node-gyp bulunamadı - yerel motor atlandı');
     process.exit(0);
   }
+  console.log(`[inkcore] node-gyp ${nodeGypVersion(gyp)} (${gyp})`);
   /* Electron ABI: paketin kendi sürümüne göre derle. */
   const electron = require(path.join(ROOT, 'node_modules', 'electron',
     'package.json')).version;

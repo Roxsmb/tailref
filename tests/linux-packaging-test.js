@@ -217,6 +217,14 @@ ok('build-native.js uses process.arch', /--arch=\$\{process\.arch\}/.test(native
 ok('build-native.js has no hard-coded x64', !/--arch=x64/.test(native));
 ok('build-native.js detects a POSIX toolchain', /hasPosixToolchain/.test(native) && /command -v/.test(native));
 ok('build-native.js supports offline headers', /TAILREF_NODEDIR/.test(native));
+ok('build-native.js prefers the project-local node-gyp',
+  /const cands = \[\s*path\.join\(ROOT, 'node_modules', 'node-gyp'/.test(native));
+ok('build-native.js knows the Visual Studio 2026 layout',
+  native.includes('Microsoft Visual Studio\\\\18'));
+const pkgJson = JSON.parse(read('package.json'));
+ok('node-gyp is pinned in devDependencies', pkgJson.devDependencies['node-gyp'] === '12.4.0');
+ok('the pinned node-gyp supports Visual Studio 2026',
+  /^(1[2-9]|[2-9][0-9])\./.test(pkgJson.devDependencies['node-gyp']));
 
 /* verify-package hedef platformun ikilisini bekler: Windows .node Linux
    paketine sızarsa kapı kırmızı olur. */
@@ -309,6 +317,11 @@ const ci = read('.github/workflows/ci.yml');
 ok('CI runs gates on Linux', /ubuntu-22\.04/.test(ci) && /windows-latest/.test(ci));
 ok('CI builds and smoke-tests Linux packages',
   /--linux AppImage deb rpm/.test(ci) && /xvfb-run/.test(ci));
+ok('release workflow installs gio for MIME resolution', /libglib2\.0-bin/.test(release));
+ok('release workflow verifies the .tail association with gio',
+  /gio info -a standard::content-type/.test(release));
+ok('CI installs the deb and verifies the .tail association',
+  /libglib2\.0-bin/.test(ci) && /gio info -a standard::content-type/.test(ci));
 
 /* --- release notes generator --- */
 const notes = read('scripts/release-notes.js');

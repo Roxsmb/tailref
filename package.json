@@ -54,7 +54,8 @@
   },
   "devDependencies": {
     "electron": "45.4.1",
-    "electron-builder": "26.18.0"
+    "electron-builder": "26.18.0",
+    "node-gyp": "12.4.0"
   },
   "build": {
     "appId": "com.tailref.studio",
