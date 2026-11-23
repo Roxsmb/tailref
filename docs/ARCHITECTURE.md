@@ -70,8 +70,7 @@ tailref/
 ├── tests/                     gate chain + QA probes (not shipped)
 ├── locales/                   generated locale JSON (build-locales.js)
 ├── docs/                      architecture, format, licensing docs
-├── build/                     electron-builder resources (icons, NSIS)
-└── demos/                     standalone experiments (not shipped)
+└── build/                     electron-builder resources (icons, NSIS)
 ```
 
 ## Renderer module system
