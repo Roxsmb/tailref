@@ -1,0 +1,97 @@
+name: Package macOS for itch.io
+
+# itch.io downloads are plain zip archives, and only a macOS runner can make a
+# zip that keeps the .app bundle's symlinks and executable bits. This manual
+# workflow produces the two archives used when publishing a release on itch.io.
+# It does not touch GitHub Releases.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to package
+        required: true
+        default: v1.4.4
+
+permissions:
+  contents: read
+
+concurrency:
+  group: itch-macos-${{ inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  macos:
+    name: Build macOS zips
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build renderer bundle
+        run: node scripts/build-app.js
+
+      - name: Build the native inkcore module (arm64)
+        run: node scripts/build-native.js --arch=arm64
+
+      - name: Build the Apple silicon app bundle
+        run: npx electron-builder --mac dir --arm64 --publish never
+
+      - name: Verify the arm64 payload
+        run: node scripts/verify-package.js dist/mac-arm64
+
+      - name: Zip the arm64 app
+        env:
+          VERSION: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          VERSION="${VERSION#v}"
+          ditto -c -k --sequesterRsrc --keepParent \
+            "dist/mac-arm64/TailRef Studio.app" \
+            "dist/TailRef-${VERSION}-macOS-arm64.zip"
+
+      - name: Build the native inkcore module (x64)
+        run: node scripts/build-native.js --arch=x64
+
+      - name: Build the Intel app bundle
+        run: npx electron-builder --mac dir --x64 --publish never
+
+      - name: Verify the x64 payload
+        run: node scripts/verify-package.js dist/mac
+
+      - name: Zip the x64 app
+        env:
+          VERSION: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          VERSION="${VERSION#v}"
+          ditto -c -k --sequesterRsrc --keepParent \
+            "dist/mac/TailRef Studio.app" \
+            "dist/TailRef-${VERSION}-macOS-x64.zip"
+
+      - name: Upload macOS zips
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-itch
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            dist/TailRef-*-macOS-arm64.zip
+            dist/TailRef-*-macOS-x64.zip
