@@ -211,7 +211,7 @@ jobs:
           if ($updateYml -notmatch "repo:\s*tailref") { throw "app-update.yml repo is not tailref" }
 
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-release
           if-no-files-found: error
@@ -381,7 +381,7 @@ jobs:
           echo "AppImage stayed alive for 25s."
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-release
           if-no-files-found: error
@@ -532,7 +532,7 @@ jobs:
             --port=9931 --app-port=5179 --timeout=120000
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-release
           if-no-files-found: error
