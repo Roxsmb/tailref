@@ -1297,8 +1297,8 @@ function inkLayerPanelEnhance() {
     const menuBtn = document.createElement('button');
     menuBtn.type = 'button';
     menuBtn.className = 'dpPanelMenu dpLayerMenuBtn';
-    menuBtn.title = 'Layer menu';
-    menuBtn.setAttribute('aria-label', 'Layer menu');
+    menuBtn.title = __t('Layer menu');
+    menuBtn.setAttribute('aria-label', __t('Layer menu'));
     menuBtn.setAttribute('aria-haspopup', 'menu');
     menuBtn.innerHTML = '<span aria-hidden="true">⋯</span>';
     menuBtn.addEventListener('click', event => {
@@ -1362,7 +1362,7 @@ function inkLayerMenu() {
   menu.className = 'dpLayerMenu';
   menu.hidden = true;
   menu.setAttribute('role', 'menu');
-  menu.setAttribute('aria-label', 'Layer actions');
+  menu.setAttribute('aria-label', __t('Layer actions'));
   document.body.appendChild(menu);
   menu.addEventListener('click', event => {
     const btn = event.target && event.target.closest('[data-layer-action]');
@@ -1442,12 +1442,12 @@ function inkLayerMenuOpen(anchor, layerId, at) {
       maskAddSeen = true;
     }
     btn.disabled = !enabled;
-    if (action === 'duplicate' && isGroup) btn.title = 'Folder cannot be duplicated';
-    if (action === 'merge' && isGroup) btn.title = 'Folder cannot be merged';
-    if (action === 'add-to-group' && !hasGroups && isAttached) btn.title = 'Create a group first';
-    if (action === 'delete' && stack.length <= 1) btn.title = 'At least one layer is required';
+    if (action === 'duplicate' && isGroup) btn.title = __t('Folder cannot be duplicated');
+    if (action === 'merge' && isGroup) btn.title = __t('Folder cannot be merged');
+    if (action === 'add-to-group' && !hasGroups && isAttached) btn.title = __t('Create a group first');
+    if (action === 'delete' && stack.length <= 1) btn.title = __t('At least one layer is required');
     if (action === 'mask-edit') {
-      btn.title = (inkState().maskEditId === layer.id) ? 'Leave mask editing' : 'Write mask strokes into the mask';
+      btn.title = (inkState().maskEditId === layer.id) ? __t('Leave mask editing') : __t('Write mask strokes into the mask');
     }
     const text = document.createElement('span');
     text.textContent = label;
@@ -1526,7 +1526,7 @@ function inkLayerMenuRefresh() {
   for (const btn of menu.querySelectorAll('[data-layer-action]')) {
     const key = btn.dataset.layerAction;
     if (key in state) btn.disabled = !state[key];
-    if (key === 'delete') btn.title = stack.length > 0 ? '' : 'At least one layer is required';
+    if (key === 'delete') btn.title = stack.length > 0 ? '' : __t('At least one layer is required');
   }
 }
 
@@ -1801,7 +1801,7 @@ function inkLayerBeginRename(row, nameEl) {
   input.className = 'dpLayerRename';
   input.value = layer.name;
   input.maxLength = 64;
-  input.setAttribute('aria-label', 'Layer name');
+  input.setAttribute('aria-label', __t('Layer name'));
   nameEl.replaceChildren(input);
   input.focus();
   input.select();

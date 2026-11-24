@@ -144,8 +144,8 @@ headers archive and the npm cache entries.
 
 ## Tag to build
 
-`flatpak/com.tailref.studio.yml` targets `tag: v1.4.3`, which was pushed on
-2026-11-23. The tag contains `build/icon.png`, `build/linux/`, `flatpak/` and
+`flatpak/com.tailref.studio.yml` targets `tag: v1.4.4`, which was pushed on
+2026-11-24. The tag contains `build/icon.png`, `build/linux/`, `flatpak/` and
 `LICENSE`, so the manifest can build from it. Update `tag:` when a newer release
 is published; `x-checker-data` also opens an automatic PR when a new tag
 appears.

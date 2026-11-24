@@ -101,6 +101,25 @@ const check = (name, ok, detail) => {
 
     rep = JSON.parse(await evaluate(ws, `(async () => {
       const wait = ms => new Promise(r => setTimeout(r, ms));
+      /* FAZ 7.U: bölgesel undo fallback'ı işi worker'a devredebiliyor.
+         Sabit gecikmeyle örneklemek yarış üretiyordu (worker uygulaması
+         160 ms'lik pencereye bazen yetişiyor, bazen yetişmiyordu). Burada
+         yayınlanan tüm worker işleri kapanana kadar bekliyoruz; sonra
+         "durgunluk" ölçümü gerçekten tembel üst-yazımayı arıyor. Üst sınır
+         aşılırsa kapı kırmızı kalır. */
+      const waitUndoWorkerIdle = async (timeoutMs = 5000) => {
+        const t0 = Date.now();
+        for (;;) {
+          const s = inkUndoRaster.stats;
+          if (s.workerPosted - s.workerApplied - s.workerCancelled <= 0) {
+            return { idle: true, ms: Date.now() - t0 };
+          }
+          if (Date.now() - t0 > timeoutMs) {
+            return { idle: false, ms: Date.now() - t0 };
+          }
+          await wait(20);
+        }
+      };
       if (inkEditorIsOpen()) { inkEditorClose(); await wait(400); }
       document.getElementById('modeDrawBtn').click();
       await wait(240);
@@ -214,6 +233,7 @@ const check = (name, ok, detail) => {
         { key: 'z', code: 'KeyZ', ctrlKey: true, bubbles: true, cancelable: true }));
 
       undo();
+      const undoWorkerIdle = await waitUndoWorkerIdle();
       await wait(160);
       const U0 = grab(layerId);
       await wait(400);
@@ -371,6 +391,7 @@ const check = (name, ok, detail) => {
         S0w: S0.w, S0h: S0.h,
         regErase: regEraseArr,
         undoSteady: cmp(U0.d, U1.d),
+        undoWorkerIdle,
         refVsS0: cmp(R0.d, S0.d),
         undoIn: cmpIn(U1.d, R0.d, { x: regEraseArr[0], y: regEraseArr[1], w: regEraseArr[2], h: regEraseArr[3] }),
         undoAll: cmp(U1.d, R0.d),
@@ -408,7 +429,13 @@ const check = (name, ok, detail) => {
   check('tam kurulum referansı deterministik (R0==S0 · 0 px)',
     rep.refVsS0.n === 0, 'diffPx=' + rep.refVsS0.n + ' maxΔ=' + rep.refVsS0.max);
 
-  check('undo sonrası pikseller durgun (U0==U1 · 0 px; tembel üst-yazım yok)',
+  check('undo worker işleri üst sınırda kapandı (yarışsız ölçüm)',
+    rep.undoWorkerIdle && rep.undoWorkerIdle.idle === true,
+    'idle=' + (rep.undoWorkerIdle && rep.undoWorkerIdle.idle) +
+    ' süre=' + (rep.undoWorkerIdle && rep.undoWorkerIdle.ms) + ' ms' +
+    ' stats=' + JSON.stringify(rep.stats));
+
+  check('undo sonrası pikseller durgun (worker kapandıktan sonra U0==U1 · 0 px; tembel üst-yazım yok)',
     rep.undoSteady.n === 0,
     'diffPx=' + rep.undoSteady.n + ' maxΔ=' + rep.undoSteady.max +
     ' dirty=' + JSON.stringify(rep.dirtyAfterUndo));

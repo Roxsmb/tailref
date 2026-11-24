@@ -345,19 +345,20 @@ settingsTopEl.onchange = async () => {
    window.inkPowerSlidersSet. */
 $('#btnRestoreBackup').onclick = async () => {
   if (!window.tailref || !window.tailref.openBackups) {
-    alert('The backup folder can only open in the desktop app.');
+    alert(__t('The backup folder can only open in the desktop app.'));
     return;
   }
   try {
     const result = await window.tailref.openBackups();
     if (result && result.ok === false) {
       try { await navigator.clipboard.writeText(result.path || ''); } catch { /* sessiz */ }
-      alert('Backup folder could not open.\n\nPath: ' + (result.path || 'bilinmiyor') +
-        '\\n\\nThe path was copied to the clipboard; paste it into the address bar to open.' +
-        (result.error ? '\n\nHata: ' + result.error : ''));
+      alert(__t('Backup folder could not open.') + '\n\n'
+        + __t('Path: {path}', { path: result.path || __t('unknown') }) + '\n\n'
+        + __t('The path was copied to the clipboard; paste it into the address bar to open.')
+        + (result.error ? '\n\n' + __t('Details: {error}', { error: result.error }) : ''));
     }
   } catch (e) {
-    alert('Backup folder could not open: ' + e.message);
+    alert(__t('Backup folder could not open: ') + e.message);
   }
 };
 $('#btnChooseBackup').onclick = () => backupFileInput.click();
@@ -460,7 +461,7 @@ function describeSkipped(list) {
   if (!bad.length) return '';
   return `
 
-${bad.length} backups skipped (too large / too many items).`;
+${__t('{n} backups skipped (too large / too many items).', { n: bad.length })}`;
 }
 
 const btnRecoverBackup = $('#btnRecoverBackup');
@@ -477,32 +478,28 @@ if (btnRecoverBackup) {
       if (!pick) {
         const any = Array.isArray(list) && list.length;
         alert(any
-          ? 'No healthy backup found.\n\n'
-            + 'All backups look too large/too many items. With Settings → "Open archive" '
-            + 'you can check old data or load a file manually with "Choose backup file".'
-          : 'No backups yet. Try again in a few minutes while Settings → "Auto backup" is on.');
+          ? __t('No healthy backup found.') + '\n\n'
+            + __t('All backups look too large/too many items. With Settings → "Open archive" you can check old data or load a file manually with "Choose backup file".')
+          : __t('No backups yet. Try again in a few minutes while Settings → "Auto backup" is on.'));
         return;
       }
-      const when = new Date(pick.mtime).toLocaleString('tr-TR');
+      const when = new Date(pick.mtime).toLocaleString(navigator.language || undefined);
       const content = typeof pick.items === 'number'
-        ? `${pick.items} items · ${pick.images || 0} images`
+        ? `${pick.items} ${__tp('item', pick.items)} · ${pick.images || 0} ${__tp('image', pick.images || 0)}`
         : '';
-      const revertDetail = `Backup: ${pick.name}
-Date: ${when}`
-        + (content ? `
-Contents: ${content}` : '')
+      const revertDetail = __t('Backup: {name}', { name: pick.name }) + '\n'
+        + __t('Date: {date}', { date: when })
+        + (content ? '\n' + __t('Contents: {contents}', { contents: content }) : '')
         + describeSkipped(list)
-        + `
-
-Current boards will be replaced by this backup; changes after the backup are lost. `
-        + 'The current state is also stored as an "emergency" backup.';
+        + '\n\n'
+        + __t('Current boards will be replaced by this backup; changes after the backup are lost. The current state is also stored as an "emergency" backup.');
       /* Not: eski koddaki '\\n\\n' literal bug'ı giderildi — boş satır
          artık gerçekten boş satır. */
-      if (!(await appConfirm('Revert to the last healthy save?', revertDetail))) return;
+      if (!(await appConfirm(__t('Revert to the last healthy save?'), revertDetail))) return;
       // Yanlış yedeğe karşı emniyet: mevcut durumu önce sakla.
       await saveEmergencyCopy(true);
       const raw = await api.readBackupFile(pick.name);
-      if (!raw) throw new Error('Backup file could not be read');
+      if (!raw) throw new Error(__t('Backup file could not be read'));
       suspendPersistenceForReload();
       try {
         await importBackupPayload(JSON.parse(raw));
@@ -512,7 +509,7 @@ Current boards will be replaced by this backup; changes after the backup are los
       }
       location.reload();
     } catch (e) {
-      alert('Backup could not be restored: ' + e.message);
+      alert(__t('Backup could not be restored: ') + e.message);
     }
   };
 }

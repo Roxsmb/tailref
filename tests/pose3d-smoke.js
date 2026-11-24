@@ -1066,25 +1066,42 @@ async function waitForTarget(deadlineMs = 25000) {
       const before = state.items.length;
       const result = await d.exporter.capture({ pass: 'beauty', scale: 1, background: 'transparent' });
       const ok = await d.board.sendResults([result]);
-      /* Pano yazımı odağa duyarlı: test sırasında odak başka pencereye
-         geçmişse "document is not focused" gelir; odaklanıp 3 deneme yap. */
+      /* Pano yazımı odağa duyarlı: odak başka penceredeyken Chromium
+         "document is not focused" reddi verir. window.focus() çağrısı
+         odak değişimini bir sonraki görev döngüsünde uygular; bu yüzden
+         yazmayı hemen denemek gerçek bir reddi değil, henüz oturmamış
+         odağı ölçer. Odak gerçekten oluşana kadar sınırlı yokla, sonra
+         yaz. Üç denemede de yazılamazsa bu gerçek bir hatadır. */
+      const waitFocused = async (timeout = 1500) => {
+        const t0 = performance.now();
+        while (!document.hasFocus()) {
+          if (performance.now() - t0 > timeout) return false;
+          await new Promise(r => setTimeout(r, 16));
+        }
+        return true;
+      };
       let clipboard = false;
+      let attempts = 0;
+      let focused = false;
       for (let i = 0; i < 3 && !clipboard; i++) {
+        attempts = i + 1;
         window.focus();
+        focused = await waitFocused();
         clipboard = await d.exporter.copyToClipboard(result);
-        if (!clipboard) await new Promise(r => setTimeout(r, 350));
+        if (!clipboard) await new Promise(r => setTimeout(r, 200));
       }
       return JSON.stringify({
         ok, before, after: state.items.length, sent: d.board.sent, last: d.board.lastCount,
         file: result ? d.board.fileName(result) : '',
-        clipboard,
+        clipboard, attempts, focused,
         legacy: String(d.exporter.quickCapture() || '').startsWith('data:image/png'),
       });
     })()`));
 
     check('tahtaya yeni öğe düşüyor', board.ok === true && board.after === board.before + 1,
       `${board.before} → ${board.after} · ${board.file}`);
-    check('panoya PNG kopyalanıyor', board.clipboard === true);
+    check('panoya PNG kopyalanıyor', board.clipboard === true,
+      `pano=${board.clipboard} · deneme=${board.attempts} · odak=${board.focused}`);
     check('hızlı yakalama data URL korunuyor', board.legacy === true);
 
     /* 8 Kasım sözleşmesi: 3D modu HER ZAMAN tam ekrandır. ⤢ büyütme ve

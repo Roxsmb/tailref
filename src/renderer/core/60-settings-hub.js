@@ -552,12 +552,12 @@ function settingsPrefsNotice(msg) {
     btnExport.dataset.prefsBound = '1';
     btnExport.addEventListener('click', () => {
       let payload;
-      try { payload = settingsPrefsBuild(); } catch (e) { alert('Export failed: ' + e.message); return; }
+      try { payload = settingsPrefsBuild(); } catch (e) { alert(__t('Export failed: ') + e.message); return; }
       const text = JSON.stringify(payload, null, 1);
       if (window.tailref && typeof window.tailref.savePreferencesJson === 'function') {
         window.tailref.savePreferencesJson(text, 'tailref-preferences.json').then(res => {
           if (res && res.ok) settingsPrefsNotice('Preferences exported: ' + res.file);
-          else if (res && !res.canceled) alert('Export failed: ' + (res.error || 'unknown'));
+          else if (res && !res.canceled) alert(__t('Export failed: ') + (res.error || __t('unknown error')));
         }).catch(() => { /* diyalog kanalı hatası: sessiz */ });
       } else {
         const blob = new Blob([text], { type: 'application/json' });
@@ -615,7 +615,7 @@ function settingsPrefsNotice(msg) {
     btnSaveFoot.dataset.prefsBound = '1';
     btnSaveFoot.addEventListener('click', async () => {
       let payload;
-      try { payload = settingsPrefsBuild(); } catch (e) { settingsPrefsNotice('Export failed: ' + e.message); return; }
+      try { payload = settingsPrefsBuild(); } catch (e) { settingsPrefsNotice(__t('Export failed: ') + e.message); return; }
       const text = JSON.stringify(payload, null, 1);
       const api = window.tailref && typeof window.tailref.savePreferencesAuto === 'function'
         ? window.tailref : null;
@@ -771,7 +771,7 @@ function settingsHubSync() {
      ızgara aralığı, metin varsayılanları. */
   try {
     const zc = $('#settingsZoomCursor');
-    if (zc) settingsHubSetToggle(zc, localStorage.getItem('tailref-zoom-cursor') === '1');
+    if (zc) settingsHubSetToggle(zc, localStorage.getItem('tailref-zoom-cursor') !== '0');
     const ae = $('#settingsAmbientEffects');
     if (ae) settingsHubSetToggle(ae, window.tailrefAmbientEffectsOn ? window.tailrefAmbientEffectsOn() : true);
     const bs = $('#settingsBoardSnap');
@@ -786,7 +786,7 @@ function settingsHubSync() {
     const gs = $('#settingsGridStepSelect');
     if (gs) {
       const n = Number(localStorage.getItem('tailref-ce-grid-step'));
-      gs.value = (n === 32 || n === 128 || n === 256) ? String(n) : '64';
+      gs.value = (n === 64 || n === 128 || n === 256) ? String(n) : '32';
     }
     const tsz = $('#settingsTextSizeDefault');
     if (tsz) {
@@ -1155,7 +1155,7 @@ function settingsKeymapBind() {
 
   /* Aday 6 (15 Kasım): imleç odaklı zoom — görüntü editörü Ctrl+tekerlek. */
   bindToggle('settingsZoomCursor',
-    () => { try { return localStorage.getItem('tailref-zoom-cursor') === '1'; } catch { return false; } },
+    () => { try { return localStorage.getItem('tailref-zoom-cursor') !== '0'; } catch { return true; } },
     v => { try { localStorage.setItem('tailref-zoom-cursor', v ? '1' : '0'); } catch { /* sessiz */ } });
   /* Aday 8 (15 Kasım): ortam efektleri — yağmur/karı bağımsız anahtar. */
   bindToggle('settingsAmbientEffects',
@@ -1172,12 +1172,26 @@ function settingsKeymapBind() {
     if (window.tailrefIdleFadeSet) window.tailrefIdleFadeSet(Number.isFinite(v) ? v : 60);
   };
   const gridStepSelect = $('#settingsGridStepSelect');
+  /* Izgara aralığı GERÇEKTEN uygulanır: #gridOverlay'in background-size'ı
+     seçilen piksel değerine ayarlanır (önceden yalnız localStorage'a
+     yazılıyordu, hiçbir tüketici yoktu). */
+  const applyGridStep = () => {
+    let n = 32;
+    try {
+      const s = Number(localStorage.getItem('tailref-ce-grid-step'));
+      if (s === 64 || s === 128 || s === 256) n = s;
+    } catch { /* sessiz */ }
+    const ov = document.getElementById('gridOverlay');
+    if (ov) ov.style.backgroundSize = n + 'px ' + n + 'px';
+  };
   if (gridStepSelect) gridStepSelect.onchange = () => {
     try {
       const n = Number(gridStepSelect.value);
       if (n === 32 || n === 64 || n === 128 || n === 256) localStorage.setItem('tailref-ce-grid-step', String(n));
     } catch { /* sessiz */ }
+    applyGridStep();
   };
+  applyGridStep();
   /* Aday 7 (15 Kasım): yeni metin varsayılanları — punto/aile. */
   const textSizeDefault = $('#settingsTextSizeDefault');
   if (textSizeDefault) textSizeDefault.onchange = () => {

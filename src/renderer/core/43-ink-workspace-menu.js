@@ -57,7 +57,7 @@ function inkWorkspaceRenderCustomList() {
   if (!workspaces.length) {
     const empty = document.createElement('p');
     empty.className = 'inkWsEmpty';
-    empty.textContent = 'No saved layouts yet.';
+    empty.textContent = __t('No saved layouts yet.');
     box.appendChild(empty);
     return;
   }
@@ -74,15 +74,15 @@ function inkWorkspaceRenderCustomList() {
     const layout = inkWorkspaceCustomLayout(item);
     hint.textContent = layout
       ? layout.layersWidth + ' / ' + layout.brushWidth + ' px · ' +
-        (layout.density === 'tight' ? 'Dense' : 'Relaxed')
-      : 'Layout';
+        (layout.density === 'tight' ? __t('Dense') : __t('Relaxed'))
+      : __t('Layout');
     apply.append(name, hint);
     const del = document.createElement('button');
     del.type = 'button';
     del.className = 'inkWsCustomDelete';
     del.dataset.wsDelete = item.id;
-    del.title = 'Delete layout';
-    del.setAttribute('aria-label', item.name + ' delete layout');
+    del.title = __t('Delete layout');
+    del.setAttribute('aria-label', __t('{name} delete layout', { name: item.name }));
     del.innerHTML = inkIcon('trash');
     row.append(apply, del);
     box.appendChild(row);
@@ -107,7 +107,7 @@ function inkWorkspaceRenderTools() {
     eye.type = 'button';
     eye.className = 'inkWsToolEye';
     eye.dataset.wsToolToggle = id;
-    eye.title = hidden ? 'Show tool' : 'Hide tool';
+    eye.title = hidden ? __t('Show tool') : __t('Hide tool');
     eye.setAttribute('aria-label', eye.title);
     eye.setAttribute('aria-pressed', hidden ? 'false' : 'true');
     eye.innerHTML = inkIcon(hidden ? 'ink-eye-off' : 'ink-eye');
@@ -126,8 +126,8 @@ function inkWorkspaceRenderTools() {
     up.className = 'inkWsTinyBtn';
     up.dataset.wsToolUp = id;
     up.disabled = index === 0;
-    up.title = 'Move up';
-    up.setAttribute('aria-label', meta.label + ' tool up');
+    up.title = __t('Move up');
+    up.setAttribute('aria-label', __t('{name} tool up', { name: meta.label }));
     up.textContent = '↑';
 
     const down = document.createElement('button');
@@ -135,8 +135,8 @@ function inkWorkspaceRenderTools() {
     down.className = 'inkWsTinyBtn';
     down.dataset.wsToolDown = id;
     down.disabled = index === st.tools.length - 1;
-    down.title = 'Move down';
-    down.setAttribute('aria-label', meta.label + ' tool down');
+    down.title = __t('Move down');
+    down.setAttribute('aria-label', __t('{name} tool down', { name: meta.label }));
     down.textContent = '↓';
 
     row.append(eye, grip, name, up, down);
@@ -176,12 +176,13 @@ function inkWorkspaceRenderShortcuts() {
         (inkWorkspaceUi.captureShortcut === item.id ? ' is-capturing' : '');
       btn.dataset.wsShortcut = item.id;
       btn.textContent = inkWorkspaceUi.captureShortcut === item.id
-        ? 'Waiting for key…'
+        ? __t('Waiting for key…')
         : inkWorkspaceShortcutLabel(st.shortcuts[item.id]);
       /* Native title yasak (pill ile üst üste biniyor): data-tooltip kanalı. */
-      btn.dataset.tooltip = 'Change shortcut';
-      btn.setAttribute('aria-label', item.label + ' shortcut: ' +
-        inkWorkspaceShortcutLabel(st.shortcuts[item.id]) + '. Press to change.');
+      btn.dataset.tooltip = __t('Change shortcut');
+      btn.setAttribute('aria-label', __t('{name} shortcut: {key}. Press to change.', {
+        name: item.label, key: inkWorkspaceShortcutLabel(st.shortcuts[item.id]),
+      }));
       row.append(label, btn);
       /* Tekil sıfırlama: kısayol özelleştirilmişse ↺ göster — hub keymap
          satırlarıyla (60-settings-hub .is-reset) aynı kalıp. Bu yüzeyde
@@ -195,7 +196,7 @@ function inkWorkspaceRenderShortcuts() {
         reset.textContent = '↺';
         reset.dataset.tooltip = 'Reset to default (' +
           inkWorkspaceShortcutLabel(item.fallback) + ')';
-        reset.setAttribute('aria-label', item.label + ' · Reset to default');
+        reset.setAttribute('aria-label', __t('{name} · Reset to default', { name: item.label }));
         row.append(reset);
       }
       box.appendChild(row);
@@ -289,7 +290,7 @@ function inkWorkspaceNote(text, isError = false) {
   note.classList.toggle('is-error', !!isError);
   clearTimeout(inkWorkspaceUi.noteTimer);
   inkWorkspaceUi.noteTimer = setTimeout(() => {
-    note.textContent = 'Saved layouts are stored on this device.';
+    note.textContent = __t('Saved layouts are stored on this device.');
     note.classList.remove('is-error');
   }, 3200);
 }

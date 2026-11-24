@@ -1,6 +1,6 @@
 {
   "name": "tailref",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "TailRef — a free and open-source reference board, drawing workspace and 3D posing tool for artists.",
   "desktopName": "tailref.desktop",
   "main": "src/main/main.js",
@@ -28,6 +28,8 @@
     "build:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win dir",
     "build:linux": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --linux --publish never",
     "build:linux:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --linux dir",
+    "build:mac": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --mac --publish never",
+    "build:mac:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --mac dir",
     "release:notes": "node scripts/release-notes.js",
     "gates": "node scripts/run-gates.js",
     "gates:full": "node scripts/run-gates.js --full",
@@ -190,6 +192,34 @@
     },
     "appImage": {
       "artifactName": "TailRef-${version}.${ext}"
+    },
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.graphics-design",
+      "identity": "-",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "darkModeSupport": true,
+      "extraResources": [
+        {
+          "from": "build/icon.png",
+          "to": "icon.png"
+        }
+      ],
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "artifactName": "TailRef-${version}-${arch}.${ext}"
     },
     "deb": {
       "artifactName": "tailref_${version}_${arch}.${ext}",

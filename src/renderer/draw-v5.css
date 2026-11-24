@@ -1154,16 +1154,8 @@ html.desktop body.mode-draw #windowDragStrip {
   display: block !important;
 }
 
-/* Mod sırası her iki modda da "Çizim | Referans". */
-body.mode-draw #appModeBar #modeDrawBtn,
-body.mode-reference #appModeBar #modeDrawBtn {
-  order: 0 !important;
-}
-
-body.mode-draw #appModeBar #modeRefBtn,
-body.mode-reference #appModeBar #modeRefBtn {
-  order: 1 !important;
-}
+/* Mod sırası DOM'dan gelir (3D Pose · Reference · Drawing) ve üç modda da
+   aynıdır; moda göre yeniden sıralama yok. */
 
 #appModeBar .modeSeg,
 body.mode-draw #appModeBar .modeSeg,
@@ -1210,6 +1202,19 @@ body.mode-draw #appModeBar .modeBtn:hover,
 body.mode-reference #appModeBar .modeBtn:hover {
   background: var(--v5-hover, rgba(255, 255, 255, 0.06)) !important;
   color: var(--v5-text, #fff) !important;
+}
+
+/* İkon düğmeleri (▤ Paneller, ⋯ Ayarlar) metin sekmeleriyle aynı yatay
+   dolguyu almamalı: 0 14px dolgu onları 43px'e şişirip ortalanmış hapı
+   sola doğru uzatıyordu ("drawing'e geçince panel uzuyor"). Çift kimlik
+   seçicisi, dosyanın ilerisindeki genel `.modeBtn` !important
+   kurallarını (satır ~1295) özgüllükle geçer. */
+#appModeBar #btnPanelsBar,
+#appModeBar #btnOverflow {
+  padding: 0 !important;
+  width: 30px !important;
+  min-width: 30px !important;
+  flex: 0 0 30px !important;
 }
 
 #appModeBar .modeBtn.is-active,
@@ -4952,11 +4957,11 @@ body.mode-draw .inkRadialPreview {
 }
 
 /* =========================================================
-   AYRI PANEL PENCERES�
-   Panel ayr� penceredeyken ana uygulamada gizlenir. v5 layoutPanels()
-   her apply() turunda inline display yazd��� i�in !important gerekir.
-   .v5-detached-probe yaln�z ayr� pencereden gelen i�aret�i i�in
-   (hit-test ve tuval �l��leri) paneli yerle�ime sokar; g�r�nmez kal�r.
+   AYRI PANEL PENCERESİ
+   Panel ayrı penceredeyken ana uygulamada gizlenir. v5 layoutPanels()
+   her apply() turunda inline display yazdığı için !important gerekir.
+   .v5-detached-probe yalnız ayrı pencereden gelen işaretçi için
+   (hit-test ve tuval ölçüleri) paneli yerleşime sokar; görünmez kalır.
    ========================================================= */
 .v5-panel[data-detached="1"] {
   display: none !important;

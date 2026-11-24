@@ -14,7 +14,7 @@ Every Linux build produces three files with fixed names:
 | `tailref_<version>_amd64.deb` | deb, amd64 | `apt`, `dpkg` |
 | `tailref-<version>.x86_64.rpm` | rpm, x86_64 | `dnf`, `zypper`, `rpm` |
 
-`<version>` is the `version` field in `package.json` (for example `1.4.3`).
+`<version>` is the `version` field in `package.json` (for example `1.4.4`).
 The names are pinned in `package.json` under `build.appImage`, `build.deb` and
 `build.rpm`, so a build from a clean checkout always produces exactly these
 names.
@@ -84,9 +84,9 @@ npx electron-builder --linux AppImage deb rpm --publish never
 The files land in `dist/`:
 
 ```
-dist/TailRef-1.4.3.AppImage
-dist/tailref_1.4.3_amd64.deb
-dist/tailref-1.4.3.x86_64.rpm
+dist/TailRef-1.4.4.AppImage
+dist/tailref_1.4.4_amd64.deb
+dist/tailref-1.4.4.x86_64.rpm
 dist/linux-unpacked/          # unpacked application used by the packages
 dist/latest-linux.yml         # update metadata; deliberately not published
 ```
@@ -134,13 +134,13 @@ node scripts/verify-package.js dist/linux-unpacked
 
 # package names and contents
 ls -l dist/TailRef-*.AppImage dist/tailref_*.deb dist/tailref-*.rpm
-dpkg-deb -I dist/tailref_1.4.3_amd64.deb
-dpkg-deb -c dist/tailref_1.4.3_amd64.deb | grep -E 'tailref$|tailref\.desktop|tailref\.xml|512x512'
-rpm -qip dist/tailref-1.4.3.x86_64.rpm
-rpm -qlp dist/tailref-1.4.3.x86_64.rpm | grep -E 'tailref$|tailref\.desktop|tailref\.xml|512x512'
+dpkg-deb -I dist/tailref_1.4.4_amd64.deb
+dpkg-deb -c dist/tailref_1.4.4_amd64.deb | grep -E 'tailref$|tailref\.desktop|tailref\.xml|512x512'
+rpm -qip dist/tailref-1.4.4.x86_64.rpm
+rpm -qlp dist/tailref-1.4.4.x86_64.rpm | grep -E 'tailref$|tailref\.desktop|tailref\.xml|512x512'
 
 # AppImage payload
-./dist/TailRef-1.4.3.AppImage --appimage-extract >/dev/null
+./dist/TailRef-1.4.4.AppImage --appimage-extract >/dev/null
 ls squashfs-root/*.desktop
 grep -E '^(Exec|MimeType|Icon)=' squashfs-root/*.desktop
 rm -rf squashfs-root
@@ -149,9 +149,9 @@ rm -rf squashfs-root
 A quick smoke test on a headless machine:
 
 ```bash
-chmod +x dist/TailRef-1.4.3.AppImage
+chmod +x dist/TailRef-1.4.4.AppImage
 xvfb-run -a --server-args="-screen 0 1280x800x24" \
-  timeout 25s ./dist/TailRef-1.4.3.AppImage --appimage-extract-and-run --no-sandbox --disable-gpu
+  timeout 25s ./dist/TailRef-1.4.4.AppImage --appimage-extract-and-run --no-sandbox --disable-gpu
 ```
 
 `timeout` exits with status 124 when the app is still running after 25 seconds;
@@ -224,7 +224,7 @@ on most images; on minimal containers install `ruby` and `ruby-dev`).
 still valid, but the app uses the JavaScript fallback.
 
 **AppImage does not start on Wayland** — try
-`./TailRef-1.4.3.AppImage --ozone-platform=x11` to isolate the compositor.
+`./TailRef-1.4.4.AppImage --ozone-platform=x11` to isolate the compositor.
 
 ## Related documents
 

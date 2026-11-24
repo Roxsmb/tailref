@@ -1,12 +1,12 @@
-﻿<p align="center">
+<p align="center">
   <a href="https://github.com/Roxsmb/tailref/releases/latest">
     <img src="assets/brand/hero.png?v=2" alt="TailRef Studio reference board with color palettes, reference images and the selection properties panel." width="100%">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download TailRef Studio for Windows and Linux" src="https://img.shields.io/badge/Download-Windows%20%7C%20Linux-2F6FB0?style=for-the-badge&logo=linux&logoColor=white"></a>
-  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.2" src="https://img.shields.io/badge/version-1.4.3-1F6FEB?style=for-the-badge"></a>
+  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download TailRef Studio for Windows, Linux and macOS" src="https://img.shields.io/badge/Download-Windows%20%7C%20Linux%20%7C%20macOS-2F6FB0?style=for-the-badge&logo=linux&logoColor=white"></a>
+  <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.4" src="https://img.shields.io/badge/version-1.4.4-1F6FEB?style=for-the-badge"></a>
   <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-2F6FB0?style=for-the-badge"></a>
   <a href="https://www.buymeacoffee.com/roxsmb"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
 </p>
@@ -15,7 +15,7 @@
 
 <p align="center">
   <strong>Collect references. Draw over them. Pose them in 3D.</strong><br>
-  Free for Windows 10/11 and Linux x64 · no account, no cloud, no telemetry.
+  Free for Windows 10/11, Linux x64 and macOS (Apple silicon and Intel) · no account, no cloud, no telemetry.
 </p>
 
 <p align="center">
@@ -229,6 +229,8 @@ Get the latest build from the
 | `TailRef-<version>.AppImage` | Linux AppImage. One file, no installation. |
 | `tailref_<version>_amd64.deb` | Debian/Ubuntu package. Adds the menu entry and `.tail` association. |
 | `tailref-<version>.x86_64.rpm` | Fedora/openSUSE package. Adds the menu entry and `.tail` association. |
+| `TailRef-<version>-arm64.dmg` | macOS disk image for Apple silicon (M1 and later). |
+| `TailRef-<version>-x64.dmg` | macOS disk image for Intel Macs. |
 | `SHA256SUMS.txt` | SHA-256 checksums for every file above. |
 
 Official builds are published on this repository's Releases page. Because
@@ -243,14 +245,19 @@ build you download.
 3. **Linux:** `chmod +x TailRef-<version>.AppImage && ./TailRef-<version>.AppImage`,
    or `sudo apt install ./tailref_<version>_amd64.deb`, or
    `sudo dnf install ./tailref-<version>.x86_64.rpm`.
+4. **macOS:** open the `.dmg`, drag **TailRef Studio** into `Applications`, then
+   right-click the app → **Open** on the first launch (the build is ad-hoc
+   signed, not notarized).
 
 Uninstalling does not delete your projects. Linux details, including AppImage
 menu integration and `.tail` associations, are in
-[`docs/LINUX_INSTALLATION.md`](docs/LINUX_INSTALLATION.md).
+[`docs/LINUX_INSTALLATION.md`](docs/LINUX_INSTALLATION.md); macOS details,
+including the Gatekeeper step, are in [`docs/MACOS.md`](docs/MACOS.md).
 
 ### Requirements
 
 - **Windows:** Windows 10 or 11, 64-bit.
+- **macOS:** macOS 12 (Monterey) or newer, Apple silicon or Intel.
 - **Linux:** x86_64, glibc 2.25 or newer (Ubuntu 20.04+, Debian 11+,
   Fedora 32+; Ubuntu 22.04 and 24.04 tested), GTK 3 and a working OpenGL
   driver.
@@ -260,8 +267,14 @@ menu integration and `.tail` associations, are in
 
 ### SmartScreen and checksums
 
-Builds are **not code-signed**. Windows SmartScreen may warn about an unknown
-publisher. This is expected for unsigned independent builds.
+Builds are **not code-signed yet**. Windows SmartScreen may warn about an
+unknown publisher. This is expected for unsigned independent builds.
+
+TailRef is preparing a free code-signing application to the SignPath
+Foundation. The signing policy, current status, roles and privacy details are
+in [`docs/CODE_SIGNING.md`](docs/CODE_SIGNING.md); the application checklist is
+in [`docs/SIGNPATH_APPLICATION.md`](docs/SIGNPATH_APPLICATION.md). Until
+signing is active, verify every download with the checksums below.
 
 Verify a download before running it:
 
@@ -270,7 +283,8 @@ Get-FileHash .\TailRef_Studio.exe -Algorithm SHA256
 ```
 
 ```bash
-sha256sum TailRef-1.4.3.AppImage
+sha256sum TailRef-1.4.4.AppImage
+shasum -a 256 TailRef-1.4.4-arm64.dmg     # macOS
 sha256sum -c SHA256SUMS.txt --ignore-missing   # the files you downloaded
 ```
 
@@ -283,6 +297,7 @@ differ, do not run the file.
 |---|---|
 | Settings, projects, brushes (Windows) | `%APPDATA%\TailRef\` |
 | Settings, projects, brushes (Linux) | `~/.config/TailRef/` |
+| Settings, projects, brushes (macOS) | `~/Library/Application Support/TailRef Studio/` |
 | Automatic backups (Windows) | `%APPDATA%\TailRef\Backups\` |
 | Automatic backups (Linux) | `~/.config/TailRef/Backups/` |
 | Known-good backup copy | `Backups/good/` inside the folder above |
@@ -332,7 +347,7 @@ belong to the same project:
 | Draw on top of references | No | Ink engine, layers, masks, selection and `.abr` brushes |
 | 3D pose and lighting reference | No | Pose3D mannequin, FBX/GLTF/OBJ import, 8K captures |
 | Finish without leaving the app | No | Non-destructive FX stack and PDF/image export |
-| Platforms | Windows, macOS, Linux | Windows 10/11 and Linux x64 |
+| Platforms | Windows, macOS, Linux | Windows 10/11, Linux x64, macOS 12+ (Apple silicon and Intel) |
 
 In short: choose a dedicated reference board for a pure pinboard, and TailRef
 when you want the reference board, the drawing workspace and the 3D posing
@@ -342,9 +357,9 @@ studio to share one project and one file.
 
 ### What is TailRef?
 
-A desktop app for Windows and Linux for collecting reference images, drawing
-over them and posing a 3D mannequin. It combines a reference board, an ink
-engine, a brush library and a 3D posing module in one project.
+A desktop app for Windows, Linux and macOS for collecting reference images,
+drawing over them and posing a 3D mannequin. It combines a reference board, an
+ink engine, a brush library and a 3D posing module in one project.
 
 ### Is TailRef free?
 
@@ -361,10 +376,12 @@ it. See [`LICENSE-FAQ.md`](LICENSE-FAQ.md).
 
 ### Does TailRef work on macOS or Linux?
 
-TailRef runs on Windows 10/11 and on Linux x86_64 (AppImage, deb, rpm). macOS
-and ARM64 builds are not planned. On Linux, automatic in-app updates are
-disabled; update through your package manager or by replacing the AppImage. See
-[`docs/LINUX_INSTALLATION.md`](docs/LINUX_INSTALLATION.md).
+TailRef runs on Windows 10/11, on Linux x86_64 (AppImage, deb, rpm) and on
+macOS 12 or newer (Apple silicon and Intel disk images). On Linux and macOS,
+automatic in-app updates are disabled; update through your package manager, by
+replacing the AppImage or by downloading the new disk image. See
+[`docs/LINUX_INSTALLATION.md`](docs/LINUX_INSTALLATION.md) and
+[`docs/MACOS.md`](docs/MACOS.md).
 
 ### Does TailRef need an internet connection?
 
@@ -412,36 +429,40 @@ their work. Contributions are accepted under GPL-3.0-or-later
 
 ## Roadmap
 
-TailRef 1.4.3 is the current release. The near-term work is:
+TailRef 1.4.4 is the current release. The near-term work is:
 
 - ink-engine polish and the remaining parity items tracked in
   [`docs/INK_STATUS.md`](docs/INK_STATUS.md);
 - the magic-wand selection tool, currently a known gap;
 - better mapping and reporting for Photoshop `.abr` brush dynamics;
-- keeping the public documentation and captures current;
-- closing the remaining localization gaps.
+- keeping the public documentation and captures current.
 
 The installed NSIS build updates itself from GitHub Releases; the portable
-`.exe` stays a manual download. Linux builds do not update themselves: the
-updater is disabled instead of installing a Windows package, and updates come
-from the package manager or a fresh AppImage. Update checks never block
+`.exe` stays a manual download. Linux and macOS builds do not update
+themselves: the updater is disabled instead of installing a Windows package,
+and updates come from the package manager, a fresh AppImage or the new disk
+image. Update checks never block
 startup, downloads only start when you ask, and the app saves your work before
 restarting. See [`docs/RELEASE.md`](docs/RELEASE.md) for the channel and
 release rules.
 
-Under consideration: code signing, enabling the native
+Under consideration: enabling the native
 ink kernel by default, more Pose3D capture passes, and community themes and UI
-packages. Not planned: macOS and ARM64 builds, cloud sync, accounts, telemetry,
-a plugin marketplace, mobile/web builds, paid tiers or ads.
+packages. Code signing is in preparation through the SignPath Foundation; see
+[`docs/CODE_SIGNING.md`](docs/CODE_SIGNING.md). Not planned: Windows and Linux
+ARM64 builds, Apple Developer ID notarization for macOS until the project can
+fund it, cloud sync, accounts, telemetry, a plugin marketplace, mobile/web
+builds, paid tiers or ads.
 
 The full list, with the difference between next, considering and not planned, is
 in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Development
 
-Requirements: **Node.js 22 LTS** and npm. Packaging targets Windows
-and Linux; the Linux build needs a Linux host (see
-[`docs/LINUX_BUILD.md`](docs/LINUX_BUILD.md)).
+Requirements: **Node.js 22 LTS** and npm. Packaging targets Windows, Linux and
+macOS; the Linux build needs a Linux host and the macOS build needs a macOS host
+(see [`docs/LINUX_BUILD.md`](docs/LINUX_BUILD.md) and
+[`docs/MACOS.md`](docs/MACOS.md)).
 
 ```bash
 git clone https://github.com/Roxsmb/tailref.git
@@ -455,11 +476,12 @@ npm start
 hand.
 
 ```bash
-npm run gates        # fast chain: 20 pure gates
-npm run gates:full   # full chain: 74 gates (Electron + CDP, slow)
+npm run gates        # fast chain: 31 pure gates
+npm run gates:full   # full chain: 86 gates (Electron + CDP, slow)
 npm run build:portable
 npm run build:setup
 npm run build:linux  # AppImage + deb + rpm (Linux host)
+npm run build:mac    # dmg for the host architecture (macOS host)
 npm run test:package # verifies app.asar against the working tree
 ```
 

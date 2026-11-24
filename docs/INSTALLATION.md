@@ -7,6 +7,9 @@ Both are built from the same source.
 
 > **Linux?** See [`LINUX_INSTALLATION.md`](LINUX_INSTALLATION.md) for AppImage,
 > deb and rpm instructions, `.tail` file associations and data locations.
+>
+> **macOS?** See [`MACOS.md`](MACOS.md) for the disk images, the Gatekeeper
+> first launch and data locations.
 
 ### Portable build (recommended)
 
@@ -44,8 +47,10 @@ as a GitHub prerelease and is never offered to a stable installation.
 
 ### SmartScreen
 
-Builds are not code-signed. Windows SmartScreen may show "Windows protected your
-PC" or "unknown publisher". This is expected for unsigned independent builds.
+Builds are not code-signed yet. Windows SmartScreen may show "Windows protected
+your PC" or "unknown publisher". This is expected for unsigned independent
+builds; the signing status and policy are in
+[`CODE_SIGNING.md`](CODE_SIGNING.md).
 
 To verify a download:
 

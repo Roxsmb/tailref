@@ -46,6 +46,36 @@ const FILES = [
   'src/preload/preload.js',
 ];
 
+/* Ana süreç modülleri yerel `require('./x')` ile birbirine bağlıdır. Yalnız
+   main.js doğrulansaydı, pakete girmeyen bir yardımcı modül (ör.
+   atomic-write.js veya backup-health.js) denetimden geçip çalışma anında
+   "Cannot find module" ile uygulamayı açılışta çökertirdi. Bu yüzden
+   bağımlılık grafiği kapatılır: her yerel require hedefi de arşivde
+   bayt-bayt aynı olmak zorunda. */
+function localRequires(file) {
+  const source = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const out = [];
+  for (const match of source.matchAll(/require\('(\.[^']*)'\)/g)) {
+    let resolved = path.normalize(path.join(path.dirname(file), match[1]));
+    if (!resolved.endsWith('.js')) resolved += '.js';
+    out.push(resolved.split(path.sep).join('/'));
+  }
+  return out;
+}
+
+const packedFiles = [];
+const seen = new Set();
+const queue = [...FILES];
+while (queue.length) {
+  const file = queue.shift();
+  if (seen.has(file)) continue;
+  seen.add(file);
+  packedFiles.push(file);
+  for (const dep of localRequires(file)) {
+    if (!seen.has(dep) && fs.existsSync(path.join(ROOT, dep))) queue.push(dep);
+  }
+}
+
 const sha = buf => crypto.createHash('sha256').update(buf).digest('hex');
 const read = file => fs.readFileSync(path.join(ROOT, file));
 /* @electron/asar Windows'ta ters eğik çizgili yollar ister */
@@ -85,7 +115,7 @@ function binaryFormat(head) {
   } else {
     console.log(`OK   package.json · sürüm ${pkg.version} · main ${pkg.main}`);
   }
-  for (const file of FILES) {
+  for (const file of packedFiles) {
     let packed;
     try {
       packed = asar.extractFile(ARCHIVE, archivePath(file));

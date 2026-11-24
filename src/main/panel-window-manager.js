@@ -11,6 +11,8 @@
    sahibidir. Renderer tarafındaki denetleyici (17b-panel-dock.js) yalnız
    buradaki sözleşmeyi kullanır; ikinci bir pencere yöneticisi yoktur. */
 
+const ipcGuard = require('./ipc-guard');
+
 const PANEL_WINDOW_PAD = Object.freeze({ top: 22, side: 42, bottom: 62 });
 const PANEL_DOCK_GRACE_MS = 900;
 const PANEL_DOCK_INSET = 16;
@@ -275,6 +277,8 @@ function createPanelWindowManager(options) {
       resizingUntil: 0,
     };
     windows.set(id, entry);
+    const panelContents = panelWin.webContents;
+    ipcGuard.trustPanel(panelContents);
 
     if (spec.guest && typeof installGuestPolicy === 'function') {
       installGuestPolicy(panelWin.webContents);
@@ -345,6 +349,7 @@ function createPanelWindowManager(options) {
     });
 
     panelWin.on('closed', () => {
+      ipcGuard.untrustPanel(panelContents);
       clearTimeout(entry.moveTimer);
       if (windows.get(id) === entry) windows.delete(id);
       if (entry.silent) return;
@@ -467,9 +472,9 @@ function createPanelWindowManager(options) {
   }
 
   function registerIpc() {
-    ipcMain.handle('panel-window-open', (event, payload) => open(event, payload));
+    ipcGuard.handle(ipcMain, 'panel-window-open', (event, payload) => open(event, payload));
 
-    ipcMain.on('panel-sync', (event, id, snapshot) => {
+    ipcGuard.on(ipcMain, 'panel-sync', (event, id, snapshot) => {
       const main = mainWindow();
       if (!main || event.sender !== main.webContents) return;
       const entry = entryFor(id);
@@ -480,7 +485,7 @@ function createPanelWindowManager(options) {
       try { entry.win.webContents.send('panel-update', payload); } catch { /* kapanmış */ }
     });
 
-    ipcMain.on('panel-action-from-window', (event, id, action) => {
+    ipcGuard.on(ipcMain, 'panel-action-from-window', (event, id, action) => {
       const entry = entryFor(id, event.sender);
       if (!entry) return;
       const clean = sanitizeAction(action);
@@ -492,7 +497,7 @@ function createPanelWindowManager(options) {
        arasındaki köprü. Konuk betik mesajı kendi barındırıcısına yollar;
        burada ana uygulamaya iletilir. "Tahtaya ekle" yanıtı ve "görünenleri
        topla" komutu aynı yoldan döner. */
-    ipcMain.on('panel-guest-message', (event, id, channel, args) => {
+    ipcGuard.on(ipcMain, 'panel-guest-message', (event, id, channel, args) => {
       const entry = entryFor(id, event.sender);
       if (!entry) return;
       sendToMain('panel-guest-message', {
@@ -502,7 +507,7 @@ function createPanelWindowManager(options) {
       });
     });
 
-    ipcMain.on('panel-guest-send', (event, id, channel, args) => {
+    ipcGuard.on(ipcMain, 'panel-guest-send', (event, id, channel, args) => {
       const main = mainWindow();
       if (!main || event.sender !== main.webContents) return;
       const entry = entryFor(id);
@@ -512,29 +517,29 @@ function createPanelWindowManager(options) {
       } catch { /* kapanmış */ }
     });
 
-    ipcMain.on('panel-window-dock', (event, id) => {
+    ipcGuard.on(ipcMain, 'panel-window-dock', (event, id) => {
       const entry = entryFor(id, event.sender);
       if (entry) closeEntry(entry, true);
     });
 
-    ipcMain.on('panel-window-close', (event, id) => {
+    ipcGuard.on(ipcMain, 'panel-window-close', (event, id) => {
       const entry = entryFor(id, event.sender);
       if (entry) closeEntry(entry, true);
     });
 
-    ipcMain.handle('panel-window-toggle-fullscreen', (event, id) => {
+    ipcGuard.handle(ipcMain, 'panel-window-toggle-fullscreen', (event, id) => {
       const entry = entryFor(id, event.sender);
       return entry ? setFullscreen(entry, !entry.fullscreen) : false;
     });
 
-    ipcMain.handle('panel-window-is-fullscreen', (event, id) => {
+    ipcGuard.handle(ipcMain, 'panel-window-is-fullscreen', (event, id) => {
       const entry = entryFor(id, event.sender);
       return entry ? !!entry.fullscreen : false;
     });
 
     /* Ayrı penceredeki panelden gelen canlı boyutlandırma. Renderer görünen
        panelin ekran dikdörtgenini gönderir; gölge boşluğu burada eklenir. */
-    ipcMain.on('panel-window-set-bounds', (event, id, bounds) => {
+    ipcGuard.on(ipcMain, 'panel-window-set-bounds', (event, id, bounds) => {
       const entry = entryFor(id, event.sender);
       if (!entry || entry.fullscreen || !bounds || typeof bounds !== 'object') return;
       const spec = PANEL_WINDOW_SPECS[entry.id] || {};
@@ -560,7 +565,7 @@ function createPanelWindowManager(options) {
 
     /* Ana pencereden ayrı paneli kapatma (ör. seçim boşalınca itemBar).
        `restore=false` ise panel geri takılmaz, kapalı kalır. */
-    ipcMain.handle('panel-window-force-close', (event, id, restore = true) => {
+    ipcGuard.handle(ipcMain, 'panel-window-force-close', (event, id, restore = true) => {
       const main = mainWindow();
       if (!main || event.sender !== main.webContents) return false;
       const entry = entryFor(id);

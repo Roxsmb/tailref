@@ -9,6 +9,12 @@ const os = require('os');
 const path = require('path');
 const { EventEmitter } = require('events');
 const { createUpdateManager } = require('../src/main/update-manager');
+const ipcGuard = require('../src/main/ipc-guard');
+
+const TEST_ORIGIN_URL = 'http://127.0.0.1:5178/';
+function ipcEvent(sender) {
+  return { sender, senderFrame: { url: TEST_ORIGIN_URL, parent: null } };
+}
 
 let pass = 0, fail = 0;
 const ok = (name, cond, detail) => {
@@ -113,6 +119,8 @@ function makeManager(opts = {}) {
     isDestroyed: () => false,
     webContents: { send: () => {} },
   };
+  ipcGuard.setAllowedOrigin(TEST_ORIGIN_URL);
+  ipcGuard.trustMain(win.webContents);
   const manager = createUpdateManager({
     app,
     ipcMain,
@@ -315,14 +323,14 @@ function makeManager(opts = {}) {
     const ctx = makeManager();
     const getState = ctx.ipcMain.handlers.get('update:get-state');
     let rejected = false;
-    try { getState({ sender: {} }); } catch { rejected = true; }
+    try { await getState({ sender: {} }); } catch { rejected = true; }
     ok('foreign IPC sender rejected', rejected === true);
-    const state = getState({ sender: ctx.win.webContents });
+    const state = await getState(ipcEvent(ctx.win.webContents));
     ok('main window IPC sender accepted', state && state.currentVersion === '1.4.2');
 
     const install = ctx.ipcMain.handlers.get('update:install');
     let installRejected = false;
-    try { install({ sender: {} }); } catch { installRejected = true; }
+    try { await install({ sender: {} }); } catch { installRejected = true; }
     ok('foreign install request rejected', installRejected === true);
   }
 
@@ -369,7 +377,7 @@ function makeManager(opts = {}) {
     let rejected = false;
     try { await open({ sender: {} }); } catch { rejected = true; }
     ok('foreign download-page request rejected', rejected === true);
-    const result = await open({ sender: ctx.win.webContents });
+    const result = await open(ipcEvent(ctx.win.webContents));
     ok('download page opened for the main window', result === true &&
       opened.length === 1 && opened[0] === 'https://github.com/Roxsmb/tailref/releases/latest');
   }

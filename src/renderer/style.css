@@ -145,6 +145,10 @@ html,body{
 [data-theme="rain"] #rainCanvas{display:block}
 #snowCanvas{position:fixed;inset:0;z-index:.5;width:100%;height:100%;pointer-events:none;display:none;opacity:.86}
 [data-theme="snow"] #snowCanvas{display:block}
+/* Özel tema rain/snow efektini taşıyorsa (data-ambient) tuval görünür olur;
+   data-theme kimliği ct_... olduğu için yukarıdaki kurallar yetmiyordu. */
+html[data-ambient="rain"] #rainCanvas{display:block}
+html[data-ambient="snow"] #snowCanvas{display:block}
 #stage{
   position:fixed;inset:0;
   z-index:1;
@@ -716,8 +720,7 @@ body.browser-panel-fullscreen-open #status{
 }
 /* Logo görseli tarayıcının yerleşik "resmi sürükle" davranışını başlatmasın:
    aksi halde logodan tutunca görsel yerinden kopup hayalet olarak sürükleniyor. */
-#brand img,
-#splashLogo img{
+#brand img{
   -webkit-user-drag:none;
   user-drag:none;
   pointer-events:none;
@@ -756,13 +759,8 @@ html.desktop #brand{
   background:#5fb0d4;
   box-shadow:0 0 .5em rgba(95,176,212,.8);
 }
-#splashLogo{
-  font-size:46px;color:#7d8398;margin-bottom:20px;opacity:.9;
-  text-shadow:0 6px 30px rgba(0,0,0,.5);
-}
 @media (max-width:780px){
   #brand{font-size:15px}
-  #splashLogo{font-size:28px}
 }
 
 /* ---------- üst bar ---------- */
@@ -891,7 +889,7 @@ button[data-tooltip]{position:relative}
   from{opacity:0;transform:translate(-50%,3px)}
   to{opacity:1;transform:translate(-50%,0)}
 }
-button[data-tooltip]::after{
+button[data-tooltip]:not(.settingToggleBtn)::after{
   content:"";
   display:none;
   position:absolute;left:50%;bottom:calc(100% + 9px);z-index:1500;
@@ -904,8 +902,8 @@ button[data-tooltip]::after{
   text-align:center;white-space:normal;pointer-events:none;
   opacity:0;
 }
-button[data-tooltip]:hover::after,
-button[data-tooltip]:focus-visible::after{
+button[data-tooltip]:not(.settingToggleBtn):hover::after,
+button[data-tooltip]:not(.settingToggleBtn):focus-visible::after{
   content:attr(data-tooltip);
   display:block;
   animation:tooltip-pop .16s ease .45s both;
@@ -937,12 +935,12 @@ button[data-tooltip]:focus-visible::after{
   from{opacity:0;transform:translate(0,3px)}
   to{opacity:1;transform:translate(0,0)}
 }
-#settings button[data-tooltip]::after{
+#settings button[data-tooltip]:not(.settingToggleBtn)::after{
   left:auto;right:0;transform:translate(0,3px);
   max-width:min(240px,100%);
 }
-#settings button[data-tooltip]:hover::after,
-#settings button[data-tooltip]:focus-visible::after{
+#settings button[data-tooltip]:not(.settingToggleBtn):hover::after,
+#settings button[data-tooltip]:not(.settingToggleBtn):focus-visible::after{
   animation:tooltip-pop-left .16s ease .45s both;
 }
 
@@ -1047,48 +1045,16 @@ body.brand-idle #brand{
   animation:easterEggGlow 1.4s ease-in-out forwards;
 }
 #brand.brandLockup.easter-egg .brandMark{display:none}
-#splashLogo.splashBrandLockup{
-  justify-content:center;
-  gap:14px;
-  margin:0 0 16px;
-  color:rgba(255,255,255,.88);
-  opacity:.96;
-  text-shadow:none;
-}
-#splashLogo.splashBrandLockup .brandMark{
-  width:clamp(44px,8vw,72px);
-  height:clamp(44px,8vw,72px);
-  border-radius:18px;
-  /* Mark rozeti: siyah sincap beyaz kart üzerinde (koyu zeminde okunur). */
-  background:#fafaf8;
-  padding:5px;
-  box-sizing:border-box;
-  object-fit:contain;
-  filter:drop-shadow(0 8px 24px rgba(0,0,0,.38));
-}
-#splashLogo.splashBrandLockup .brandWordmark{
-  display:flex;
-  align-items:center;
-}
-#splashLogo.splashBrandLockup .brandWordmark img{
-  display:block;
-  height:34px;
-  width:auto;
-  opacity:.92;
-}
 
 /* Marka işareti beyaz olduğu için açık temada görünmez. Yalnızca açık zeminli
    temada ters çeviriyoruz; gölge değerleri de zemine göre yeniden yazılıyor. */
-[data-theme="paper"] #brand.brandLockup .brandMark,
-[data-theme="paper"] #splashLogo.splashBrandLockup .brandMark{
+[data-theme="paper"] #brand.brandLockup .brandMark{
   filter:invert(1) drop-shadow(0 3px 8px rgba(40,36,28,.22));
 }
 /* Açık temada marka yazısı beyaz kalınca okunmuyordu — img için invert. */
-[data-theme="paper"] #brand.brandLockup .brandWordmark img,
-[data-theme="paper"] #splashLogo.splashBrandLockup .brandWordmark img{
+[data-theme="paper"] #brand.brandLockup .brandWordmark img{
   filter:invert(1);opacity:.9;
 }
-[data-theme="paper"] #splashLogo.splashBrandLockup{color:rgba(40,38,34,.82)}
 [data-theme="paper"] #brand.brandLockup:hover .brandMark{
   filter:invert(1) drop-shadow(0 0 10px rgba(80,72,58,.28));
 }
@@ -3101,7 +3067,6 @@ body.bar-hidden #bar{transition:transform .34s var(--ease-spring-soft),opacity .
 
 /* Boş durum: ilk açılışta ve tahta boşalınca yumuşakça belirir. */
 #hint:not(.hidden){animation:hint-in .45s var(--ease-spring-soft) both}
-#hint .splashBrandLockup{animation:hint-in .55s var(--ease-spring-soft) both;animation-delay:40ms}
 
 /* Studio panelleri açıkken seçim panelleri sertçe kaybolmasın. */
 #inspector,#itemBar{
@@ -3166,7 +3131,7 @@ body.properties-collapsed #inspector:not([hidden]){
   .item img{transition:none}
   #bar button:hover,#bar button:active{translate:0 0;scale:1}
   .sw:not(.handle):not(.ghandle):hover,.sw:not(.handle):not(.ghandle):active{transform:none;translate:0}
-  #hint:not(.hidden),#hint .splashBrandLockup{animation:none!important}
+  #hint:not(.hidden){animation:none!important}
 }
 
 /* =========================================================
@@ -9126,8 +9091,13 @@ body.bar-collapsed-ui #projectBar{
 
 /* ••• düğmesi (Diğer araçlar / paneller menüsü) üst mod hapında —
    her iki modda da görünür; genişliğine göre menü altına açılır.
-   Noktalar büyük ve net olsun (kullanıcı: "hiç anlaşılmıyor"). */
-#appModeBar #btnOverflow{
+   Noktalar büyük ve net olsun (kullanıcı: "hiç anlaşılmıyor").
+   ▤ (#btnPanelsBar) aynı sınıf ailesini paylaşır ve BİREBİR aynı
+   ölçüyü almalı: aksi halde çizim modundaki genel `.modeBtn`
+   dolgusu onu 28→43px şişirip ortalanmış hapı sola doğru
+   uzatıyordu (kullanıcı: "drawing'e geçince panel uzuyor"). */
+#appModeBar #btnOverflow,
+#appModeBar #btnPanelsBar{
   flex:0 0 30px;
   width:30px;
   min-width:30px;
@@ -9154,9 +9124,10 @@ body.bar-collapsed-ui #projectBar{
   width:18px!important;height:18px!important;
 }
 /* Çizim modu hapi (draw-mode-new stil ailesi): kapsülsüz, sol ayraçlı,
-   bright — referans hapındaki ⋯ ile aynı işi görür, kaybolmaz. */
+   bright — referans hapındaki ⋯ ile aynı işi görür, kaybolmaz.
+   Kenar boşluğu iki modda da 2px: moda göre değişirse hap genişliği
+   değişip ortalanmış konumu kayıyor. */
 body.mode-draw #appModeBar #btnOverflow{
-  margin-left:4px;
   border:1px solid transparent;
   border-left:1px solid var(--ink-border);
   border-radius:0;
@@ -9174,7 +9145,6 @@ body.mode-draw #appModeBar #btnOverflow:hover{
    aynı görünüm ailesini paylaşır.
    ========================================================= */
 body.mode-draw #appModeBar #btnPanelsBar{
-  margin-left:4px;
   border:1px solid transparent;
   border-left:1px solid var(--ink-border);
   border-radius:0;
@@ -9294,16 +9264,27 @@ body.mode-3d #settings.settings-hub{z-index:9400!important}
   flex:0 0 auto;
   margin-top:0;padding:8px 16px 10px;
   border-top:1px solid var(--border);
-  display:flex;justify-content:flex-start;align-items:center;gap:10px;
+  /* Sol sütun: e-posta üstte, telif ALTINDA; düğmeler sağda ortalanır.
+     Dar pencerede metinler kırpılmaz, satır kırılır. */
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;gap:2px 12px;
 }
-.settingsMail{color:var(--dim);font-size:12px;letter-spacing:.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* Marka telif satırı: e-posta metninin yanında, sessiz ve taşmaya dayanıklı. */
-.settingsCopyright{color:var(--dim);font-size:11px;opacity:.75;white-space:nowrap;min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+.settingsMail{
+  grid-column:1;grid-row:1;
+  color:var(--dim);font-size:12px;letter-spacing:.01em;
+  min-width:0;white-space:normal;overflow-wrap:break-word;
+}
+/* Marka telif satırı: e-posta metninin hemen altında, sessiz ve taşmaya dayanıklı. */
+.settingsCopyright{
+  grid-column:1;grid-row:2;
+  color:var(--dim);font-size:11px;opacity:.75;
+  min-width:0;white-space:normal;
+}
 .settingsAboutLegal{color:var(--dim);font-size:11px;letter-spacing:.02em}
-/* Footer sağ uç eylemleri: Kaydet + Tüm ayarları sıfırla.
-   Mail metni sola, düğmeler sağa yaslanır. */
+/* Footer sağ uç eylemleri: Kaydet + Tüm ayarları sıfırla (iki metin satırı
+   boyunca dikeyde ortalanır). */
 .settingsFootActions{
-  margin-left:auto;flex:0 0 auto;
+  grid-column:2;grid-row:1 / span 2;margin-left:0;flex:0 0 auto;
   display:flex;gap:6px;align-items:center;
 }
 .settingsFootActions button{
@@ -9314,6 +9295,30 @@ body.mode-3d #settings.settings-hub{z-index:9400!important}
 .settingsFootActions button:hover{border-color:var(--accent);color:var(--text)}
 .settingsFootActions button:active{transform:translateY(1px)}
 #btnSettingsResetAll:hover{border-color:color-mix(in srgb,#ff5c5c 55%,var(--border))}
+
+/* ---- Dar panel: Ayarlar 560 px altına inince ----
+   Panel küçültülünce sol nav 172 px sabit kalıyor, sağ sütunda alt bilgi
+   düğmeleri (169 px) metin sütununu sıfıra indiriyordu; e-posta tek harf
+   genişliğinde dikey sarıyordu ("I / f / y / o / u..."). Panel kendi
+   genişliğine göre (container query) tek sütuna geçer: nav üstte yatay
+   şerit, alt bilgi metni üstte / düğmeler altta. */
+#settings{container-type:inline-size}
+@container (max-width:560px){
+  #settings .floatingPanelBody.settingsHubBody{flex-direction:column}
+  #settings .settingsNav{
+    flex:0 0 auto;flex-direction:row;flex-wrap:wrap;align-items:center;
+    gap:4px;padding:6px 8px;
+    border-right:0;border-bottom:1px solid var(--border);
+    overflow:visible;max-height:32%;overflow-y:auto;
+  }
+  /* Arama kutusu kendi satırında tam genişlik. */
+  #settings .settingsSearchWrap{flex:1 1 100%;padding:0 0 2px}
+  #settings .settingsNavItem{width:auto;flex:0 0 auto;padding:5px 9px;font-size:12px;border-radius:7px}
+  #settings .settingsNavItem[aria-selected="true"]::before{display:none}
+  #settings .settingsCoffee{margin-top:0;margin-left:auto;flex:0 0 auto;padding:5px 9px;font-size:11.5px}
+  #settings .settingsFoot{grid-template-columns:minmax(0,1fr);gap:2px}
+  #settings .settingsFootActions{grid-column:1;grid-row:3;justify-content:flex-end;margin-top:4px}
+}
 
 /* Açıklamalar artık HER ZAMAN görünür: "?" düğmeleri kalktı.
    data-l10n-help → data-help kanalı (01b-l10n ATTRS) besler. */
@@ -9353,7 +9358,7 @@ body.mode-3d #settings.settings-hub{z-index:9400!important}
   position:relative;flex:0 0 38px;width:38px;height:21px;
   padding:0;border-radius:999px;border:1px solid var(--border);
   background:var(--bg);cursor:pointer;font-size:0;color:transparent;
-  overflow:hidden;
+  overflow:visible;
 }
 .settingToggleBtn::after{
   content:'';position:absolute;top:2px;left:2px;
@@ -9368,6 +9373,27 @@ body.mode-3d #settings.settings-hub{z-index:9400!important}
 }
 .settingToggleBtn[aria-pressed="true"]::after{transform:translateX(17px);background:var(--accent)}
 .settingToggleBtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Topuz ::after'ı kullandığı için toggle'larda tooltip ::before ile çizilir.
+   Genel button[data-tooltip]::after kuralı (daha yüksek özgüllük) topuzu ezip
+   düğmeyi boş gösteriyordu: "Also works with the Tab/U shortcut". */
+.settingToggleBtn[data-tooltip]::before{
+  content:"";display:none;position:absolute;left:auto;right:0;
+  bottom:calc(100% + 9px);z-index:1500;
+  width:max-content;max-width:240px;padding:6px 9px;
+  transform:translate(0,3px);
+  border:1px solid rgba(255,255,255,.08);border-radius:8px;
+  color:#f5f5f7;background:rgba(25,25,27,.94);
+  box-shadow:0 8px 24px rgba(0,0,0,.32);
+  font:11px/1.35 'Inter',BlinkMacSystemFont,sans-serif;
+  text-align:center;white-space:normal;pointer-events:none;
+  opacity:0;
+}
+.settingToggleBtn[data-tooltip]:hover::before,
+.settingToggleBtn[data-tooltip]:focus-visible::before{
+  content:attr(data-tooltip);display:block;
+  animation:tooltip-pop-left .16s ease .45s both;
+}
 
 /* Header'daki kategori açıklaması (nav item data-help'ten beslenir) */
 .settingsCatDesc{
@@ -9826,8 +9852,13 @@ html[data-reduce-motion="1"] .panel-leaving{animation-duration:1ms!important}
 
 /* ---- Yüksek kontrast ----
    Tema değişkenlerini güçlendirir; tüm UI bunları kullandığından
-   etki gerçek ve temayla uyumludur (sabit HEX yok). */
-html[data-hi-contrast="1"]{
+   etki gerçek ve temayla uyumludur (sabit HEX yok).
+   Özgüllük: tema kuralı `:root[data-theme="..."]` (0,2,0) ve özel tema
+   kuralları <head>'e SONRADAN eklenir. Bu yüzden `html[data-hi-contrast]`
+   tek başına (0,1,1) kaybediyordu → "ayar çalışmıyor". data-theme'li
+   ikinci seçici (0,2,1) hem gömülü hem üretilmiş temayı yener. */
+html[data-hi-contrast="1"],
+html[data-hi-contrast="1"][data-theme]{
   --dim:color-mix(in srgb,var(--text) 86%,var(--bg));
   --border:color-mix(in srgb,var(--text) 52%,var(--bg));
 }

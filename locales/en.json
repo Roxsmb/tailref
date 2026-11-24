@@ -32,5 +32,10 @@
   "Use a single letter, number or Ctrl+a key. Shift and Alt are fixed.": "Use a single letter, number or Ctrl+a key. Shift and Alt are fixed.",
   "Waiting for key…": "Waiting for key…",
   "Zoom 100%": "Zoom 100%",
-  "“{key}” is already used by “{action}”.": "“{key}” is already used by “{action}”."
+  "“{key}” is already used by “{action}”.": "“{key}” is already used by “{action}”.",
+  "image_other": "images",
+  "text_other": "texts",
+  "item_other": "items",
+  "brush_other": "brushes",
+  "step_other": "steps"
 }

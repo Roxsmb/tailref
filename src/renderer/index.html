@@ -121,7 +121,6 @@
   <div id="snapGuides" aria-hidden="true"><i class="sg v" hidden></i><i class="sg h" hidden></i></div>
   <svg id="linkLayer" aria-hidden="true"></svg>
   <div id="hint">
-    <div id="splashLogo" class="brandLockup splashBrandLockup"><img class="brandMark" draggable="false" src="assets/tailref_logo_black_transparent.png" alt="TailRef"><span class="brandWordmark"><img src="assets/tailref_studio_wordmark_white.png" alt="TailRef Studio"></span></div>
     <b data-l10n="Drag images here">Drag images here</b>
     <span data-l10n="or paste with Ctrl+V · double-click for text">or paste with Ctrl+V · double-click for text</span>
   </div>
@@ -141,22 +140,23 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
   </button>
   <div class="modeSeg" role="tablist" data-l10n-aria="Pick mode" aria-label="Pick mode">
-    <!-- 3D Poz en solda: sekmeden açılış tam ekran yapar;
+    <!-- Sıra her modda aynı: 3D Pose · Reference · Drawing.
+         3D Poz en solda: sekmeden açılış tam ekran yapar;
          tam ekrandan çıkınca panel küçülüp arkadaki modda yüzer. -->
     <button id="mode3dBtn" class="modeBtn" type="button" role="tab"
             aria-selected="false" data-l10n-title="3D character pose (Ctrl+3)">
       <svg class="modeIcon" aria-hidden="true"><use href="#icon-cube"/></svg>
       <span class="modeBtnText" data-l10n="3D Pose">3D Pose</span>
     </button>
-    <button id="modeDrawBtn" class="modeBtn" type="button" role="tab"
-            aria-selected="false" data-l10n-title="Drawing mode (Ctrl+1)">
-      <svg class="modeIcon" aria-hidden="true"><use href="#icon-ink-brush"/></svg>
-      <span class="modeBtnText" data-l10n="Drawing">Drawing</span>
-    </button>
     <button id="modeRefBtn" class="modeBtn is-active" type="button" role="tab"
             aria-selected="true" data-l10n-title="Reference board (Ctrl+2)">
       <svg class="modeIcon" aria-hidden="true"><use href="#icon-grid"/></svg>
       <span class="modeBtnText" data-l10n="Reference">Reference</span>
+    </button>
+    <button id="modeDrawBtn" class="modeBtn" type="button" role="tab"
+            aria-selected="false" data-l10n-title="Drawing mode (Ctrl+1)">
+      <svg class="modeIcon" aria-hidden="true"><use href="#icon-ink-brush"/></svg>
+      <span class="modeBtnText" data-l10n="Drawing">Drawing</span>
     </button>
   </div>
   <button id="psDockCollapse" class="psDockCollapse" type="button"
@@ -1891,13 +1891,14 @@
           </select>
         </label>
         <!-- Aday 6 (15 Kasım 2026): görüntü editöründe Ctrl+tekerlek zoom
-             odağı. '1' → imleç odaklı; yoksa merkez-sabit (mevcut davranış). -->
+             odağı. Anahtar yoksa AÇIK (imleç odaklı, eski davranış); '0' →
+             tuval merkezi sabit. -->
         <div class="settingRow" data-l10n-help="In the image editor, Ctrl + wheel zoom keeps the point under the cursor in place. Off zooms around the canvas centre." data-help="In the image editor, Ctrl + wheel zoom keeps the point under the cursor in place. Off zooms around the canvas centre.">
           <span data-l10n="Cursor-anchored zoom">Cursor-anchored zoom</span>
-          <button class="settingToggleBtn" id="settingsZoomCursor" type="button" aria-pressed="false" data-l10n="Off">Off</button>
+          <button class="settingToggleBtn" id="settingsZoomCursor" type="button" aria-pressed="true" data-l10n="On">On</button>
         </div>
         <!-- Aday 9 (15 Kasım 2026): görüntü editörü ızgara aralığı.
-             Yoksa/bozuksa 64 px (mevcut davranış). -->
+             Yoksa/bozuksa 32 px (mevcut davranış). -->
         <label class="settingRow" data-l10n-help="Grid spacing in the image editor, in pixels." data-help="Grid spacing in the image editor, in pixels.">
           <span data-l10n="Editor grid step">Editor grid step</span>
           <select id="settingsGridStepSelect">

@@ -280,14 +280,14 @@ function inkSyncFxPanel() {
       /* Klavye erişimi: satır odaklanabilir, Enter/Space seçer. */
       row.tabIndex = 0;
       row.setAttribute('role', 'listitem');
-      row.setAttribute('aria-label', (def ? def.label : fx.type) + ' effect');
+      row.setAttribute('aria-label', __t('{name} effect', { name: def ? __t(def.label) : fx.type }));
       if (fx.id === inkFxUi.selFxId) row.classList.add('active');
 
       const eye = inkFxUiEl('button', 'inkLayerBtn' + (fx.visible ? ' on' : ''), '');
       eye.type = 'button';
       eye.dataset.act = 'eye';
-      eye.title = 'Visibility';
-      eye.setAttribute('aria-label', 'Toggle visibility');
+      eye.title = __t('Visibility');
+      eye.setAttribute('aria-label', __t('Toggle visibility'));
       eye.setAttribute('aria-pressed', fx.visible ? 'true' : 'false');
       eye.textContent = fx.visible ? '●' : '○';
       row.appendChild(eye);
@@ -295,8 +295,8 @@ function inkSyncFxPanel() {
       const up = inkFxUiEl('button', 'inkLayerBtn', '');
       up.type = 'button';
       up.dataset.act = 'up';
-      up.title = 'Move up';
-      up.setAttribute('aria-label', 'Move effect up');
+      up.title = __t('Move up');
+      up.setAttribute('aria-label', __t('Move effect up'));
       up.textContent = '↑';
       /* İlk satırda yukarı, son satırda aşağı hareket edilemez: düğme
          etkin görünüp hiçbir şey yapmıyordu (katman panelindeki gibi
@@ -307,8 +307,8 @@ function inkSyncFxPanel() {
       const down = inkFxUiEl('button', 'inkLayerBtn', '');
       down.type = 'button';
       down.dataset.act = 'down';
-      down.title = 'Move down';
-      down.setAttribute('aria-label', 'Move effect down');
+      down.title = __t('Move down');
+      down.setAttribute('aria-label', __t('Move effect down'));
       down.textContent = '↓';
       if (idx === stack.length - 1) { down.disabled = true; down.setAttribute('aria-disabled', 'true'); }
       row.appendChild(down);
@@ -323,8 +323,8 @@ function inkSyncFxPanel() {
       const del = inkFxUiEl('button', 'inkLayerBtn inkLayerDel', '');
       del.type = 'button';
       del.dataset.act = 'del';
-      del.title = 'Remove effect';
-      del.setAttribute('aria-label', 'Remove effect');
+      del.title = __t('Remove effect');
+      del.setAttribute('aria-label', __t('Remove effect'));
       del.textContent = '×';
       row.appendChild(del);
 
@@ -433,10 +433,10 @@ function inkFxUiRenderInspector(it) {
   presetSel.dataset.role = 'fx-preset';
   presetSel.value = '';
   const ph = document.createElement('option');
-  ph.value = ''; ph.textContent = 'Preset…';
+  ph.value = ''; ph.textContent = __t('Preset…');
   presetSel.appendChild(ph);
   const builtGroup = document.createElement('optgroup');
-  builtGroup.label = 'Built-in';
+  builtGroup.label = __t('Built-in');
   for (const pr of (INK_FX_PRESETS[fx.type] || [])) {
     const opt = document.createElement('option');
     opt.value = 'b:' + pr.name;
@@ -470,8 +470,8 @@ function inkFxUiRenderInspector(it) {
   presetRow.appendChild(presetSel);
   const presetName = inkFxUiEl('input', 'inkFxPresetName');
   presetName.type = 'text';
-  presetName.placeholder = 'Preset name';
-  presetName.setAttribute('aria-label', 'Preset name');
+  presetName.placeholder = __t('Preset name');
+  presetName.setAttribute('aria-label', __t('Preset name'));
   presetName.dataset.role = 'fx-preset-name';
   presetRow.appendChild(presetName);
   const saveBtn = inkFxUiEl('button', 'inkFxBtn', 'Save');
@@ -912,7 +912,7 @@ function inkFxUiBind() {
     addBtn.addEventListener('click', e => {
       e.preventDefault();
       const itNow = inkFxUiScopedItem();
-      if (!itNow) { addBtn.title = 'Select an image first'; return; }
+      if (!itNow) { addBtn.title = __t('Select an image first'); return; }
       section.hidden = false;
       section.open = true;
       inkFxUi.browserOpen = !inkFxUi.browserOpen;

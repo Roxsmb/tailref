@@ -102,6 +102,7 @@ function themeRegRuleFor(theme) {
     `--text:${hex('text')};--dim:${hex('dim')};--accent:${hex('accent')};` +
     `--accent-ink:${themeRegAccentInkFor(hex('accent'))};}`;
   const bd = theme.backdrop || null;
+  const grad = themeRegSanitizeGradient(theme.backdropCss);
   if (bd && bd.image) {
     const blur = Math.max(0, Math.min(40, +bd.blur || 0));
     const op = Math.max(0.05, Math.min(1, +bd.opacity || 1));
@@ -111,6 +112,12 @@ function themeRegRuleFor(theme) {
       `background-position:${bd.position || 'center'};` +
       `background-size:${bd.size || 'cover'};background-repeat:no-repeat;` +
       `opacity:${op};filter:blur(${blur}px);}`;
+  } else if (grad) {
+    /* Kaynak gömülü temanın gradyanı (rain/snow gibi): kaydetmede görünüm
+       değişmesin. Renkler yine kullanıcının seçtiği değerlerdir. */
+    css += `:root[data-theme="${theme.id}"] #backdrop{` +
+      `background:${grad};background-color:${hex('bg')};` +
+      `opacity:1;filter:none;}`;
   } else {
     css += `:root[data-theme="${theme.id}"] #backdrop{` +
       `background:radial-gradient(120% 90% at 70% -10%,` +
@@ -122,6 +129,19 @@ function themeRegRuleFor(theme) {
 function themeRegSanitizeHex(v) {
   const m = String(v || '').match(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
   return m ? m[0] : '#4da3ff';
+}
+/* Gömülü rain/snow temalarının #backdrop gradyanı özel temaya taşınırken
+   kullanılır. Yalnız gradyan fonksiyonlarına izin verilir; kural enjeksiyonu
+   (; { } url()) reddedilir. */
+function themeRegSanitizeGradient(v) {
+  const s = String(v || '').trim();
+  if (!/^(?:repeating-)?(?:linear|radial|conic)-gradient\(/i.test(s)) return '';
+  if (s.length > 600 || /[;{}]/.test(s) || /url\s*\(/i.test(s)) return '';
+  return s;
+}
+function themeRegEffectOf(id) {
+  const t = themeRegRead().find(x => x.id === id);
+  return t && (t.effect === 'rain' || t.effect === 'snow') ? t.effect : null;
 }
 function themeRegRebuildRules() {
   const sheet = themeRegStyleSheet();
@@ -162,13 +182,13 @@ function themeRegApply(id) {
 }
 function themeRegNewId() { return 'ct_' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6); }
 function themeRegValidate(theme) {
-  if (!theme || typeof theme.name !== 'string' || !theme.name.trim()) return 'isim boş';
-  if (theme.name.trim().length > 40) return 'isim uzun';
+  if (!theme || typeof theme.name !== 'string' || !theme.name.trim()) return 'Name is empty';
+  if (theme.name.trim().length > 40) return 'Name is too long';
   const c = theme.colors || {};
-  for (const k of THEME_COLOR_SLOTS) if (!/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(String(c[k] || ''))) return 'renk bozuk: ' + k;
+  for (const k of THEME_COLOR_SLOTS) if (!/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(String(c[k] || ''))) return 'Invalid color: ' + k;
   if (theme.backdrop && theme.backdrop.image) {
-    if (typeof theme.backdrop.image !== 'string' || !theme.backdrop.image.startsWith('data:image/')) return 'görsel bozuk';
-    if (theme.backdrop.image.length > 1_600_000) return 'görsel çok büyük';
+    if (typeof theme.backdrop.image !== 'string' || !theme.backdrop.image.startsWith('data:image/')) return 'Image is invalid';
+    if (theme.backdrop.image.length > 1_600_000) return 'Image is too large';
   }
   return null;
 }
@@ -188,6 +208,8 @@ function themeRegSave(draft, asNew) {
       id, name: draft.name.trim(), colors: { ...draft.colors },
       panelAlpha: Math.max(40, Math.min(100, +draft.panelAlpha || 94)),
       backdrop: draft.backdrop ? { ...draft.backdrop } : null,
+      effect: draft.effect === 'rain' || draft.effect === 'snow' ? draft.effect : null,
+      backdropCss: themeRegSanitizeGradient(draft.backdropCss) || null,
       createdAt: Date.now(),
     };
     list.push(entry);
@@ -197,6 +219,8 @@ function themeRegSave(draft, asNew) {
     t.colors = { ...draft.colors };
     t.panelAlpha = Math.max(40, Math.min(100, +draft.panelAlpha || 94));
     t.backdrop = draft.backdrop ? { ...draft.backdrop } : null;
+    t.effect = draft.effect === 'rain' || draft.effect === 'snow' ? draft.effect : null;
+    t.backdropCss = themeRegSanitizeGradient(draft.backdropCss) || null;
   }
   themeRegWrite(list);
   themeRegRebuildRules();
@@ -207,7 +231,7 @@ function themeRegSave(draft, asNew) {
 function themeRegRename(id, name) {
   const list = themeRegRead();
   const t = list.find(x => x.id === id);
-  if (!t || !String(name || '').trim()) return { ok: false, error: 'yok' };
+  if (!t || !String(name || '').trim()) return { ok: false, error: 'Not found' };
   t.name = String(name).trim().slice(0, 40);
   themeRegWrite(list);
   themeRegRebuildRules();
@@ -216,12 +240,15 @@ function themeRegRename(id, name) {
 function themeRegDuplicate(id) {
   const list = themeRegRead();
   const src = list.find(x => x.id === id);
-  if (!src) return { ok: false, error: 'yok' };
+  if (!src) return { ok: false, error: 'Not found' };
   if (list.length >= THEME_REG_MAX) return { ok: false, error: 'limit' };
   const copy = {
     id: themeRegNewId(), name: (src.name + ' — copy').slice(0, 40),
     colors: { ...src.colors }, panelAlpha: src.panelAlpha,
-    backdrop: src.backdrop ? { ...src.backdrop } : null, createdAt: Date.now(),
+    backdrop: src.backdrop ? { ...src.backdrop } : null,
+    effect: src.effect === 'rain' || src.effect === 'snow' ? src.effect : null,
+    backdropCss: themeRegSanitizeGradient(src.backdropCss) || null,
+    createdAt: Date.now(),
   };
   list.push(copy);
   themeRegWrite(list);
@@ -232,7 +259,7 @@ function themeRegDuplicate(id) {
 function themeRegDelete(id) {
   const list = themeRegRead();
   const i = list.findIndex(x => x.id === id);
-  if (i < 0) return { ok: false, error: 'yok' };
+  if (i < 0) return { ok: false, error: 'Not found' };
   list.splice(i, 1);
   themeRegWrite(list);
   themeRegRebuildRules();
@@ -244,9 +271,9 @@ function themeRegDelete(id) {
 function themeRegSetImage(id, dataUrl, opts) {
   const list = themeRegRead();
   const t = list.find(x => x.id === id);
-  if (!t) return { ok: false, error: 'yok' };
+  if (!t) return { ok: false, error: 'Not found' };
   if (dataUrl && (!String(dataUrl).startsWith('data:image/') || dataUrl.length > 1_600_000)) {
-    return { ok: false, error: 'görsel bozuk' };
+    return { ok: false, error: 'Image is invalid' };
   }
   t.backdrop = dataUrl ? {
     image: dataUrl, position: opts && opts.position || 'center',
@@ -286,7 +313,7 @@ async function themeRegExtractPalette(dataUrl) {
     if (data[i + 3] < 128) continue;
     px.push([data[i], data[i + 1], data[i + 2]]);
   }
-  if (!px.length) throw new Error('boş görsel');
+  if (!px.length) throw new Error('Empty image');
   /* median-cut: en geniş kanaldan ortanca ile böl, 6 kova */
   let buckets = [px];
   while (buckets.length < 6) {
@@ -353,6 +380,7 @@ window.tailrefThemeRegistry = {
   duplicate: themeRegDuplicate,
   delete: themeRegDelete,
   setImage: themeRegSetImage,
+  effectOf: themeRegEffectOf,
   extractPalette: themeRegExtractPalette,
   downscale: themeRegDownscale,
   accentInkFor: themeRegAccentInkFor,

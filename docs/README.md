@@ -9,6 +9,7 @@ material; some of it is historical and written in Turkish.
 |---|---|
 | [`INSTALLATION.md`](INSTALLATION.md) | Installing the Windows portable build or installer, data locations, checksums, troubleshooting |
 | [`LINUX_INSTALLATION.md`](LINUX_INSTALLATION.md) | Installing the AppImage, deb or rpm on Linux, menu and `.tail` integration, data locations |
+| [`MACOS.md`](MACOS.md) | macOS disk images, the Gatekeeper first launch, building and signing on macOS, release validation |
 | [`FEATURES.md`](FEATURES.md) | What the app actually does today, including known limitations |
 | [`DEVELOPMENT.md`](DEVELOPMENT.md) | Prerequisites, commands, testing, debugging, code style |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | How the main process, renderer, persistence and drawing engine fit together |
@@ -23,6 +24,8 @@ material; some of it is historical and written in Turkish.
 | [`LINUX_BUILD.md`](LINUX_BUILD.md) | Building the AppImage, deb and rpm locally, native module, verification |
 | [`FLATPAK.md`](FLATPAK.md) | The Flathub-ready Flatpak manifest, sandbox permissions and submission checklist |
 | [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) | Short pre-flight list before a build |
+| [`CODE_SIGNING.md`](CODE_SIGNING.md) | Code signing policy: scope, roles, privacy, verification; current unsigned status |
+| [`SIGNPATH_APPLICATION.md`](SIGNPATH_APPLICATION.md) | Eligibility evidence and remaining steps for the free SignPath Foundation signing application |
 | [`PROJECT_AUDIT.md`](PROJECT_AUDIT.md) | The pre-publication audit: findings and resolutions |
 | [`LICENSE_MIGRATION.md`](LICENSE_MIGRATION.md) | The 2026 relicensing to GPL-3.0-or-later: audit, compatibility notes, open questions |
 

@@ -325,34 +325,71 @@ const PRELUDE = `
     /* 7 · Grup başlığı düzenlemesi geri alınır, grup çözülmez; Escape
        yazılanı iptal eder ve boş bir geri-alma adımı bırakmaz. */
     const titleUndo = JSON.parse(await evaluate(ws, `(async () => {
+      /* Sabit süre beklemek yerine gerçek hazır-olma koşulunu bekle:
+         başlık DOM'da ve görünür olmalı. rAF arka planda kısılabildiği
+         için setTimeout(16) ile sınırlı bir yoklama kullanılır. */
+      const waitFor = async (pick, timeout = 4000) => {
+        const t0 = performance.now();
+        for (;;) {
+          const v = pick();
+          if (v) return v;
+          if (performance.now() - t0 > timeout) return null;
+          await new Promise(r => setTimeout(r, 16));
+        }
+      };
+      const titleText = gid => document.querySelector('.gt[data-gid="' + gid + '"] .gtText');
+      const visibleTitle = gid => {
+        const t = titleText(gid);
+        return t && !t.closest('.gt').hidden ? t : null;
+      };
+      /* Pencere arka plandaysa HTMLElement.focus() etkinleşmeyebilir;
+         o durumda handler sözleşmesini korumak için focus olayı
+         gönderilir (diğer testlerdeki sentetik pointer olayları gibi). */
+      const beginEdit = t => {
+        t.focus({ preventScroll: true });
+        const real = document.activeElement === t;
+        if (!real) t.dispatchEvent(new FocusEvent('focus'));
+        return real;
+      };
+      const endEdit = (t, real) => {
+        if (real) t.blur();
+        else t.dispatchEvent(new FocusEvent('blur'));
+      };
+
       __refQa.reset();
       const a = __refQa.text('A', 300, 320);
       const b = __refQa.text('B', 520, 320);
       __refQa.select([a, b]);
       groupSelection();
-      await new Promise(r => setTimeout(r, 160));
       const gid = state.items.find(i => i.groupId)?.groupId;
-      const el = document.querySelector('.gt[data-gid="' + gid + '"] .gtText');
-      el.focus();
+      if (!gid) return JSON.stringify({ error: 'group was not created' });
+      const el = await waitFor(() => visibleTitle(gid));
+      if (!el) return JSON.stringify({ error: 'group title never became visible', gid });
+      const focusReal = beginEdit(el);
       el.textContent = 'MY GROUP';
       el.dispatchEvent(new Event('input', { bubbles: true }));
-      el.blur();
+      endEdit(el, focusReal);
       const undo1 = undoStack.length;
+      const titleAfterEdit = groupTitleOf(gid);
       undo();
       const titleAfterUndo = groupTitleOf(gid);
 
-      const el2 = document.querySelector('.gt[data-gid="' + gid + '"] .gtText');
       /* Geri almadan sonra seçim temizlendiği için grup başlığı gizlidir;
-         gerçek kullanıcı gibi önce grubu yeniden seç. */
+         gerçek kullanıcı gibi önce grubu yeniden seç, sonra başlığı düzenle. */
       __refQa.select(state.items.filter(i => i.groupId === gid).map(i => i.id));
-      await new Promise(r => setTimeout(r, 80));
-      el2.focus();
+      const el2 = await waitFor(() => visibleTitle(gid));
+      if (!el2) return JSON.stringify({ error: 'group title missing after reselect', gid });
+      const focusReal2 = beginEdit(el2);
       el2.textContent = 'TEMP NAME';
       el2.dispatchEvent(new Event('input', { bubbles: true }));
       const undoBeforeEsc = undoStack.length;
       el2.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      /* Escape işleyicisi text.blur() çağırır; pencere odağı yoksa blur
+         olayı çıkmaz, sözleşmeyi tamamlamak için açıkça gönderilir. */
+      if (!focusReal2) el2.dispatchEvent(new FocusEvent('blur'));
       return JSON.stringify({
-        undo1, title: titleAfterUndo,
+        undo1, titleAfterEdit, title: titleAfterUndo,
+        focusReal, focusReal2,
         groupAlive: !!state.items.find(i => i.groupId === gid),
         frame: !!document.querySelector('.gframe[data-gid="' + gid + '"]'),
         titleAfterEsc: groupTitleOf(gid),
@@ -361,7 +398,8 @@ const PRELUDE = `
     })()`));
     check('grup başlığı geri alınıyor ve grup korunuyor',
       titleUndo.title === '' && titleUndo.groupAlive && titleUndo.frame,
-      `başlık=${JSON.stringify(titleUndo.title)} · grup=${titleUndo.groupAlive}`);
+      titleUndo.error ? `hata=${titleUndo.error}`
+        : `başlık=${JSON.stringify(titleUndo.title)} · grup=${titleUndo.groupAlive} · adım=${titleUndo.undo1} · odak=${titleUndo.focusReal}/${titleUndo.focusReal2}`);
     check('grup başlığında Escape iptal ediyor, boş adım bırakmıyor',
       titleUndo.titleAfterEsc === '' && titleUndo.undoAfterEsc === titleUndo.undoBeforeEsc,
       `başlık=${JSON.stringify(titleUndo.titleAfterEsc)} · adım ${titleUndo.undoBeforeEsc} → ${titleUndo.undoAfterEsc}`);

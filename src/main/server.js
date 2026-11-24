@@ -1,9 +1,10 @@
 'use strict';
 
 /* TailRef yerel sunucu (tarayıcı sürümü) — bağımlılık yok.
-   Kullanım: node server.js   (veya start.bat)
+   Kullanım: node src/main/server.js
    Statik sunucu mantığı static-server.js içinde, masaüstü sürümüyle ortak. */
 
+const path = require('path');
 const { spawn } = require('child_process');
 const { startStaticServer } = require('./static-server');
 

@@ -5,7 +5,8 @@ ready and tested. Nothing here is promised for a specific date.
 
 ## Current state
 
-TailRef 1.4.3 is a Windows and Linux x64 desktop app with:
+TailRef 1.4.4 is a Windows, Linux x64 and macOS (Apple silicon + Intel) desktop
+app with:
 
 - a reference board, a drawing engine, a brush library with `.abr` import/export,
   layers and effects;
@@ -13,7 +14,7 @@ TailRef 1.4.3 is a Windows and Linux x64 desktop app with:
 - sandboxed Pinterest/ArtStation/YouTube Music panels;
 - automatic and manual persistence with backups;
 - themes, interface skins, UI packages and 10 UI languages;
-- a 69-gate quality chain.
+- an 86-gate quality chain.
 
 ## Next
 
@@ -28,8 +29,9 @@ TailRef 1.4.3 is a Windows and Linux x64 desktop app with:
   ships as a raster and `assets/tailref-mark.svg` wraps that PNG. A hand-traced
   vector would scale more cleanly. This is cosmetic, not a licensing issue (see
   [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md)).
-- **Localization completeness** — close the remaining gaps in the non-English
-  locales.
+- **Localization completeness** — every shipped locale is complete; new strings
+  must be translated before a release, and `locale-data-test` fails if a
+  translation silently falls back to English.
 
 ## Considering
 
@@ -44,8 +46,9 @@ These are ideas under evaluation, not commitments:
 
 ## Not planned
 
-- macOS release builds. The project targets Windows and Linux x64.
-- ARM64 builds for any platform.
+- ARM64 builds for Windows and Linux (macOS arm64 is published).
+- Notarization for the macOS builds: they are ad-hoc signed until the project
+  can fund an Apple Developer ID. See [`MACOS.md`](MACOS.md).
 - Cloud sync, accounts, telemetry or an online service.
 - A plugin API or third-party extension marketplace.
 - Mobile or web builds.

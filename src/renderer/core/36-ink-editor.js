@@ -823,9 +823,17 @@ function inkEditorWheel(event) {
   event.stopPropagation();
 
   if (event.ctrlKey || event.metaKey) {
-    // Ctrl/Cmd + tekerlek: imlecin altındaki noktayı sabitleyerek zoom.
+    /* Ctrl/Cmd + tekerlek zoom. "Cursor-anchored zoom" AÇIKSA imlecin
+       altındaki nokta sabit kalır; KAPALIYSA tuval merkezi sabit kalır.
+       Anahtar hiç yoksa açık kabul edilir (eski davranış bozulmasın). */
+    let atCursor = true;
+    try { atCursor = localStorage.getItem('tailref-zoom-cursor') !== '0'; } catch { /* sessiz */ }
+    const rect = ui.canvas.getBoundingClientRect();
+    const anchor = atCursor
+      ? { x: event.clientX, y: event.clientY }
+      : { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     const factor = Math.exp(-event.deltaY * 0.0022);
-    inkEditorZoomBy(factor, { x: event.clientX, y: event.clientY });
+    inkEditorZoomBy(factor, anchor);
     return;
   }
   // Düz tekerlek: dikey kaydır; Shift ile yatay. A11 v3: delta ekran

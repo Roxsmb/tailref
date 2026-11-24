@@ -987,7 +987,7 @@
         h.type = 'button';
         h.style.left = pct(s.pos);
         h.style.background = s.color;
-        h.title = `#${i + 1} · ${s.color} — tık: seçici · sürükle: taşı · Alt+tık: sil`;
+        h.title = `#${i + 1} · ${s.color} — ` + __t('Click to pick · Drag to move · Alt+click to delete');
         /* FAZ 7.X: görünür sil düğmesi — seçili durağın yanında × belirir;
            yanlışlıkla eklenen durakları Alt+tık bilmeden silmek için
            (kullanıcı isteği). Yalnız seçilide görünür: sürüklemeye

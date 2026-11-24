@@ -438,7 +438,7 @@ async function waitForTarget(deadlineMs = 25000) {
       let cssOk = false;
       for (const sheet of document.styleSheets) {
         try { for (const r of sheet.cssRules) {
-          if (r.selectorText === '#settings button[data-tooltip]::after') cssOk = true;
+          if (r.selectorText === '#settings button[data-tooltip]:not(.settingToggleBtn)::after') cssOk = true;
         } } catch {}
       }
       const btn = document.getElementById('settingsPose3dReset');
@@ -449,6 +449,29 @@ async function waitForTarget(deadlineMs = 25000) {
     check('Tooltip kanalı: title yok, data-tooltip + #settings sağ çapa CSS',
       tipChannel.cssOk && tipChannel.noTitle === true && tipChannel.hasDt === true,
       JSON.stringify(tipChannel));
+
+    /* ---- FAZ 2b · toggle topuzu ----
+       Genel `button[data-tooltip]::after` kuralı (daha yüksek özgüllük)
+       switch topuzunu ezip düğmeyi boş gösteriyordu; topuz ::after'da
+       kalmalı, tooltip toggle'larda ::before'a taşınmalı. */
+    await evaluate(ws, `document.querySelector('#settingsNav .settingsNavItem[data-cat="drawing"]').click()`);
+    await sleep(250);
+    const toggleKnob = JSON.parse(await evaluate(ws, `(() => {
+      const el = document.getElementById('settingsPanelsHide');
+      if (!el) return JSON.stringify({ missing: true });
+      const a = getComputedStyle(el, '::after');
+      const b = getComputedStyle(el, '::before');
+      return JSON.stringify({
+        w: a.width, h: a.height, bg: a.backgroundColor,
+        afterText: (a.content || '').replace(/"/g, ''),
+        tipDisplay: b.display,
+      });
+    })()`));
+    check('Toggle topuzu: data-tooltip switch\'te ::after topuz olarak kalır',
+      toggleKnob.w === '15px' && toggleKnob.h === '15px'
+        && toggleKnob.bg !== 'rgba(0, 0, 0, 0)' && toggleKnob.bg !== 'transparent'
+        && toggleKnob.afterText === '' && toggleKnob.tipDisplay === 'none',
+      JSON.stringify(toggleKnob));
 
     /* ---- FAZ 3 · 3D Pose: üç eylem gerçek yetenek ---- */
     await evaluate(ws, `document.querySelector('#settingsNav .settingsNavItem[data-cat="pose3d"]').click()`);
@@ -813,6 +836,7 @@ async function waitForTarget(deadlineMs = 25000) {
       navTo('drawing'); await wait(150);
       const zc = document.getElementById('settingsZoomCursor');
       out.zcExists = String(!!zc);
+      out.zcDefaultAria = zc.getAttribute('aria-pressed');
       zc.click(); await wait(80);
       out.zcOn = localStorage.getItem('tailref-zoom-cursor');
       out.zcOnAria = zc.getAttribute('aria-pressed');
@@ -820,10 +844,13 @@ async function waitForTarget(deadlineMs = 25000) {
       out.zcOff = localStorage.getItem('tailref-zoom-cursor');
       const gs = document.getElementById('settingsGridStepSelect');
       out.gsExists = String(!!gs);
+      const gridOv = document.getElementById('gridOverlay');
       gs.value = '256'; gs.dispatchEvent(new Event('change', { bubbles: true })); await wait(60);
       out.gs256 = localStorage.getItem('tailref-ce-grid-step');
+      out.gs256Size = gridOv ? gridOv.style.backgroundSize : null;
       gs.value = '32'; gs.dispatchEvent(new Event('change', { bubbles: true })); await wait(60);
       out.gs32 = localStorage.getItem('tailref-ce-grid-step');
+      out.gs32Size = gridOv ? gridOv.style.backgroundSize : null;
       /* Temizlik. */
       localStorage.removeItem('tailref-brush-cursor');
       localStorage.removeItem('tailref-close-confirm');
@@ -841,6 +868,12 @@ async function waitForTarget(deadlineMs = 25000) {
     check('Tekerlek: zoom toggle localStorage\u2019a yazar (0/1)',
       sector.zoomOff === '0' && sector.zoomOn === '1' && sector.zoomOffAria === 'false',
       `kapalı=${sector.zoomOff}(${sector.zoomOffAria}) açık=${sector.zoomOn}`);
+    check('\u0130mle\u00e7 odakl\u0131 zoom varsay\u0131lan\u0131 a\u00e7\u0131k (eski davran\u0131\u015f korunur)',
+      sector.zcDefaultAria === 'true', `varsay\u0131lan aria=${sector.zcDefaultAria}`);
+    check('Izgara aral\u0131\u011f\u0131: se\u00e7im #gridOverlay aral\u0131\u011f\u0131n\u0131 ger\u00e7ekten de\u011fi\u015ftirir',
+      sector.gs256 === '256' && sector.gs256Size === '256px 256px' &&
+      sector.gs32 === '32' && sector.gs32Size === '32px 32px',
+      `256→${sector.gs256Size} · 32→${sector.gs32Size}`);
     check('Tekerlek: doğal yön toggle localStorage\u2019a yazar',
       sector.invOn === '1' && sector.invOff === '0' && sector.invOnAria === 'true',
       `açık=${sector.invOn}(${sector.invOnAria}) kapalı=${sector.invOff}`);
@@ -881,10 +914,11 @@ async function waitForTarget(deadlineMs = 25000) {
       sector.aeOn === '1',
       `var=${sector.aeExists} kapalı=${sector.aeOff}(${sector.aeOffAria}) açık=${sector.aeOn}`);
     check('Editör zoom/ızgara: imleç zoom toggle + ızgara aralığı kalıcılığı',
-      sector.zcExists === 'true' && sector.zcOn === '1' && sector.zcOnAria === 'true' &&
-      sector.zcOff === '0' && sector.gsExists === 'true' &&
+      sector.zcExists === 'true' && sector.zcDefaultAria === 'true' &&
+      sector.zcOn === '0' && sector.zcOnAria === 'false' &&
+      sector.zcOff === '1' && sector.gsExists === 'true' &&
       sector.gs256 === '256' && sector.gs32 === '32',
-      `zoom=${sector.zcOn}→${sector.zcOff}(${sector.zcOnAria}) ızgara=${sector.gs256}/${sector.gs32}`);
+      `varsayılan=${sector.zcDefaultAria} zoom=${sector.zcOn}→${sector.zcOff}(${sector.zcOnAria}) ızgara=${sector.gs256}/${sector.gs32}`);
 
     /* ---- FAZ 8 · Tüm kategori taraması + pencere boyutu varyantları ---- */
     const navScan = JSON.parse(await evaluate(ws, `(async () => {
@@ -999,14 +1033,52 @@ async function waitForTarget(deadlineMs = 25000) {
       const p = document.getElementById('settings').getBoundingClientRect();
       const f = document.querySelector('.settingsFoot');
       const m = document.querySelector('.settingsMail');
+      const c = document.querySelector('.settingsCopyright');
       const fr = f.getBoundingClientRect(), mr = m.getBoundingClientRect();
+      const cr = c.getBoundingClientRect();
       return JSON.stringify({
         bottomGap: Math.round(p.bottom - fr.bottom),
         leftAligned: Math.round(mr.left - fr.left),
+        mailClipped: m.scrollWidth > m.clientWidth + 1,
+        copyClipped: c.scrollWidth > c.clientWidth + 1,
+        copyBelow: cr.top >= mr.bottom - 1,
+        copyLeftDelta: Math.round(cr.left - mr.left),
       });
     })()`));
     check('footer panelin en altında', Math.abs(foot.bottomGap) <= 4, `alt boşluk=${foot.bottomGap}px`);
     check('footer sola hizalı', foot.leftAligned < 30, `mail sol kenar sapması=${foot.leftAligned}px`);
+    check('footer metinleri kırpılmıyor (e-posta + telif tam okunur)',
+      !foot.mailClipped && !foot.copyClipped,
+      `mail kırpık=${foot.mailClipped} · telif kırpık=${foot.copyClipped}`);
+    check('telif satırı e-posta metninin ALTINDA ve sol hizalı',
+      foot.copyBelow && Math.abs(foot.copyLeftDelta) < 30,
+      `alt=${foot.copyBelow} · sol sapma=${foot.copyLeftDelta}px`);
+
+    /* ---- Dar panel (kullanıcı paneli küçültünce) ----
+       400 px'te tek sütuna geçmeli: nav yatay şerit, e-posta tam genişlik,
+       düğmeler alt satırda. Önceden e-posta tek harf genişliğinde sarıyordu. */
+    const narrow = JSON.parse(await evaluate(ws, `(() => {
+      const p = document.getElementById('settings');
+      const prev = p.style.width;
+      p.style.width = '400px';
+      const nav = p.querySelector('.settingsNav');
+      const m = p.querySelector('.settingsMail');
+      const a = p.querySelector('.settingsFootActions');
+      const mr = m.getBoundingClientRect(), ar = a.getBoundingClientRect();
+      const out = {
+        navDir: getComputedStyle(nav).flexDirection,
+        mailWidth: Math.round(mr.width),
+        mailClipped: m.scrollWidth > m.clientWidth + 1,
+        actionsBelow: ar.top >= mr.bottom - 1,
+        panelWidth: Math.round(p.getBoundingClientRect().width),
+      };
+      p.style.width = prev;
+      return JSON.stringify(out);
+    })()`));
+    check('Dar panel: tek sütun düzeni (nav yatay, e-posta tam genişlik, düğmeler altta)',
+      narrow.navDir === 'row' && narrow.mailWidth > 150 && !narrow.mailClipped &&
+      narrow.actionsBelow === true,
+      `nav=${narrow.navDir} mail=${narrow.mailWidth}px kırpık=${narrow.mailClipped} alt=${narrow.actionsBelow}`);
     await evaluate(ws, `document.getElementById('btnSettingsClose').click()`);
     await sleep(400);
     const closed = await evaluate(ws, `document.getElementById('settings').hidden`);

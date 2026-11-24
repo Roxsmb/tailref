@@ -3,7 +3,7 @@
 TailRef Studio is published for x86_64 (amd64) Linux as an AppImage, a Debian
 package and an RPM package. All three contain the same application and the same
 `.tail` project support, so a project can be moved between them — and between
-Windows and Linux — without conversion.
+Windows, Linux and macOS — without conversion.
 
 > **Not on Flathub yet.** The Flatpak manifest is prepared but not submitted.
 > Until a Flathub submission is accepted, use one of the formats below.
@@ -48,8 +48,8 @@ The AppImage is a single executable file. It needs no installation and no root
 rights.
 
 ```bash
-chmod +x TailRef-1.4.3.AppImage
-./TailRef-1.4.3.AppImage
+chmod +x TailRef-1.4.4.AppImage
+./TailRef-1.4.4.AppImage
 ```
 
 Put it anywhere you like, for example `~/Applications/`.
@@ -64,7 +64,7 @@ AppImages mount themselves with FUSE. If your system has no `libfuse2`:
 - Or skip FUSE entirely:
 
 ```bash
-./TailRef-1.4.3.AppImage --appimage-extract-and-run
+./TailRef-1.4.4.AppImage --appimage-extract-and-run
 ```
 
 ### Menu entry and `.tail` association
@@ -85,7 +85,7 @@ current user. The AppImage keeps running from where you store it; only the menu
 entry, icon and MIME definition are copied out of the extracted image.
 
 ```bash
-./TailRef-1.4.3.AppImage --appimage-extract
+./TailRef-1.4.4.AppImage --appimage-extract
 mkdir -p ~/.local/share/applications \
          ~/.local/share/icons/hicolor/512x512/apps \
          ~/.local/share/mime/packages
@@ -96,7 +96,7 @@ cp squashfs-root/usr/share/mime/packages/tailref.xml ~/.local/share/mime/package
 # Point the menu entry at the AppImage you keep. Keep --no-sandbox: the
 # AppImage's own entry uses it, and without it Chromium's sandbox helper
 # fails on distributions that disable unprivileged user namespaces.
-sed -i "s|^Exec=.*|Exec=$HOME/Applications/TailRef-1.4.3.AppImage --no-sandbox %U|" \
+sed -i "s|^Exec=.*|Exec=$HOME/Applications/TailRef-1.4.4.AppImage --no-sandbox %U|" \
    ~/.local/share/applications/tailref.desktop
 update-mime-database ~/.local/share/mime
 update-desktop-database ~/.local/share/applications
@@ -112,7 +112,7 @@ default*. The MIME type is `application/x-tailref-board`.
 ## Debian / Ubuntu package
 
 ```bash
-sudo apt install ./tailref_1.4.3_amd64.deb
+sudo apt install ./tailref_1.4.4_amd64.deb
 ```
 
 `apt` resolves the runtime dependencies (`libgtk-3-0`, `libnss3`, `libxss1`,
@@ -135,7 +135,7 @@ by double-clicking them.
 Upgrade by installing the newer `.deb` over the old one:
 
 ```bash
-sudo apt install ./tailref_1.4.3_amd64.deb
+sudo apt install ./tailref_1.4.4_amd64.deb
 ```
 
 Remove:
@@ -153,13 +153,13 @@ files.
 Fedora:
 
 ```bash
-sudo dnf install ./tailref-1.4.3.x86_64.rpm
+sudo dnf install ./tailref-1.4.4.x86_64.rpm
 ```
 
 openSUSE:
 
 ```bash
-sudo zypper install ./tailref-1.4.3.x86_64.rpm
+sudo zypper install ./tailref-1.4.4.x86_64.rpm
 ```
 
 The rpm installs the same files as the deb. Dependencies are resolved by your
@@ -170,7 +170,7 @@ package manager (`gtk3`, `nss`, `libnotify`, `libXScrnSaver`, `libXtst`,
 Upgrade and remove:
 
 ```bash
-sudo dnf upgrade ./tailref-1.4.3.x86_64.rpm
+sudo dnf upgrade ./tailref-1.4.4.x86_64.rpm
 sudo dnf remove tailref
 ```
 
@@ -219,7 +219,7 @@ sha256sum -c SHA256SUMS.txt --ignore-missing
 Or for a single file:
 
 ```bash
-sha256sum TailRef-1.4.3.AppImage
+sha256sum TailRef-1.4.4.AppImage
 ```
 
 Compare the output with the release page. If the values differ, do not run the
@@ -232,16 +232,16 @@ may warn about an unknown signature; the checksum is the integrity check.
 NVIDIA driver first. Then try software rendering:
 
 ```bash
-LIBGL_ALWAYS_SOFTWARE=1 ./TailRef-1.4.3.AppImage
+LIBGL_ALWAYS_SOFTWARE=1 ./TailRef-1.4.4.AppImage
 # or
-./TailRef-1.4.3.AppImage --disable-gpu
+./TailRef-1.4.4.AppImage --disable-gpu
 ```
 
 **Wayland problems (fractional scaling, input, black window).** TailRef asks
 Chromium for the native Wayland backend. To force X11/XWayland:
 
 ```bash
-./TailRef-1.4.3.AppImage --ozone-platform=x11
+./TailRef-1.4.4.AppImage --ozone-platform=x11
 ```
 
 For the deb/rpm build, add the flag to the command line the same way:

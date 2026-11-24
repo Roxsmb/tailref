@@ -498,7 +498,7 @@ function setAppModeCollapsed(on, animate = true) {
   appModeWipeTimer = null;
   /* Kesintiye uğramış bir wipe varsa temizle. */
   bar.classList.remove('appMode-anim');
-  bar.style.width = '';
+  bar.style.removeProperty('width');
 
   appModeFoldables().forEach(el => el.classList.add('appModeFoldable'));
 
@@ -521,24 +521,32 @@ function setAppModeCollapsed(on, animate = true) {
 
   appModeWiping = true;
   btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  /* Genişlik MUTLAKA `!important` ile yazılmalı: moda özel kurallar
+     (draw-proto.css `body.mode-draw #appModeBar{width:auto!important}`,
+     ui-shell.css dock/referans varyantları) normal inline genişliği
+     ezip wipe'ı donduruyordu — kullanıcı: "bastığın an donuyor sonra
+     bir anda kapanıyor". !important'lı inline, stylesheet !important'ını
+     geçer; temizlikte removeProperty ile geri alınır. */
   if (on) {
     /* Kapanış: çocuklar görünür kalır, genişlik akarken overflow kırpılır. */
     bar.classList.add('appMode-anim');
-    bar.style.width = from + 'px';
+    bar.style.setProperty('width', from + 'px', 'important');
   } else {
     /* Açılış: dar durumdan tam genişliğe; çocuklar hemen gelir, genişlik akar. */
     bar.classList.remove('appMode-collapsed');
     bar.classList.add('appMode-anim');
-    bar.style.width = from + 'px';
+    bar.style.setProperty('width', from + 'px', 'important');
   }
   void bar.offsetWidth; /* başlangıç genişliğini kilitle */
-  requestAnimationFrame(() => { bar.style.width = to + 'px'; });
+  requestAnimationFrame(() => {
+    bar.style.setProperty('width', to + 'px', 'important');
+  });
 
   appModeWipeTimer = setTimeout(() => {
     appModeWipeTimer = null;
     appModeWiping = false;
     bar.classList.remove('appMode-anim');
-    bar.style.width = '';
+    bar.style.removeProperty('width');
     appModeApplyState(bar, btn, on);
   }, APPMODE_WIPE_MS);
 }

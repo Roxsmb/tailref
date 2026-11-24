@@ -286,7 +286,11 @@ async function hazirla(ws) {
     const WC_KAPA = `(() => { world.style.willChange = 'auto'; return true; })()`;
     await vary('B scroll-okumasiz 200', UYGULA, GERI);
     await vary('C willChange 200', WC_AC, WC_KAPA);
-    await vary('D ikisi birden 200', UYGULA + WC_AC, GERI + WC_KAPA);
+    /* İki IIFE'yi yan yana eklemek `(() => {...})()(() => {...})()`
+       üretiyordu: ikinci IIFE birinci çağrının dönüş değerini çağırmaya
+       çalışıyor ve "intermediate value is not a function" ile çöküyordu.
+       Araya noktalı virgül koyarak iki ayrı ifade olmalarını sağla. */
+    await vary('D ikisi birden 200', UYGULA + ';' + WC_AC, GERI + ';' + WC_KAPA);
     /* temel bir kez daha (sirasinin etkisini gormek icin) */
     await evaluate(ws, sifirla);
     await run('E temel-yine 200', 200);

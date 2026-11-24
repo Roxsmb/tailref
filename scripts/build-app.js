@@ -2,14 +2,14 @@
 
 /* app.js üreticisi.
 
-   Kaynak dosyalar: src/app/*.js (isim sırasına göre birleştirilir).
-   Çıktı: app.js — index.html ve paketlenmiş uygulama bunu yükler.
+   Kaynak dosyalar: src/renderer/core/*.js (isim sırasına göre birleştirilir).
+   Çıktı: src/renderer/app.js — index.html ve paketlenmiş uygulama bunu yükler.
 
    Kullanım:
      node scripts/build-app.js
      node scripts/build-app.js --check   (yazmadan yalnızca doğrula)
 
-   Not: app.js'i elle düzenlemeyin; değişiklikleri src/app/ altında yapın. */
+   Not: app.js'i elle düzenlemeyin; değişiklikleri src/renderer/core/ altında yapın. */
 
 const fs = require('fs');
 const path = require('path');
@@ -48,7 +48,17 @@ function build() {
 
   const output = `${BANNER}\n${chunks.join('\n')}`;
   if (CHECK_ONLY) {
-    console.log(`OK   ${files.length} kaynak doğrulandı (yazılmadı).`);
+    /* Yalnızca kaynakların sözdizimini değil, üretilmiş app.js'in gerçekten
+       bu kaynaklardan üretilmiş olduğunu da doğrula. Önceden --check hiçbir
+       şeyi karşılaştırmıyordu: bir kaynak değişip yeniden üretim unutulsa
+       bile kapı yeşil kalıyor, paket eski kodla çıkıyordu. */
+    const current = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
+    if (current.replace(/\r\n/g, '\n') !== output) {
+      throw new Error(!current
+        ? 'app.js yok — node scripts/build-app.js ile üretin.'
+        : 'app.js kaynaklarla güncel değil — node scripts/build-app.js ile yeniden üretin.');
+    }
+    console.log(`OK   app.js ${files.length} kaynakla güncel (${(output.length / 1024).toFixed(1)} KB).`);
     return;
   }
 

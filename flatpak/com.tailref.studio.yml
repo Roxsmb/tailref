@@ -86,7 +86,7 @@ modules:
     sources:
       - type: git
         url: https://github.com/Roxsmb/tailref.git
-        tag: v1.4.3
+        tag: v1.4.4
         x-checker-data:
           type: git
           tag-pattern: ^v([\d.]+)$

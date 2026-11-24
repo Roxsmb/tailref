@@ -397,10 +397,24 @@ function launch(userDataDir, saveDir) {
       JSON.stringify({ docked, dockedUrl }));
 
     // ---- ayrı penceredeki × uygulama içi kapatma gibi davranmalı ----
-    await evaluate(mainWs, `(async () => {
-      await detachPanelToWindow(document.getElementById('pinterestPanel'));
-      return true;
+    /* Taşımayı beklemeden başlat, sonucu ayrı ölç: hang'in çağrı içinde mi
+       yoksa sonrasında mı olduğunu ayırır. */
+    const detachKick = await evaluate(mainWs, `(() => {
+      window.__detach2State = 'kick';
+      Promise.resolve()
+        .then(() => detachPanelToWindow(document.getElementById('pinterestPanel')))
+        .then(r => { window.__detach2State = 'done:' + r; })
+        .catch(e => { window.__detach2State = 'err:' + (e && e.message); });
+      return 'kicked';
     })()`);
+    if (detachKick !== 'kicked') throw new Error('ikinci taşıma başlatılamadı');
+    const detach2State = await waitFor(async () => {
+      const s = await evaluate(mainWs, 'window.__detach2State');
+      return s && s !== 'kick' ? s : '';
+    }, 'ikinci ayrı panel taşıma');
+    if (detach2State !== 'done:true') {
+      throw new Error('ikinci taşıma başarısız: ' + detach2State);
+    }
     const detTarget2 = await waitFor(() => findTarget(APP_PORT, t => t.url.includes('/panel.html')),
       'ikinci ayrı panel penceresi');
     detWs = await connect(detTarget2.webSocketDebuggerUrl);

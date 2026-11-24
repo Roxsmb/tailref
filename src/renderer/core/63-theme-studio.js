@@ -20,6 +20,23 @@ let themeStudioDraft = null;
 let themeStudioPreviewTimer = 0;
 
 function themeStudioRoot() { return document.documentElement; }
+/* Seçimi aktif modun anahtarına da yaz (çizim/referans ayrı tema tutar). */
+function themeStudioApplyForMode(id) {
+  if (typeof window.tailrefThemeApplyForMode === 'function') window.tailrefThemeApplyForMode(id);
+  else if (typeof applyTheme === 'function') applyTheme(id);
+}
+function themeStudioBackdropGradientCss() {
+  const bd = document.getElementById('backdrop');
+  if (!bd) return null;
+  const img = getComputedStyle(bd).backgroundImage || '';
+  return /gradient\(/i.test(img) ? img : null;
+}
+function themeStudioCurrentEffect() {
+  const cur = document.documentElement.dataset.theme || 'classic';
+  if (cur === 'rain' || cur === 'snow') return cur;
+  const reg = window.tailrefThemeRegistry;
+  return reg && typeof reg.effectOf === 'function' ? reg.effectOf(cur) : null;
+}
 
 /* ---- gömülü tema paletini CSSOM'dan oku ---- */
 function themeStudioBuiltinColors(id) {
@@ -71,7 +88,7 @@ function themeStudioHexFromRgbString(v) {
 function themeStudioBuildGallery() {
   const box = document.getElementById('settingsThemeGallery');
   if (!box) return;
-  const active = (localStorage.getItem('tailref-theme') || 'classic');
+  const active = (document.documentElement.dataset.theme || 'classic');
   const reg = window.tailrefThemeRegistry;
   const customs = reg ? reg.list() : [];
   /* idempotent: her açılışta yeniden kur (seçim durumu değişebilir) */
@@ -111,11 +128,11 @@ function themeStudioBuildGallery() {
       if (isCustom) {
         const t = reg.list().find(x => x.id === id);
         if (t) {
-          reg.apply(id);
+          themeStudioApplyForMode(id);
           themeStudioLoadDraftFromCustom(t);
         }
       } else {
-        if (typeof applyTheme === 'function') applyTheme(id);
+        themeStudioApplyForMode(id);
         themeStudioLoadDraftFromBuiltin(id);
       }
       settingsThemeStudioSync();
@@ -174,6 +191,9 @@ function themeStudioLoadDraftFromBuiltin(id) {
     id: null, sourceId: id, sourceCustom: false,
     name: id === 'classic' ? '' : id.charAt(0).toUpperCase() + id.slice(1) + ' style',
     colors: themeStudioNormalize(raw), panelAlpha: 94, backdrop: null,
+    /* Rain/Snow: efekt + kendi gradyanı kaydetmede korunur. */
+    effect: (id === 'rain' || id === 'snow') ? id : null,
+    backdropCss: themeStudioBackdropGradientCss(),
   };
   themeStudioDraftToUi();
 }
@@ -186,6 +206,8 @@ function themeStudioLoadDraftFromCustom(t) {
     id: t.id, sourceId: t.id, sourceCustom: true,
     name: t.name, colors, panelAlpha: t.panelAlpha || 94,
     backdrop: t.backdrop ? { ...t.backdrop } : null,
+    effect: t.effect === 'rain' || t.effect === 'snow' ? t.effect : null,
+    backdropCss: t.backdropCss || null,
   };
   themeStudioDraftToUi();
 }
@@ -194,6 +216,8 @@ function themeStudioNewFromCurrent() {
     id: null, sourceId: null, sourceCustom: false,
     name: '', colors: themeStudioNormalize(themeStudioClassicColors()),
     panelAlpha: 94, backdrop: null,
+    effect: themeStudioCurrentEffect(),
+    backdropCss: themeStudioBackdropGradientCss(),
   };
   /* Mevcut aktif tema görünümünden kopyala: computed değerler */
   const cs = getComputedStyle(themeStudioRoot());
@@ -278,8 +302,9 @@ function themeStudioApplyPreview() {
     } else {
       themeStudioClearBackdropInline();
       /* Kullanıcı kararı: Background rengi backdrop'ı da canlı boyasın.
-         (Kaydet'te üretilen kural zaten bg'den gradyan kurar.) */
-      backdrop.style.backgroundImage = 'none';
+         Rain/Snow'dan gelen gradyan varsa korunur; yoksa düz renk.
+         (Kaydet'te üretilen kural aynı gradyanı taşır.) */
+      backdrop.style.backgroundImage = themeStudioDraft.backdropCss || 'none';
       backdrop.style.backgroundColor = c.bg;
     }
   }
@@ -335,7 +360,7 @@ function settingsThemeStudioSync() {
   /* Editör boşsa ve aktif tema özel ise onu yükle */
   if (!themeStudioDraft) {
     const reg = window.tailrefThemeRegistry;
-    const active = reg ? reg.list().find(t => t.id === (localStorage.getItem('tailref-theme') || '')) : null;
+    const active = reg ? reg.list().find(t => t.id === (document.documentElement.dataset.theme || '')) : null;
     if (active) themeStudioLoadDraftFromCustom(active);
   }
   if (themeStudioDraft) themeStudioDraftToUi();
@@ -345,7 +370,9 @@ function themeStudioSyncToolbarSelects() {
   const reg = window.tailrefThemeRegistry;
   if (!reg) return;
   const list = reg.list();
-  const active = reg.active();
+  /* Görünen (uygulanmış) tema esastır: mod başına anahtar base'den farklı
+     olabilir; select eski temayı göstermesin. */
+  const active = document.documentElement.dataset.theme || 'classic';
   for (const id of ['themeSelect', 'themeSelectOverflow', 'settingsThemeGlobal', 'settingsThemeDraw', 'settingsThemeRef']) {
     const sel = document.getElementById(id);
     if (!sel) continue;
@@ -396,10 +423,26 @@ function settingsThemeStudioBind() {
       asNew = true; /* gömülü kaynak — daima yeni tema */
     }
     const res = reg.save(themeStudioDraft, asNew);
-    if (!res.ok) { window.toast && toast(res.error === 'limit' ? (window.L10N ? L10N.t('Custom theme limit reached') : 'Custom theme limit reached') : res.error); return; }
+    if (!res.ok) {
+      /* Doğrulama nedenleri artık İngilizce anahtarlar (02b); kullanıcıya
+         seçili dilde göster. 'Invalid color: <slot>' slot adını korur. */
+      const err = String(res.error || '');
+      const msg = err === 'limit'
+        ? (window.L10N ? L10N.t('Custom theme limit reached') : 'Custom theme limit reached')
+        : err.indexOf('Invalid color: ') === 0
+          ? __t('Invalid color') + err.slice('Invalid color'.length)
+          : __t(err);
+      window.toast && toast(msg);
+      return;
+    }
     /* Taslak inline override'ları kaldır — kayıtlı tema artık üretilmiş
        kural üzerinden (data-theme) geçerli; inline onu ezmesin. */
     themeStudioClearInlinePalette();
+    /* Kaydetme aktif modun anahtarına da yazılmalı; yoksa çizimde kaydedilen
+       tema mod değişiminde eski temaya dönüyordu. */
+    if (typeof themeSet === 'function' && typeof themeModeNow === 'function') {
+      themeSet(themeModeNow(), res.id);
+    }
     /* draft artık kayıtlı temaya işaret eder */
     const saved = reg.list().find(t => t.id === res.id);
     if (saved) themeStudioLoadDraftFromCustom(saved);

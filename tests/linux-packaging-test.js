@@ -213,7 +213,8 @@ ok('update UI explains the Linux update path',
   /Windows-only\. On Linux, update through your package manager or download the new AppImage\./.test(updateUi));
 
 const native = read('scripts/build-native.js');
-ok('build-native.js uses process.arch', /--arch=\$\{process\.arch\}/.test(native));
+ok('build-native.js takes the architecture from --arch (default process.arch)',
+  /--arch=\$\{arch\}/.test(native) && /return process\.arch;/.test(native));
 ok('build-native.js has no hard-coded x64', !/--arch=x64/.test(native));
 ok('build-native.js detects a POSIX toolchain', /hasPosixToolchain/.test(native) && /command -v/.test(native));
 ok('build-native.js supports offline headers', /TAILREF_NODEDIR/.test(native));
@@ -348,7 +349,8 @@ const notesText = execFileSync(process.execPath,
   ['scripts/release-notes.js', '--version', pkg.version],
   { cwd: ROOT, encoding: 'utf8' });
 ok('release notes embed the English changelog section for the current version',
-  notesText.includes('### Added — Linux support') &&
+  notesText.includes(`# TailRef Studio ${pkg.version}`) &&
+  notesText.includes('## Changelog') &&
   !notesText.includes('No English changelog section'));
 ok('release notes are English-only',
   !/[çğışöüÇĞİŞÖÜ]/.test(notesText), 'no Turkish letters');

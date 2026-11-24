@@ -23,6 +23,15 @@ if (!(process.versions && process.versions.electron)) {
   const { app } = require('electron');
   const host = require(path.join(__dirname, '..', 'src', 'main',
     'ink-engine-host.js'));
+  const ipcGuard = require(path.join(__dirname, '..', 'src', 'main',
+    'ipc-guard.js'));
+
+  const TEST_ORIGIN_URL = 'http://127.0.0.1:5178/';
+  const TEST_SENDER = { id: 1, isDestroyed: () => false };
+  const trustedEvent = () => ({
+    sender: TEST_SENDER,
+    senderFrame: { url: TEST_ORIGIN_URL, parent: null },
+  });
 
   function main() {
     /* ipcMain taklidi: handle çağrılarını kaydet ve döndür. */
@@ -34,6 +43,9 @@ if (!(process.versions && process.versions.electron)) {
       on: (channel, handler) => { /* kayıtsız — kapı kapsamı dışı */ },
     };
     let failures = 0;
+
+    ipcGuard.setAllowedOrigin(TEST_ORIGIN_URL);
+    ipcGuard.trustMain(TEST_SENDER);
 
     try {
       host.register(fakeIpcMain);
@@ -52,7 +64,7 @@ if (!(process.versions && process.versions.electron)) {
     }
 
     (async () => {
-      const st = await status({}, null);
+      const st = await status(trustedEvent(), null);
       if (!st.ok) {
         console.error('HOST KIRMIZI: status beklenmedik - ' + st.error);
         app.exit(1);
@@ -61,16 +73,16 @@ if (!(process.versions && process.versions.electron)) {
       console.log('HOST: motor yüklü, mod=' + st.kind);
 
       /* noiseTip: boyut + aralık denetimleri */
-      const off = await tip({}, 'noiseTip', 0, 0.5, 0.9, 0);
+      const off = await tip(trustedEvent(), 'noiseTip', 0, 0.5, 0.9, 0);
       if (off.ok) { console.error('HOST KIRMIZI: px=0 kabul edildi'); failures++; }
-      const big = await tip({}, 'noiseTip', 2000, 0.5, 0.9, 0);
+      const big = await tip(trustedEvent(), 'noiseTip', 2000, 0.5, 0.9, 0);
       if (big.ok) { console.error('HOST KIRMIZI: px=2000 kabul edildi'); failures++; }
-      const garbage = await tip({}, 'noiseTip', 'x', 0.5, 0.9, 0);
+      const garbage = await tip(trustedEvent(), 'noiseTip', 'x', 0.5, 0.9, 0);
       if (garbage.ok) { console.error('HOST KIRMIZI: sayı olmayan kabul'); failures++; }
-      const alien = await tip({}, 'circleTip', 64, 1, 1, 1);
+      const alien = await tip(trustedEvent(), 'circleTip', 64, 1, 1, 1);
       if (alien.ok) { console.error('HOST KIRMIZI: bilinmeyen iş kabul'); failures++; }
 
-      const noise = await tip({}, 'noiseTip', 128, 0.55, 0.94, 3, 1);
+      const noise = await tip(trustedEvent(), 'noiseTip', 128, 0.55, 0.94, 3, 1);
       if (!noise.ok) {
         console.error('HOST KIRMIZI: noiseTip - ' + noise.error);
         failures++;
@@ -84,7 +96,7 @@ if (!(process.versions && process.versions.electron)) {
         }
       }
 
-      const wc = await tip({}, 'watercolorTip', 128, 0.22, 0.76, 0.42, 0);
+      const wc = await tip(trustedEvent(), 'watercolorTip', 128, 0.22, 0.76, 0.42, 0);
       if (!wc.ok || wc.data.length !== 128 * 128 * 4) {
         console.error('HOST KIRMIZI: watercolorTip - ' + (wc.error || 'boyut'));
         failures++;

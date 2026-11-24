@@ -1,5 +1,7 @@
 'use strict';
 
+const ipcGuard = require('./ipc-guard');
+
 /* TailRef — automatic update manager (Electron main process).
    ------------------------------------------------------------------
    Owns the complete update lifecycle:
@@ -556,11 +558,11 @@ function createUpdateManager(options) {
   }
 
   /* ---------------- IPC (explicit allowlist) ---------------- */
-  ipcMain.handle('update:get-state', event => {
+  ipcGuard.handle(ipcMain, 'update:get-state', event => {
     assertTrusted(event);
     return snapshot();
   });
-  ipcMain.handle('update:get-preferences', event => {
+  ipcGuard.handle(ipcMain, 'update:get-preferences', event => {
     assertTrusted(event);
     return {
       autoCheck: prefs.autoCheck,
@@ -568,23 +570,23 @@ function createUpdateManager(options) {
       skippedVersion: prefs.skippedVersion,
     };
   });
-  ipcMain.handle('update:set-preferences', (event, patch) => {
+  ipcGuard.handle(ipcMain, 'update:set-preferences', (event, patch) => {
     assertTrusted(event);
     return setPreferences(patch);
   });
-  ipcMain.handle('update:check', (event, manual) => {
+  ipcGuard.handle(ipcMain, 'update:check', (event, manual) => {
     assertTrusted(event);
     return checkForUpdates({ manual: !!manual });
   });
-  ipcMain.handle('update:download', event => {
+  ipcGuard.handle(ipcMain, 'update:download', event => {
     assertTrusted(event);
     return downloadUpdate();
   });
-  ipcMain.handle('update:install', event => {
+  ipcGuard.handle(ipcMain, 'update:install', event => {
     assertTrusted(event);
     return installUpdate();
   });
-  ipcMain.handle('update:open-download', async event => {
+  ipcGuard.handle(ipcMain, 'update:open-download', async event => {
     assertTrusted(event);
     if (typeof openExternal !== 'function') return false;
     try {

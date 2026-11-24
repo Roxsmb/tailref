@@ -1477,7 +1477,7 @@ export class PanelController {
     if (!this.sceneGraph) return;
     this.sceneGraph.restoreVisibility();
     this.refreshPartList();
-    this.hud?.flash('Tüm parçalar görünür');
+    this.hud?.flash(__t('All parts visible'));
   }
 
   syncPartsRestore() {

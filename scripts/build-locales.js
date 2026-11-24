@@ -27,6 +27,27 @@ const BANNER = `/* =========================================================
 window.TailRefLocales = {
 `;
 
+/* `--check` gerçekten karşılaştırır: üretilecek içerik diskteki dosyayla
+   aynı mı? Önceden yalnız "OK" yazıyordu, yani kaynak JSON'lar değişip
+   yeniden üretim unutulsa bile kapı yeşil kalıyordu. Satır sonları
+   karşılaştırmada normalize edilir (git eol=lf, Windows çalışma kopyası
+   CRLF olabilir). */
+function normalizeEol(text) {
+  return text.replace(/\r\n/g, '\n');
+}
+
+function describeDifference(expected, actual) {
+  const a = normalizeEol(expected).split('\n');
+  const b = normalizeEol(actual).split('\n');
+  const max = Math.max(a.length, b.length);
+  for (let i = 0; i < max; i += 1) {
+    if (a[i] !== b[i]) {
+      return `ilk fark satır ${i + 1}\n  beklenen: ${JSON.stringify(a[i] || '')}\n  dosyada : ${JSON.stringify(b[i] || '')}`;
+    }
+  }
+  return 'içerik aynı görünüyor (yalnızca boyut/encoding farkı)';
+}
+
 function main() {
   if (!fs.existsSync(LOCALES)) {
     console.error('locales/ klasörü yok — hiçbir şey üretilmedi.');
@@ -57,7 +78,19 @@ function main() {
     `\n};\n`;
 
   if (CHECK_ONLY) {
-    console.log(`OK   locales doğrulandı · ${files.length} dil · ${keyTotal} anahtar (yazma yok)`);
+    const actual = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : null;
+    if (actual === null) {
+      console.error(`HATA: ${path.relative(ROOT, OUT)} yok — üretim çalıştırılmamış.`);
+      console.error('Düzeltme: node scripts/build-locales.js');
+      process.exit(1);
+    }
+    if (normalizeEol(actual) !== normalizeEol(out)) {
+      console.error(`HATA: ${path.relative(ROOT, OUT)} kaynaklarla güncel değil.`);
+      console.error(describeDifference(out, actual));
+      console.error('Düzeltme: node scripts/build-locales.js');
+      process.exit(1);
+    }
+    console.log(`OK   locales doğrulandı · ${files.length} dil · ${keyTotal} anahtar · üretilen dosya güncel`);
     return;
   }
   fs.writeFileSync(OUT, out, 'utf8');

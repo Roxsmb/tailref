@@ -2858,7 +2858,7 @@ function inkNativeCategoryById(id) {
 
 function inkNativeBrushCategoryName(id) {
   const cat = inkNativeCategoryById(id);
-  return cat ? cat.name : 'Brush';
+  return cat ? __t(cat.name) : __t('Brush');
 }
 
 function inkNativeVisibleCategories() {
@@ -3232,11 +3232,11 @@ function inkNativeShowMoveCategoryMenu(brush, clientX, clientY) {
   const actions = inkNativeAssignableCategories()
     .filter(category => category.id !== brush.category)
     .map(category => ({
-      label: category.name,
+      label: __t(category.name),
       run: () => inkNativeMoveBrushToCategory(brush.id, category.id),
     }));
   if (!actions.length) {
-    actions.push({ label: 'No other category', disabled: true });
+    actions.push({ label: __t('No other category'), disabled: true });
   }
   inkNativeShowContextMenuAt(clientX, clientY, actions);
 }
@@ -3427,7 +3427,7 @@ function inkNativeSafeFileName(value, fallback = 'firca') {
 
 async function inkNativeSaveAbrFile(bytes, fileName, label) {
   if (!bytes || !bytes.length) {
-    window.alert(label + ' could not be prepared as .abr.');
+    window.alert(__t('{label} could not be prepared as .abr.', { label }));
     return false;
   }
   try {
@@ -3435,13 +3435,12 @@ async function inkNativeSaveAbrFile(bytes, fileName, label) {
       const res = await window.tailref.exportAbr(bytes, fileName);
       if (res && res.ok) {
         if (typeof showProjectNotice === 'function') {
-          showProjectNotice(label + ' exported: ' + res.file, 4200);
+          showProjectNotice(__t('{label} exported: {file}', { label, file: res.file }), 4200);
         }
         return true;
       }
       if (res && res.canceled) return false;
-      window.alert(label + ' export failed: ' +
-        (res && res.error ? res.error : 'bilinmeyen hata'));
+      window.alert(__t('{label} export failed: {error}', { label, error: res && res.error ? res.error : __t('unknown error') }));
       return false;
     }
     const blob = new Blob([bytes], { type: 'application/octet-stream' });
@@ -3475,7 +3474,7 @@ async function inkNativeExportCategoryAbr(categoryId) {
   const category = inkNativeCategoryById(categoryId);
   const brushes = inkNativeBrushesForCategory(categoryId);
   if (!brushes.length) {
-    window.alert('No brushes to export in this category.');
+    window.alert(__t('No brushes to export in this category.'));
     return false;
   }
   let bytes = null;
@@ -3485,7 +3484,7 @@ async function inkNativeExportCategoryAbr(categoryId) {
   return inkNativeSaveAbrFile(
     bytes,
     inkNativeSafeFileName(category ? category.name : 'kategori') + '.abr',
-    category ? '“' + category.name + '” kategorisi' : 'Category'
+    category ? __t('“{name}” category', { name: __t(category.name) }) : __t('Category')
   );
 }
 
@@ -3493,7 +3492,7 @@ async function inkNativeDeleteBrush(brushId) {
   const ink = inkState();
   const brush = ink.brushes.find(item => item.id === brushId);
   if (!brush || inkNativeIsDefaultBrush(brush)) return false;
-  if (!(await appConfirm('“' + brush.name + '” — remove this brush from the library?'))) return false;
+  if (!(await appConfirm(__t('“{name}” — remove this brush from the library?', { name: brush.name })))) return false;
   if (!ink.deletedBrushIds.includes(brush.id)) ink.deletedBrushIds.push(brush.id);
   if (ink.brushId === brush.id) {
     const fallback = inkNativeFallbackBrush();
@@ -3512,24 +3511,24 @@ async function inkNativeDeleteCategory(categoryId) {
   const category = inkNativeCategoryById(categoryId);
   if (!category || category.virtual) {
     if (category && category.virtual) {
-      window.alert('Favorites is a virtual category; it cannot be deleted. You can remove stars one by one.');
+      window.alert(__t('Favorites is a virtual category; it cannot be deleted. You can remove stars one by one.'));
     }
     return;
   }
   if (ink.deletedCategories.includes(categoryId)) return;
   const categories = inkNativeVisibleCategories().filter(item => !item.virtual);
   if (categories.length <= 1 && categories.some(item => item.id === categoryId)) {
-    window.alert('At least one category must remain in the library.');
+    window.alert(__t('At least one category must remain in the library.'));
     return;
   }
   const contents = inkNativeBrushesForCategory(categoryId);
   /* Onay metni yanlış birleştirilmişti: "… category and its 3 — remove this
      brush …" gibi yarım bir cümle çıkıyordu. Sayıya göre tekil/çoğul kur. */
-  const confirmText = contents.length
-    ? '“' + category.name + '” category and its ' + contents.length +
-      (contents.length === 1 ? ' brush will be removed from the library.'
-        : ' brushes will be removed from the library.')
-    : '“' + category.name + '” category will be removed from the library.';
+  const confirmText = contents.length === 1
+    ? __t('“{name}” category and its 1 brush will be removed from the library.', { name: __t(category.name) })
+    : contents.length
+      ? __t('“{name}” category and its {n} brushes will be removed from the library.', { name: __t(category.name), n: contents.length })
+      : __t('“{name}” category will be removed from the library.', { name: __t(category.name) });
   if (!(await appConfirm(confirmText))) return;
 
   if (!ink.deletedCategories.includes(categoryId)) ink.deletedCategories.push(categoryId);
@@ -3630,11 +3629,11 @@ function inkNativeRenderCategories() {
       (cat.virtual ? ' nbCategory--virtual' : '');
     btn.dataset.category = cat.id;
     btn.draggable = true;
-    btn.title = (cat.hint || cat.name) + ' · Drag to reorder';
+    btn.title = __t(cat.hint || cat.name) + ' · ' + __t('Drag to reorder');
     btn.setAttribute('aria-pressed', cat.id === inkNativeBrushUi.activeCategory ? 'true' : 'false');
     const name = document.createElement('span');
     name.className = 'nbCategory__name';
-    name.textContent = cat.name;
+    name.textContent = __t(cat.name);
     const meta = document.createElement('span');
     meta.className = 'nbCategory__count';
     meta.textContent = String(count);
@@ -3897,7 +3896,7 @@ function inkNativeRenderBrushListInner() {
       group.className = 'nbBrushGroup';
       const title = document.createElement('div');
       title.className = 'nbBrushGroup__title';
-      title.textContent = category.name;
+      title.textContent = __t(category.name);
       group.appendChild(title);
       for (const brush of items) {
         group.appendChild(inkNativeBrushCard(brush, ink, {
@@ -3909,7 +3908,7 @@ function inkNativeRenderBrushListInner() {
       if (!items.length && category.id === 'custom') {
         const empty = document.createElement('p');
         empty.className = 'nbEmpty nbEmpty--compact';
-        empty.textContent = 'You have no custom brushes yet.';
+        empty.textContent = __t('You have no custom brushes yet.');
         group.appendChild(empty);
       }
       list.appendChild(group);
@@ -3917,7 +3916,7 @@ function inkNativeRenderBrushListInner() {
     if (!shown) {
       const empty = document.createElement('p');
       empty.className = 'nbEmpty';
-      empty.textContent = 'No brushes to show.';
+      empty.textContent = __t('No brushes to show.');
       list.appendChild(empty);
     }
     return;
@@ -3955,22 +3954,22 @@ function inkNativeSyncMeta() {
   if (inkNativeBrushUi.creatorOnly) {
     let total = 0;
     try { total = inkNativeVisibleBrushes().length; } catch { total = 0; }
-    if (title) title.textContent = 'MY LIBRARY';
-    if (hint) hint.textContent = 'All brushes by category';
-    if (count) count.textContent = total + ' brush';
+    if (title) title.textContent = __t('MY LIBRARY');
+    if (hint) hint.textContent = __t('All brushes by category');
+    if (count) count.textContent = total + ' ' + __tp('brush', total);
     return;
   }
 
   const cat = inkNativeVisibleCategories().find(item =>
     item.id === inkNativeBrushUi.activeCategory) || inkNativeVisibleCategories()[0];
-  if (title) title.textContent = cat ? cat.title : 'BRUSH LIBRARY';
-  if (hint) hint.textContent = cat ? cat.hint : '';
+  if (title) title.textContent = cat ? __t(cat.title) : __t('BRUSH LIBRARY');
+  if (hint) hint.textContent = cat ? __t(cat.hint) : '';
   if (count) {
     let n = 0;
     try {
       n = cat ? inkNativeBrushesForCategory(cat.id).length : 0;
     } catch { n = 0; }
-    count.textContent = n + ' brush';
+    count.textContent = n + ' ' + __tp('brush', n);
   }
 }
 
@@ -4142,12 +4141,12 @@ function inkOpenNativeBrushLibrary(anchor, categoryId, options = {}) {
     inkNativeRenderBrushList();
     inkNativeSyncMeta();
   }
-  root.setAttribute('aria-label', creatorOnly ? 'Brush creator' : 'Brush library');
+  root.setAttribute('aria-label', __t(creatorOnly ? 'Brush creator' : 'Brush library'));
   const title = root.querySelector('.nbHead h2');
-  if (title) title.textContent = creatorOnly ? 'CREATE YOUR OWN BRUSH' : 'BRUSH LIBRARY';
+  if (title) title.textContent = __t(creatorOnly ? 'CREATE YOUR OWN BRUSH' : 'BRUSH LIBRARY');
   if (inkNativeBrushUi.els.close) {
     inkNativeBrushUi.els.close.setAttribute(
-      'aria-label', creatorOnly ? 'Close the brush creator' : 'Close library'
+      'aria-label', __t(creatorOnly ? 'Close the brush creator' : 'Close library')
     );
   }
   root.hidden = false;
@@ -4331,7 +4330,7 @@ function inkInitNativeBrushLibrary() {
       }
       if (els.creatorPngStatus) {
         els.creatorPngStatus.textContent =
-          'Transparent PNG recommended; a white background is converted to a mask automatically.';
+          __t('Transparent PNG recommended; a white background is converted to a mask automatically.');
       }
       updateCreator();
     });
@@ -4339,7 +4338,7 @@ function inkInitNativeBrushLibrary() {
       const brush = inkNativeCustomBrushFromForm();
       const status = document.getElementById('nativeBrushCreatorStatus');
       if (!brush.name) {
-        if (status) status.textContent = 'Give the brush a name.';
+        if (status) status.textContent = __t('Give the brush a name.');
         document.getElementById('nativeBrushCustomName')?.focus();
         return;
       }
@@ -4352,8 +4351,8 @@ function inkInitNativeBrushLibrary() {
         setActiveBrush(duplicate.id);
         inkNativeRenderAll();
         if (status) {
-          status.textContent = 'Bu ayarlarla “' + duplicate.name +
-            '” already exists; no new copy was created, the existing brush was selected.';
+          status.textContent = __t('These settings already have “{name}”; no new copy was created, the existing brush was selected.',
+            { name: duplicate.name });
         }
         return;
       }
@@ -4361,7 +4360,7 @@ function inkInitNativeBrushLibrary() {
       inkNativeBrushUi.activeCategory = brush.category;
       setActiveBrush(brush.id);
       inkNativeRenderAll();
-      if (status) status.textContent = '“' + brush.name + '” created and saved.';
+      if (status) status.textContent = __t('“{name}” created and saved.', { name: brush.name });
       if (brush.kind === 'abr' && brush.tipId) inkLoadAbrTip(brush.tipId);
       // Proje kaydı manuel modda olsa bile fırça kütüphanesi hemen
       // IndexedDB'ye yazılır; "Save" alınmasa da fırça kaybolmaz.
@@ -4375,7 +4374,7 @@ function inkInitNativeBrushLibrary() {
       const deleted = await inkNativeDeleteBrush(brush.id);
       if (deleted) {
         const status = document.getElementById('nativeBrushCreatorStatus');
-        if (status) status.textContent = 'Custom brush deleted.';
+        if (status) status.textContent = __t('Custom brush deleted.');
       }
     });
   }

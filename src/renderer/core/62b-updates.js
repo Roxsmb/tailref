@@ -31,7 +31,13 @@
         return t('Portable build - download the new version from GitHub to update.');
       }
       if (s.reason === 'platform') {
-        return t('Automatic updates are Windows-only. On Linux, update through your package manager or download the new AppImage.');
+        /* macOS ve Linux'ta güncelleyici kapalı; her platform kendi
+           güncelleme yolunu söyler. */
+        const onMac = /mac/i.test(navigator.platform || '') ||
+          /macintosh|mac os x/i.test(navigator.userAgent || '');
+        return onMac
+          ? t('Automatic updates are Windows-only. On macOS, download the new disk image.')
+          : t('Automatic updates are Windows-only. On Linux, update through your package manager or download the new AppImage.');
       }
       return t('Automatic updates are not available on this platform.');
     }

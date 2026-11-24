@@ -15,6 +15,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const ipcGuard = require('./ipc-guard');
 const { MessageChannelMain } = require('electron');
 
 /* Yükleme hassas nokta: .node dosyası asar dışında yaşamak
@@ -64,9 +65,10 @@ const KINDS = ['noiseTip', 'watercolorTip'];
    Protokol: { id, fn:'tileSlice', w, h, src(transfer),
                slices(transfer) } → { id, ok, count,
                data(transfer) | error }
-   Ölü oturum temizliği: 'close' mesajı + istek zaman aşımı yok
-   (tek istek; hizmet cevaplamazsa foıreign güzel düşüş yoksa
-   calling JS yolu yedektir). ========================================== */
+   Ölü oturum temizliği: 'close' mesajı + renderer tarafında istek zaman
+   aşımı (preload ENGINE_PORT_TIMEOUT_MS). Hizmet takılırsa renderer isteği
+   hata olarak çözer, portu kapatır ve senkron JS dilimleme yoluna düşer;
+   asenkron çağrı asla sonsuza kadar asılı kalmaz. */
 const portSessions = new Set();
 
 function onPortRequest(port, event) {
@@ -107,7 +109,7 @@ function onPortRequest(port, event) {
 }
 
 function register(ipcMain) {
-  ipcMain.on('ink-engine:port-open', (event) => {
+  ipcGuard.on(ipcMain, 'ink-engine:port-open', (event) => {
     /* DÜZELTME (boş ekran sorunu): bu kanal süs yoludur — invoke yedeği
        her durumda çalışır. Buradaki herhangi bir hata ana süreci
        DÜŞÜRMEMELİ; eskiden try/catsizdi ve MessageChannelMain eksik
@@ -129,7 +131,7 @@ function register(ipcMain) {
     }
   });
 
-  ipcMain.handle('ink-engine:status', () => {
+  ipcGuard.handle(ipcMain, 'ink-engine:status', () => {
     const ok = tryLoad();
     return {
       ok,
@@ -138,7 +140,7 @@ function register(ipcMain) {
     };
   });
 
-  ipcMain.handle('ink-engine:tip', (_e, kind, a, b, c, d, f) => {
+  ipcGuard.handle(ipcMain, 'ink-engine:tip', (_e, kind, a, b, c, d, f) => {
     if (!tryLoad()) return { ok: false, error: loadError };
     if (!KINDS.includes(kind)) return { ok: false, error: 'bilinmeyen iş' };
     /* numbers: [px, ...] - a=px, diğer dört sayı işe göre. */
@@ -167,7 +169,7 @@ function register(ipcMain) {
      Cevap: { ok, count, data: Float64Array stride 9
      (x,y,k,p,s,t,a,br,tilted) }. JS emisyondaki "yok" alanlar NaN
      olarak döner — tüketiciya üretim sırasında yeniden aynen taşınır. */
-  ipcMain.handle('ink-engine:dabs', (
+  ipcGuard.handle(ipcMain, 'ink-engine:dabs', (
     _e, points, spacing, sx, sy, stableOnly, jitter, taperStart,
     taperEnd, progressOffset, totalLength, strokeId) => {
     if (!tryLoad()) return { ok: false, error: loadError };
@@ -203,7 +205,7 @@ function register(ipcMain) {
      (karo kutularının bölgeye göre konumu). Cevap: { ok, count,
      data: Uint8Array } — dilim sırasıyla BİTİŞİK: karo başına
      w*h*4 bayt, satır-bazlı. JS bunu dilim başına görünümle keser. */
-  ipcMain.handle('ink-engine:tiles', (_e, src, srcW, srcH, slices) => {
+  ipcGuard.handle(ipcMain, 'ink-engine:tiles', (_e, src, srcW, srcH, slices) => {
     if (!tryLoad()) return { ok: false, error: loadError };
     if (typeof srcW !== 'number' || !Number.isFinite(srcW) ||
         typeof srcH !== 'number' || !Number.isFinite(srcH)) {

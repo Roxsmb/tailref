@@ -240,4 +240,11 @@
     if (typeof key !== 'string' || !key) return key;
     try { return t(key, params); } catch { return key; }
   };
+
+  /** Çoğul yardımcısı: __tp('image', 3). IIFE kapsamı dışındaki dosyalar
+      çıplak tPlural() çağıramaz (ReferenceError); bu köprü tek güvenli yol. */
+  window.__tp = function (key, count, params) {
+    if (typeof key !== 'string' || !key) return key;
+    try { return tPlural(key, count, params); } catch { return key; }
+  };
 })();

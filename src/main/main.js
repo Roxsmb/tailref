@@ -13,6 +13,7 @@ const { createPanelWindowManager } = require('./panel-window-manager');
 const { createUpdateManager } = require('./update-manager');
 const { isPortableEnv } = require('./update-policy');
 const { normalizeExternalUrl } = require('./external-links');
+const ipcGuard = require('./ipc-guard');
 const {
   isTailFilePath,
   normalizeExportDir,
@@ -53,38 +54,14 @@ if (process.platform === 'linux' && process.env.FLATPAK_ID &&
 const path = require('path');
 const { fileURLToPath } = require('url');
 const fs   = require('fs');
-const zlib = require('zlib');
 const { startStaticServer } = require('./static-server');
 /* (Canvas Editor köprüsü kaldırıldı — ayrı pencere akışı silindi.) */
 
 /* Atomik yazım choke-point: kalıcılık dosyalarına yarım içerik asla düşmez.
-   Aynı klasörde geçici dosyaya yazar, sonra tek renameSync ile yerleştirir
-   (aynı klasör = aynı disk, rename atomiktir). Süreç yazım ortasında çökerse
-   ya eski dosya ya tam yenisi okunur — bozuk/truncate JSON hiçbir zaman yok.
-   Windows'ta hedef bir okuyucu (AV, yedekleme) tarafından kilitliyse rename
-   EPERM/EBUSY verebilir: bir kez hedefi bırakıp yeniden denenir, düşerse
-   doğrudan yazmaya cansıkı düşer (eski davranış; kayıp yerine yarım dosya). */
-function writeFileAtomic(file, data) {
-  const dir = path.dirname(file);
-  fs.mkdirSync(dir, { recursive: true });
-  const tmp = path.join(dir,
-    `.tmp-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
-  try {
-    fs.writeFileSync(tmp, data);
-    try {
-      fs.renameSync(tmp, file);
-    } catch {
-      try {
-        fs.rmSync(file, { force: true });
-        fs.renameSync(tmp, file);
-      } catch {
-        fs.writeFileSync(file, data);
-      }
-    }
-  } finally {
-    try { fs.rmSync(tmp, { force: true }); } catch { /* sessiz */ }
-  }
-}
+   Ayrıntı ve Windows kilit/rename geri dönüşü: src/main/atomic-write.js.
+   Eski yerel kopya, rename ikinci kez düşünce hedefi silip veriyi kaybediyordu
+   (P0); modül artık eski dosyayı yana alır, asla geri dönüşsüz silmez. */
+const { writeFileAtomic, reserveUniqueFile } = require('./atomic-write');
 
 /* Test/otomasyon için ortam değişkeniyle geçici port ve veri klasörü
    kullanılabilir. Paketlenmiş uygulamada bu kapalıdır; port sabit kalır
@@ -108,6 +85,7 @@ if (TEST_ENV || process.env.TailRef_TEST_SCREEN) {
 const PORT = ((TEST_ENV || E2E_ENV) && Number(process.env.TailRef_PORT)) || 5178;
 const HOST = '127.0.0.1';
 const APP_URL = `http://${HOST}:${PORT}/`;
+ipcGuard.setAllowedOrigin(APP_URL);
 const SRC_ROOT = __dirname;
 const PRELOAD_DIR = path.join(SRC_ROOT, '..', 'preload');
 const RENDERER_DIR = path.join(SRC_ROOT, '..', 'renderer');
@@ -367,9 +345,13 @@ function createWindow() {
     },
   });
 
-  // Pencere ikonu: Windows .ico, Linux .png (Electron Linux'ta .ico okumaz).
+  // Pencere ikonu: Windows .ico, Linux ve macOS .png (Electron Linux'ta .ico
+  // okumaz; macOS'ta ikon paket içindeki .icns'ten gelir, bu yalnız yedek).
   // Paketli sürümde extraResources/icon.*, geliştirmede depo kökü build/.
-  const iconFile = process.platform === 'linux' ? 'icon.png' : 'icon.ico';
+  const mainContents = win.webContents;
+  ipcGuard.trustMain(mainContents);
+
+  const iconFile = process.platform === 'win32' ? 'icon.ico' : 'icon.png';
   const iconPath = app.isPackaged
     ? path.join(process.resourcesPath, iconFile)
     : path.join(__dirname, '..', '..', 'build', iconFile);
@@ -408,6 +390,7 @@ function createWindow() {
   win.on('enter-full-screen', () => { winFullscreen = true; });
   win.on('leave-full-screen', () => { winFullscreen = false; });
   win.on('closed', () => {
+    ipcGuard.untrustMain(mainContents);
     win = null;
     winFullscreen = false;
     // Ana pencere kapanınca ayrı panel pencereleri de kapanır.
@@ -564,7 +547,7 @@ function requestRendererFlush() {
 }
 
 /* Renderer isteği aldı ve kullanıcıya soruyor: zaman aşımını durdur. */
-ipcMain.on('window-close-ack', () => {
+ipcGuard.on(ipcMain, 'window-close-ack', () => {
   closeAck = true;
   if (closeFallbackTimer) { clearTimeout(closeFallbackTimer); closeFallbackTimer = null; }
 });
@@ -572,7 +555,7 @@ ipcMain.on('window-close-ack', () => {
 /* İlk frame boyandıktan sonra renderer sinyali: ana penceriyi görünür yap.
    Yalnızca ana pencerenin kendi sender'ı kabul edilir (webview'lerden
    gelen ping yok sayılır). */
-ipcMain.on('reveal-main-window', (event) => {
+ipcGuard.on(ipcMain, 'reveal-main-window', (event) => {
   if (TEST_ENV) return;
   if (!win || win.isDestroyed() || event.sender !== win.webContents) return;
   if (revealDone) return;
@@ -588,7 +571,7 @@ ipcMain.on('reveal-main-window', (event) => {
 
 /* Kullanıcı kapanıştan vazgeçti (kaydetme iptal edildi / hata oldu):
    pencere açık kalır, sonraki kapatma denemesi normal çalışır. */
-ipcMain.handle('window-cancel-close', () => {
+ipcGuard.handle(ipcMain, 'window-cancel-close', () => {
   if (closeFallbackTimer) { clearTimeout(closeFallbackTimer); closeFallbackTimer = null; }
   closeAck = false;
   closeConfirmed = false;
@@ -600,7 +583,7 @@ ipcMain.handle('window-cancel-close', () => {
    bulgusu: diyalog açıkken CPU %100). Genel onay sorusu: pencereye bağlı
    yerel kutu, renderer blok DEĞİL (await IPC). Dönüş: 0 = Onay, 1 = İptal.
    Bilinmeyen dizeler aynen geçer (canvas-editor.toast kuralı). */
-ipcMain.handle('confirm-dialog', async (_e, message, detail, params) => {
+ipcGuard.handle(ipcMain, 'confirm-dialog', async (_e, message, detail, params) => {
   if (!win || win.isDestroyed()) return 1;
   try {
     const box = await dialog.showMessageBox(win, {
@@ -626,7 +609,7 @@ ipcMain.handle('confirm-dialog', async (_e, message, detail, params) => {
    renderer'ı kilitlediği için (yanıt vermiyor sanılıp kurtarma kutusu
    açılıyordu) soruyu ana süreçte, pencereye bağlı yerel kutu olarak soruyoruz.
    Dönüş: 0 = kaydet ve çık, 1 = kaydetmeden çık, 2 = vazgeç. */
-ipcMain.handle('window-close-choice', async () => {  if (!win || win.isDestroyed()) return 1;
+ipcGuard.handle(ipcMain, 'window-close-choice', async () => {  if (!win || win.isDestroyed()) return 1;
   try {
     const box = await dialog.showMessageBox(win, {
       type: 'warning',
@@ -648,18 +631,18 @@ ipcMain.handle('window-close-choice', async () => {  if (!win || win.isDestroyed
   }
 });
 
-ipcMain.handle('window-confirm-close', () => {
+ipcGuard.handle(ipcMain, 'window-confirm-close', () => {
   if (closeFallbackTimer) { clearTimeout(closeFallbackTimer); closeFallbackTimer = null; }
   closeConfirmed = true;
   if (win && !win.isDestroyed()) win.close();
   return true;
 });
 
-/* ---------------- otomatik gǬncelleme el s��k��Ymas�� ----------------
-   GǬncelleme kurulmadan ��nce renderer'a "kaydet" f��rsat�� verilir. Ana
-   sǬre��, renderer'��n update-install-ready / update-install-postpone
-   cevab��n�� bekler. Cevap gelmezse (renderer dondu) kurulum iptal edilir;
-   kullan��c�� verisi asla zorla kapat��larak riske at��lmaz. */
+/* ---------------- otomatik güncelleme el sıkışması ----------------
+   Güncelleme kurulmadan önce renderer'a "kaydet" fırsatı verilir. Ana
+   süreç, renderer'ın update-install-ready / update-install-postpone
+   cevabını bekler. Cevap gelmezse (renderer dondu) kurulum iptal edilir;
+   kullanıcı verisi asla zorla kapatılarak riske atılmaz. */
 let installHandshakeResolve = null;
 let installHandshakeTimer = null;
 
@@ -678,7 +661,7 @@ function requestInstallHandshake() {
     if (!win || win.isDestroyed()) { resolve(false); return; }
     if (installHandshakeResolve) finishInstallHandshake(false);
     installHandshakeResolve = resolve;
-    /* Kaydetme diyalo�Yu a����k kalabilir; 10 dakika sonra vazge�� say. */
+    /* Kaydetme diyaloğu açık kalabilir; 10 dakika sonra vazgeç say. */
     installHandshakeTimer = setTimeout(() => finishInstallHandshake(false), 10 * 60 * 1000);
     try {
       win.webContents.send('update-install-requested');
@@ -688,22 +671,22 @@ function requestInstallHandshake() {
   });
 }
 
-ipcMain.handle('update-install-ready', (event) => {
+ipcGuard.handle(ipcMain, 'update-install-ready', (event) => {
   if (!win || win.isDestroyed() || event.sender !== win.webContents) return false;
   finishInstallHandshake(true);
   return true;
 });
 
-ipcMain.handle('update-install-postpone', (event) => {
+ipcGuard.handle(ipcMain, 'update-install-postpone', (event) => {
   if (!win || win.isDestroyed() || event.sender !== win.webContents) return false;
   finishInstallHandshake(false);
   return true;
 });
 
-/* GǬncelleme kurulumundan ��nce "kaydet?" sorusu. Kapan��Ytaki ile ayn��
-   gǬvenlik s��zle�Ymesi, farkl�� d��Yme metinleri: 0 = kaydet ve yeniden
-   ba�Ylat, 1 = kaydetmeden yeniden ba�Ylat, 2 = vazge��. */
-ipcMain.handle('window-install-choice', async (event) => {
+/* Güncelleme kurulumundan önce "kaydet?" sorusu. Kapanıştaki ile aynı
+   güvenlik sözleşmesi, farklı düğme metinleri: 0 = kaydet ve yeniden
+   başlat, 1 = kaydetmeden yeniden başlat, 2 = vazgeç. */
+ipcGuard.handle(ipcMain, 'window-install-choice', async (event) => {
   if (!win || win.isDestroyed() || event.sender !== win.webContents) return 2;
   try {
     const box = await dialog.showMessageBox(win, {
@@ -728,7 +711,7 @@ ipcMain.handle('window-install-choice', async (event) => {
 
 let updateManager = null;
 
-ipcMain.handle('toggle-on-top', () => {
+ipcGuard.handle(ipcMain, 'toggle-on-top', () => {
   if (!win) return false;
   alwaysOnTop = !alwaysOnTop;
   applyAlwaysOnTop();
@@ -736,11 +719,11 @@ ipcMain.handle('toggle-on-top', () => {
   return alwaysOnTop;
 });
 
-ipcMain.handle('is-on-top', () => (win ? alwaysOnTop : false));
+ipcGuard.handle(ipcMain, 'is-on-top', () => (win ? alwaysOnTop : false));
 
-ipcMain.handle('window-minimize', () => { if (win) win.minimize(); });
-ipcMain.handle('window-close',    () => { if (win) win.close(); });
-ipcMain.handle('window-toggle-max', () => {
+ipcGuard.handle(ipcMain, 'window-minimize', () => { if (win) win.minimize(); });
+ipcGuard.handle(ipcMain, 'window-close',    () => { if (win) win.close(); });
+ipcGuard.handle(ipcMain, 'window-toggle-max', () => {
   if (!win) return false;
   /* maximize()/unmaximize() OS'de asenktir; hemen ardından isMaximized()
      okumak eski değeri döndürebilir. Hedef durumu önce hesapla ve onu döndür;
@@ -750,8 +733,8 @@ ipcMain.handle('window-toggle-max', () => {
   else win.unmaximize();
   return target;
 });
-ipcMain.handle('window-is-maximized', () => !!(win && win.isMaximized()));
-ipcMain.handle('window-toggle-fullscreen', () => {
+ipcGuard.handle(ipcMain, 'window-is-maximized', () => !!(win && win.isMaximized()));
+ipcGuard.handle(ipcMain, 'window-toggle-fullscreen', () => {
   if (!win) return false;
   /* Windows'ta saydam/çerçevesiz pencerede isFullScreen() her zaman false
      dönebiliyor; gerçek durumu enter/leave-full-screen olaylarından izle. */
@@ -774,8 +757,8 @@ panelWindowManager = createPanelWindowManager({
 });
 panelWindowManager.registerIpc();
 
-ipcMain.handle('window-is-fullscreen', () => !!(win && (winFullscreen || win.isFullScreen())));
-ipcMain.handle('window-exit-fullscreen', () => {
+ipcGuard.handle(ipcMain, 'window-is-fullscreen', () => !!(win && (winFullscreen || win.isFullScreen())));
+ipcGuard.handle(ipcMain, 'window-exit-fullscreen', () => {
   if (!win) return false;
   if (win.isKiosk()) win.setKiosk(false);
   if (winFullscreen || win.isFullScreen()) {
@@ -784,7 +767,7 @@ ipcMain.handle('window-exit-fullscreen', () => {
   }
   return false;
 });
-ipcMain.handle('open-external', (_e, url) => {
+ipcGuard.handle(ipcMain, 'open-external', (_e, url) => {
   /* Yalnız bilinen dış hedefler (YouTube + destek sayfası). Doğrulama
      src/main/external-links.js içinde; testi tests/external-links-test.js. */
   const target = normalizeExternalUrl(url);
@@ -811,7 +794,7 @@ function pngBuffer(bytes) {
   }
 }
 
-ipcMain.handle('clipboard-image', (_e, bytes) => {
+ipcGuard.handle(ipcMain, 'clipboard-image', (_e, bytes) => {
   const buffer = pngBuffer(bytes);
   if (!buffer) return false;
   try {
@@ -824,7 +807,7 @@ ipcMain.handle('clipboard-image', (_e, bytes) => {
   }
 });
 
-ipcMain.handle('save-image', async (_e, bytes, suggestedName) => {
+ipcGuard.handle(ipcMain, 'save-image', async (_e, bytes, suggestedName) => {
   const buffer = pngBuffer(bytes);
   if (!buffer) return { ok: false, error: dialogL10n.t('Invalid PNG.') };
   const rawName = String(suggestedName || 'tailref-pose.png').replace(/[\\/:*?"<>|]/g, '_').slice(0, 120);
@@ -836,7 +819,9 @@ ipcMain.handle('save-image', async (_e, bytes, suggestedName) => {
       filters: [{ name: 'PNG', extensions: ['png'] }],
     });
     if (result.canceled || !result.filePath) return { ok: false, canceled: true };
-    fs.writeFileSync(result.filePath, buffer);
+    /* Kullanıcı dosyası: yarım kalan yazma (güç kesintisi / disk dolu)
+       eski dosyayı bozmasın diye atomik yaz. */
+    writeFileAtomic(result.filePath, buffer);
     return { ok: true, file: result.filePath };
   } catch (error) {
     return { ok: false, error: error.message };
@@ -845,7 +830,7 @@ ipcMain.handle('save-image', async (_e, bytes, suggestedName) => {
 
 /* Ayarlar > Genel: tercih yedeği (Faz 6) — tercih JSON'u diske yazar.
    Yalnızca metin; tahta verisi (IndexedDB) bu kanaldan geçmez. */
-ipcMain.handle('save-preferences-json', async (_e, text, suggestedName) => {
+ipcGuard.handle(ipcMain, 'save-preferences-json', async (_e, text, suggestedName) => {
   const rawName = String(suggestedName || 'tailref-preferences.json')
     .replace(/[\\/:*?"<>|]/g, '_').slice(0, 120);
   const fileName = /\.json$/i.test(rawName) ? rawName : `${rawName}.json`;
@@ -856,7 +841,7 @@ ipcMain.handle('save-preferences-json', async (_e, text, suggestedName) => {
       filters: [{ name: 'JSON', extensions: ['json'] }],
     });
     if (result.canceled || !result.filePath) return { ok: false, canceled: true };
-    fs.writeFileSync(result.filePath, String(text || ''), 'utf8');
+    writeFileAtomic(result.filePath, String(text || ''));
     return { ok: true, file: result.filePath };
   } catch (error) {
     return { ok: false, error: error.message };
@@ -867,14 +852,14 @@ ipcMain.handle('save-preferences-json', async (_e, text, suggestedName) => {
    diyalog yok. Portable kullanım güvenliği: userData her zaman denenir;
    exe yanına da yazılır (oradaki dosya profil kaybında kurtarıcıdır;
    Program Files gibi yazmaya kapalı yerlerde sessizce atlanır). */
-ipcMain.handle('save-preferences-auto', async (_e, text) => {
+ipcGuard.handle(ipcMain, 'save-preferences-auto', async (_e, text) => {
   const targets = [path.join(app.getPath('userData'), 'tailref-preferences.json')];
   try { targets.push(path.join(path.dirname(app.getPath('exe')), 'tailref-preferences.json')); } catch { /* exe yolu okunamadı */ }
   let lastErr = '';
   let wrote = 0;
   for (const file of targets) {
     try {
-      fs.writeFileSync(file, String(text || ''), 'utf8');
+      writeFileAtomic(file, String(text || ''));
       wrote++;
     } catch (error) { lastErr = error.message; }
   }
@@ -885,7 +870,7 @@ ipcMain.handle('save-preferences-auto', async (_e, text) => {
 /* Boot tercih geri yüklemesi (footer "Kaydet" ikilisi): renderer açılışta
    profilini kaybettiğini bildirirse (localStorage'da tailref- anahtarı
    kalmamışsa) kayıtlı dosyayı okur. */
-ipcMain.handle('load-preferences-auto', async () => {
+ipcGuard.handle(ipcMain, 'load-preferences-auto', async () => {
   const candidates = [];
   try { candidates.push(path.join(path.dirname(app.getPath('exe')), 'tailref-preferences.json')); } catch { /* sessiz */ }
   candidates.push(path.join(app.getPath('userData'), 'tailref-preferences.json'));
@@ -904,12 +889,12 @@ inkEngineHost.register(ipcMain);
    kapatma uyarısı, kurtarma kutuları) bu dille gösterilir. Renderer her
    açılışta ve dil değişiminde gönderir; renderer donmuşsa en son bilinen
    dil kullanılır. */
-ipcMain.on('app-language', (_e, code) => {
+ipcGuard.on(ipcMain, 'app-language', (_e, code) => {
   const gec = typeof code === 'string' ? code.slice(0, 12) : '';
   if (gec) dialogL10n.setLanguage(gec);
 });
 /* Test/otomasyon: ana sürecin bilinen dilini oku. */
-ipcMain.handle('app-language-get', () => dialogL10n.getLanguage());
+ipcGuard.handle(ipcMain, 'app-language-get', () => dialogL10n.getLanguage());
 
 /* Seçili fotoğrafı orijinal baytlarıyla dışa aktarır: yeniden kodlama,
    yeniden sıkıştırma veya kalite kaybı yok. Uzantı kaynağın MIME türünden
@@ -967,7 +952,7 @@ function rememberExportDir(dir) {
 }
 
 /* Kayıt klasörü seçme penceresi: Dışa Aktar diyaloğundan klasör seçilir. */
-ipcMain.handle('choose-dir', async () => {
+ipcGuard.handle(ipcMain, 'choose-dir', async () => {
   try {
     const r = await dialog.showOpenDialog(win, {
       title: dialogL10n.t('Choose save folder'),
@@ -981,7 +966,7 @@ ipcMain.handle('choose-dir', async () => {
     return { ok: false, error: error.message };
   }
 });
-ipcMain.handle('export-image', async (_e, bytes, suggestedName, mime, dir) => {
+ipcGuard.handle(ipcMain, 'export-image', async (_e, bytes, suggestedName, mime, dir) => {
   let buffer;
   try { buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes || []); }
   catch { return { ok: false, error: dialogL10n.t('Invalid image.') }; }
@@ -1007,13 +992,18 @@ ipcMain.handle('export-image', async (_e, bytes, suggestedName, mime, dir) => {
       if (!fs.existsSync(requestedDir) || !fs.statSync(requestedDir).isDirectory()) {
         return { ok: false, error: dialogL10n.t('Folder not found.') };
       }
-      let hedef = path.join(requestedDir, fileName);
-      let sira = 1;
-      while (fs.existsSync(hedef)) {
-        hedef = path.join(requestedDir, `${base} (${sira}).${ext}`);
-        sira += 1;
+      /* Adı "var mı?" diye kontrol edip sonra yazmak yarışa açıktı: iki
+         eşzamanlı dışa aktarma aynı dosyayı seçip birbirinin üzerine
+         yazabiliyordu (P1). reserveUniqueFile adı O_EXCL ile atomik
+         sahiplenir; ikinci aktarım " (1)" varyantına kayar. */
+      const hedef = reserveUniqueFile(requestedDir, base, ext);
+      try {
+        writeFileAtomic(hedef, buffer);
+      } catch (error) {
+        /* Sahiplenilen boş yer tutucu kalmasın. */
+        try { fs.rmSync(hedef, { force: true }); } catch { /* sessiz */ }
+        throw error;
       }
-      fs.writeFileSync(hedef, buffer);
       return { ok: true, file: hedef };
     } catch (error) {
       return { ok: false, error: error.message };
@@ -1034,7 +1024,7 @@ ipcMain.handle('export-image', async (_e, bytes, suggestedName, mime, dir) => {
       filters: [{ name: filterName, extensions: [ext] }],
     });
     if (result.canceled || !result.filePath) return { ok: false, canceled: true };
-    fs.writeFileSync(result.filePath, buffer);
+    writeFileAtomic(result.filePath, buffer);
     /* Kullanıcı bu klasörü kaydet penceresinde onayladı: sonraki sessiz
        dışa aktarmalar için hatırla. */
     rememberExportDir(path.dirname(result.filePath));
@@ -1045,7 +1035,7 @@ ipcMain.handle('export-image', async (_e, bytes, suggestedName, mime, dir) => {
 });
 /* Fırça kütüphanesinden .abr dışa aktarma. Baytlar doğrudan yazılır;
    biçim tarayıcıda üretildiği için burada yeniden kodlama yapılmaz. */
-ipcMain.handle('export-abr', async (_e, bytes, suggestedName) => {
+ipcGuard.handle(ipcMain, 'export-abr', async (_e, bytes, suggestedName) => {
   let buffer;
   try { buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes || []); }
   catch { return { ok: false, error: dialogL10n.t('Invalid brush.') }; }
@@ -1064,14 +1054,16 @@ ipcMain.handle('export-abr', async (_e, bytes, suggestedName) => {
       filters: [{ name: dialogL10n.t('.abr brush'), extensions: ['abr'] }],
     });
     if (result.canceled || !result.filePath) return { ok: false, canceled: true };
-    fs.writeFileSync(result.filePath, buffer);
+    /* Kullanıcı dosyası: yarım kalan yazma (güç kesintisi / disk dolu)
+       eski dosyayı bozmasın diye atomik yaz. */
+    writeFileAtomic(result.filePath, buffer);
     return { ok: true, file: result.filePath };
   } catch (error) {
     return { ok: false, error: error.message };
   }
 });
-ipcMain.handle('get-window-pos', () => (win ? win.getPosition() : [0, 0]));
-ipcMain.handle('set-window-pos', (_e, x, y) => {
+ipcGuard.handle(ipcMain, 'get-window-pos', () => (win ? win.getPosition() : [0, 0]));
+ipcGuard.handle(ipcMain, 'set-window-pos', (_e, x, y) => {
   if (!win || !Number.isFinite(x) || !Number.isFinite(y)) return;
   win.setPosition(Math.round(x), Math.round(y));
 });
@@ -1080,47 +1072,27 @@ ipcMain.handle('set-window-pos', (_e, x, y) => {
    Manuel kayıt modunun dosya biçimi. İçerik gzip'lenmiş JSON'dur
    (görseller base64 dataUrl olarak gömülü). Sıkıştırma sayesinde
    tekrarlı çizim verisi (state.ink) küçülür; ek bağımlılık gerekmez.
-   Dosya imzası 'TAIL'dir. Eski Refeverr sürümlerinin yazdığı 'RFVR'
-   imzası OKUMA tarafında kabul edilir; yeni dosyalar her zaman 'TAIL'
-   olarak yazılır (kullanıcıya görünmez, 4 baytlık biçim tanıma). */
+   Kapsayıcı biçimi (imza, sürüm, sınırlar) src/main/tail-format.js'te;
+   orası Electron olmadan test edilir (tests/tail-format-test.js). */
 const TAIL_EXT = '.tail';
-const TAIL_MAGIC = 'TAIL';
-const LEGACY_TAIL_MAGIC = 'RFVR';
-const TAIL_VERSION = 1;
-/* Bozuk/kötü niyetli bir dosyanın belleği tüketmesini engelle: sıkıştırılmış
-   dosya ve açılmış JSON için ayrı üst sınırlar. Gerçek panolar bunların çok
-   altında kalır (en ağır kullanıcı panosu ~200 MB). */
-const MAX_TAIL_FILE_BYTES = 1024 * 1024 * 1024;      // 1 GB (disk)
-const MAX_TAIL_INFLATED_BYTES = 1536 * 1024 * 1024;  // 1,5 GB (JSON)
-/* Sıkıştırma/açma senkron yapılırsa ana süreç (pencere, menü, IPC) büyük
-   panolarda saniyelerce donar. Async zlib ana süreci serbest bırakır. */
-function deflateAsync(buf) {
-  return new Promise((resolve, reject) => {
-    zlib.deflate(buf, { level: 6 }, (error, out) => (error ? reject(error) : resolve(out)));
-  });
-}
-function inflateAsync(buf) {
-  return new Promise((resolve, reject) => {
-    zlib.inflate(buf, { maxOutputLength: MAX_TAIL_INFLATED_BYTES },
-      (error, out) => (error ? reject(error) : resolve(out)));
-  });
-}
+const {
+  MAX_FILE_BYTES: MAX_TAIL_FILE_BYTES,
+  encodeBoard,
+  decodeBoard,
+} = require('./tail-format');
 
-ipcMain.handle('save-tail', async (_e, payload, suggestedName) => {
+ipcGuard.handle(ipcMain, 'save-tail', async (_e, payload, suggestedName) => {
   try {
     const text = typeof payload === 'string' ? payload : JSON.stringify(payload);
-    const json = Buffer.from(text, 'utf8');
-    if (json.length > MAX_TAIL_INFLATED_BYTES) {
-      return { ok: false, error: 'Board is too large to save as .tail' };
+    let out;
+    try {
+      out = await encodeBoard(text);
+    } catch (error) {
+      if (error && error.code === 'too-large') {
+        return { ok: false, error: 'Board is too large to save as .tail' };
+      }
+      throw error;
     }
-    const deflated = await deflateAsync(json);
-
-    // Basltic: magic(4) + version(1) + deflated baytlar.
-    const out = Buffer.concat([
-      Buffer.from(TAIL_MAGIC, 'ascii'),
-      Buffer.from([TAIL_VERSION]),
-      deflated,
-    ]);
 
     const rawName = String(suggestedName || dialogL10n.t('board')).replace(/[\\/:*?"<>|]/g, '_').slice(0, 120);
     const fileName = new RegExp(TAIL_EXT.replace('.', '\\.') + '$', 'i').test(rawName) ? rawName : `${rawName}${TAIL_EXT}`;
@@ -1137,34 +1109,30 @@ ipcMain.handle('save-tail', async (_e, payload, suggestedName) => {
   }
 });
 
-/** Diskten .tail dosyası okur (magic + sürüm + inflate). open-tail
-    diyaloğu ile çift tık / sürükle-bırak yolları aynı kapıyı kullanır.
-    Eski 'RFVR' imzası geriye dönük uyumluluk için kabul edilir. */
+/** Diskten .tail dosyası okur. open-tail diyaloğu ile çift tık /
+    sürükle-bırak yolları aynı kapıyı kullanır. Kapsayıcı çözümü
+    tail-format.js'te; burada yalnız dosya erişimi ve yerelleştirilmiş
+    hata metinleri var. */
 async function readBoardFile(filePath) {
   const invalid = { ok: false, error: dialogL10n.t('This is not a valid .tail file.') };
   let stat = null;
-  try { stat = fs.statSync(filePath); } catch { return invalid; }
+  try { stat = await fs.promises.stat(filePath); } catch { return invalid; }
   if (!stat.isFile() || stat.size < 6 || stat.size > MAX_TAIL_FILE_BYTES) return invalid;
-  const buf = fs.readFileSync(filePath);
-  const magic = buf.length >= 4 ? buf.subarray(0, 4).toString('ascii') : '';
-  if (buf.length < 6 || (magic !== TAIL_MAGIC && magic !== LEGACY_TAIL_MAGIC)) {
+  let buf = null;
+  /* Büyük .tail (onlarca MB) senkron okununca ana süreç ve tüm pencereler
+     donuyordu (P1). I/O artık async; çözme (inflate) zaten async. */
+  try { buf = await fs.promises.readFile(filePath); } catch { return invalid; }
+  const decoded = await decodeBoard(buf);
+  if (!decoded.ok) {
+    if (decoded.reason === 'version') {
+      return { ok: false, error: dialogL10n.t('Unsupported .tail version ({n}).', { n: decoded.version }) };
+    }
     return invalid;
   }
-  const version = buf[4];
-  if (version !== TAIL_VERSION) {
-    return { ok: false, error: dialogL10n.t('Unsupported .tail version ({n}).', { n: version }) };
-  }
-  let json = null;
-  try {
-    json = await inflateAsync(buf.subarray(5));
-  } catch {
-    /* Bozuk gövde / sınırı aşan açılım: geçersiz dosya olarak raporla. */
-    return invalid;
-  }
-  return { ok: true, file: filePath, payload: JSON.parse(json.toString('utf8')) };
+  return { ok: true, file: filePath, payload: decoded.payload };
 }
 
-ipcMain.handle('open-tail', async () => {
+ipcGuard.handle(ipcMain, 'open-tail', async () => {
   try {
     const result = await dialog.showOpenDialog(win, {
       title: dialogL10n.t('Open .tail board'),
@@ -1181,7 +1149,7 @@ ipcMain.handle('open-tail', async () => {
 
 /* Çift tık / pencereye sürükleme: renderer .tail yolunu gönderir, main
    aynı okuma kapısından döndürür. */
-ipcMain.handle('open-tail-path', async (_e, filePath) => {
+ipcGuard.handle(ipcMain, 'open-tail-path', async (_e, filePath) => {
   try {
     /* Renderer'dan gelen yol güvenilmez: yalnızca yerel, mutlak ve .tail
        uzantılı dosyalar açılır. UNC/aygıt yolları reddedilir. */
@@ -1215,11 +1183,27 @@ function extractBoardPath(argv) {
   return null;
 }
 let pendingBoardFile = extractBoardPath(process.argv);
-ipcMain.handle('consume-board-launch-file', () => {
+ipcGuard.handle(ipcMain, 'consume-board-launch-file', () => {
   const p = pendingBoardFile;
   pendingBoardFile = null;
   return p;
 });
+/* macOS: Finder'da "Birlikte Aç" bir argüman göndermez; sistem open-file
+   olayı yayar. Olay app hazır olmadan da gelebilir, bu yüzden yol önce
+   bekleyen dosyaya yazılır (renderer açılışta consume ile alır) ve açık
+   pencere varsa ayrıca canlı push edilir. macOS'ta .tail çift tıklamasının
+   Windows/Linux ile aynı davranması bu olaya bağlıdır. */
+if (process.platform === 'darwin') {
+  app.on('open-file', (event, filePath) => {
+    const boardFile = extractBoardPath([filePath]);
+    if (!boardFile) return;
+    event.preventDefault();
+    pendingBoardFile = boardFile;
+    for (const target of BrowserWindow.getAllWindows()) {
+      try { target.webContents.send('tailref:open-board-file', boardFile); } catch { /* sessiz */ }
+    }
+  });
+}
 /* Yedek saklama sınırı (aday 4): renderer localStorage 'tailref-backup-limit'
    okuyup 2. argümanla gönderir; yoksa/bozuksa eski sabit 20 geçerlidir
    (parite). 1–200 aralığına sıkıştırılır; good/ ve emergency-* rotasyonu
@@ -1232,7 +1216,7 @@ function autoBackupKeepCount(limit) {
   if (n > 200) n = 200;
   return n;
 }
-ipcMain.handle('auto-backup', async (_e, payload, limit, counts) => {
+ipcGuard.handle(ipcMain, 'auto-backup', async (_e, payload, limit, counts) => {
   try {
     const dir = path.join(app.getPath('userData'), 'Backups');
     fs.mkdirSync(dir, { recursive: true });
@@ -1263,7 +1247,7 @@ ipcMain.handle('auto-backup', async (_e, payload, limit, counts) => {
               counts.items <= MAX_HEALTHY_ITEMS &&
               counts.images <= MAX_HEALTHY_IMAGES,
           }
-        : inspectBackup({ name: path.basename(file), size: stat.size, mtime: stat.mtimeMs, tier: 'auto' });
+        : await inspectBackup({ name: path.basename(file), size: stat.size, mtime: stat.mtimeMs, tier: 'auto' });
       healthy = info.ok;
       if (healthy) {
         const goodDir = goodBackupsDir();
@@ -1286,12 +1270,12 @@ ipcMain.handle('auto-backup', async (_e, payload, limit, counts) => {
     return { ok: false, error: e.message };
   }
 });
-ipcMain.handle('open-backups', async () => {
+ipcGuard.handle(ipcMain, 'open-backups', async () => {
   const dir = path.join(app.getPath('userData'), 'Backups');
   try {
     fs.mkdirSync(dir, { recursive: true });
   } catch (e) {
-    return { ok: false, path: dir, error: `Klasör oluşturulamadı: ${e.message}` };
+    return { ok: false, path: dir, error: `Could not create the folder: ${e.message}` };
   }
 
   // "Her zaman üstte" modu Explorer penceresini uygulamanın arkasında bırakıyor.
@@ -1328,7 +1312,7 @@ ipcMain.handle('open-backups', async () => {
 
   return { ok: !error, path: dir, error };
 });
-ipcMain.handle('set-on-top', (_e, on) => {
+ipcGuard.handle(ipcMain, 'set-on-top', (_e, on) => {
   if (!win) return false;
   alwaysOnTop = !!on;
   applyAlwaysOnTop();
@@ -1420,27 +1404,27 @@ function backupPath(name) {
   return path.join(backupsDir(), safe);
 }
 
-function countBackupContent(parsed) {
-  let items = 0;
-  const images = Array.isArray(parsed.images) ? parsed.images.length : 0;
-  const workspace = parsed.workspace;
-  if (workspace && Array.isArray(workspace.projects) && workspace.projects.length) {
-    for (const record of workspace.projects) {
-      const snapshot = record && (record.state || record.snapshot);
-      if (snapshot && Array.isArray(snapshot.items)) items += snapshot.items.length;
-    }
-  } else if (parsed.state && Array.isArray(parsed.state.items)) {
-    items += parsed.state.items.length;
-  }
-  return { items, images };
-}
+/* Yedek içeriği denetimi artık worker'da koşar: 200 MB'a kadar JSON'u ana
+   süreçte senkron parse etmek kurtarma kutusu açılırken uygulamayı
+   saniyelerce donduruyordu (P1). Ayrıntı: src/main/backup-health.js. */
+const { BackupInspector } = require('./backup-health');
+const backupInspector = new BackupInspector({
+  maxBytes: MAX_HEALTHY_BYTES,
+  maxItems: MAX_HEALTHY_ITEMS,
+  maxImages: MAX_HEALTHY_IMAGES,
+});
 
-/* Aynı dosya tekrar tekrar okunmasın (yoklama/kutu döngüsü). */
+/* Aynı dosya tekrar tekrar okunmasın (yoklama/kutu döngüsü). Sınırlı tutulur:
+   saatlerce açık oturumda yedek adları birikip bellek şişmesin. */
+const HEALTH_CACHE_MAX = 256;
 const healthCache = new Map();
 
 /** Yedeğin içeriğine bakar: kaç öğe, kaç görsel, ne kadar büyük?
-    Bozuk/aşırı yüklenmiş yedekleri elemek için kullanılır. */
-function inspectBackup(entry) {
+    Bozuk/aşırı yüklenmiş yedekleri elemek için kullanılır.
+    reason kodları: '' (sağlıklı) · too-large · too-many-items ·
+    too-many-images · corrupt · timeout · missing (UI metni üretmez;
+    kurtarma kutusu yalnız sayıyı gösterir). */
+async function inspectBackup(entry) {
   const key = `${entry.name}:${entry.size}:${entry.mtime}`;
   const cached = healthCache.get(key);
   if (cached) return cached;
@@ -1449,21 +1433,18 @@ function inspectBackup(entry) {
     name: entry.name, size: entry.size, mtime: entry.mtime,
     tier: entry.tier || 'auto', ok: false, items: 0, images: 0, reason: '',
   };
-  if (entry.size > MAX_HEALTHY_BYTES) {
-    info.reason = `dosya çok büyük (${Math.round(entry.size / (1024 * 1024))} MB)`;
+  const full = backupPath(entry.name);
+  if (!full) {
+    info.reason = 'missing';
   } else {
-    try {
-      const full = backupPath(entry.name);
-      const parsed = JSON.parse(fs.readFileSync(full, 'utf8'));
-      const counts = countBackupContent(parsed);
-      info.items = counts.items;
-      info.images = counts.images;
-      if (counts.items > MAX_HEALTHY_ITEMS) info.reason = `${counts.items} öğe`;
-      else if (counts.images > MAX_HEALTHY_IMAGES) info.reason = `${counts.images} görsel`;
-      else info.ok = true;
-    } catch {
-      info.reason = 'okunamadı (bozuk dosya)';
-    }
+    const result = await backupInspector.inspect(full, entry);
+    info.ok = result.ok;
+    info.items = result.items;
+    info.images = result.images;
+    info.reason = result.reason;
+  }
+  if (healthCache.size >= HEALTH_CACHE_MAX) {
+    healthCache.delete(healthCache.keys().next().value);
   }
   healthCache.set(key, info);
   return info;
@@ -1493,7 +1474,9 @@ function rememberRecoveryTry(name) {
   try {
     const entries = readRecoveryHistory().filter(entry => entry.name !== name);
     entries.push({ name, at: Date.now() });
-    fs.writeFileSync(recoveryHistoryPath(), JSON.stringify({ entries }), 'utf8');
+    /* Yarım yazılmış geçmiş JSON'u bir sonraki açılışta sessizce yok sayılır;
+       atomik yaz ki kurtarma zinciri kaybolmasın. */
+    writeFileAtomic(recoveryHistoryPath(), JSON.stringify({ entries }));
   } catch { /* sessiz */ }
 }
 
@@ -1502,15 +1485,16 @@ function clearRecoveryHistory() {
 }
 
 /** Kurtarma için yedeği seçer: yeni → eski tara, İLK SAĞLIKLI olanı al.
-    Bu oturumda zaten denenmiş dosyalar atlanır (zincirleme geri dönüş). */
-function pickRecoveryBackup(detectedAt) {
+    Bu oturumda zaten denenmiş dosyalar atlanır (zincirleme geri dönüş).
+    Denetim async'tir: büyük JSON parse'ı ana süreçte bloklamaz. */
+async function pickRecoveryBackup(detectedAt) {
   const entries = listBackupFiles();
   const tried = new Set(readRecoveryHistory().map(entry => entry.name));
   const scanned = [];
   const healthy = [];
   for (const entry of entries) {
     if (tried.has(entry.name)) continue;
-    const info = inspectBackup(entry);
+    const info = await inspectBackup(entry);
     scanned.push(info);
     if (info.ok) healthy.push(info);
     if (healthy.length >= 3) break; // yeterince aday bulundu
@@ -1554,12 +1538,14 @@ function readRecoveryMarker() {
 
 function writeRecoveryMarker(backupName, reason) {
   try {
-    fs.writeFileSync(recoveryMarkerPath(), JSON.stringify({
+    /* İşaret dosyası yarım kalırsa sonraki açılış onu "yok" sayar ve
+       kurtarma hiç teklif edilmez; atomik yaz. */
+    writeFileAtomic(recoveryMarkerPath(), JSON.stringify({
       mode: 'restore',
       backup: path.basename(backupName),
       reason: reason || 'watchdog',
       requestedAt: new Date().toISOString(),
-    }), 'utf8');
+    }));
     return true;
   } catch (error) {
     console.warn('kurtarma işareti yazılamadı', error);
@@ -1569,11 +1555,11 @@ function writeRecoveryMarker(backupName, reason) {
 
 function writeResetMarker(reason) {
   try {
-    fs.writeFileSync(recoveryMarkerPath(), JSON.stringify({
+    writeFileAtomic(recoveryMarkerPath(), JSON.stringify({
       mode: 'reset',
       reason: reason || 'reset',
       requestedAt: new Date().toISOString(),
-    }), 'utf8');
+    }));
     return true;
   } catch (error) {
     console.warn('sıfırlama işareti yazılamadı', error);
@@ -1595,7 +1581,7 @@ let watchdogTimer = null;
    devreye girer. */
 let rendererBusyUntil = 0;
 
-ipcMain.on('renderer-busy', (_event, active) => {
+ipcGuard.on(ipcMain, 'renderer-busy', (_event, active) => {
   rendererBusyUntil = active ? Date.now() + 20000 : 0;
   if (active) probeFailures = 0;
 });
@@ -1621,7 +1607,7 @@ async function offerRecovery(reason) {
       win.focus();
     }
     const parent = win && !win.isDestroyed() ? win : undefined;
-    const { backup, scanned, total, tried } = pickRecoveryBackup(Date.now());
+    const { backup, scanned, total, tried } = await pickRecoveryBackup(Date.now());
     const skipped = scanned.filter(info => !info.ok).length;
 
     /* Sağlıklı yedek yoksa "Son kayda dön" sunmanın anlamı yok: tek çıkış
@@ -1774,22 +1760,29 @@ function stopResponsivenessWatchdog() {
 }
 
 /* ---- kurtarma IPC ---- */
-ipcMain.handle('list-backups', () => listBackupFiles().map(entry => {
-  const info = inspectBackup(entry);
-  return {
-    name: entry.name, size: entry.size, mtime: entry.mtime,
-    tier: entry.tier || 'auto', healthy: info.ok,
-    items: info.items, images: info.images, reason: info.reason,
-  };
-}));
+ipcGuard.handle(ipcMain, 'list-backups', async () => {
+  /* Sıralı denetim: aynı anda birden çok 200 MB'lık parse belleği şişirmesin.
+     Handler async olduğu için ana süreç/UI beklemez. */
+  const out = [];
+  for (const entry of listBackupFiles()) {
+    const info = await inspectBackup(entry);
+    out.push({
+      name: entry.name, size: entry.size, mtime: entry.mtime,
+      tier: entry.tier || 'auto', healthy: info.ok,
+      items: info.items, images: info.images, reason: info.reason,
+    });
+  }
+  return out;
+});
 
-ipcMain.handle('read-backup', (_e, name) => {
+ipcGuard.handle(ipcMain, 'read-backup', async (_e, name) => {
   try {
     const full = backupPath(name);
     if (!full) return null;
-    const stat = fs.statSync(full);
+    const stat = await fs.promises.stat(full);
     if (!stat.isFile() || stat.size > 1024 * 1024 * 1024) return null;
-    return fs.readFileSync(full, 'utf8');
+    /* 1 GB'a kadar yedek: senkron okuma tüm pencereyi donduruyordu. */
+    return await fs.promises.readFile(full, 'utf8');
   } catch {
     return null;
   }
@@ -1797,7 +1790,7 @@ ipcMain.handle('read-backup', (_e, name) => {
 
 /* Geri yükleme/sıfırlama ÖNCESİ mevcut durumun kopyası: yanlış yedeği
    seçme ihtimaline karşı emniyet kemeri. */
-ipcMain.handle('save-emergency', (_e, payload) => {
+ipcGuard.handle(ipcMain, 'save-emergency', (_e, payload) => {
   try {
     const dir = backupsDir();
     fs.mkdirSync(dir, { recursive: true });
@@ -1822,7 +1815,7 @@ ipcMain.handle('save-emergency', (_e, payload) => {
 
 /* "Temiz başlat" öncesi panoları arşive yazar (görseller hariç: asıl
    şişkinlik onlarda). Arşiv kullanıcı tarafından geri alınabilir. */
-ipcMain.handle('save-archive', (_e, payload) => {
+ipcGuard.handle(ipcMain, 'save-archive', (_e, payload) => {
   try {
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     const dir = path.join(archiveDir(), stamp);
@@ -1843,14 +1836,14 @@ ipcMain.handle('save-archive', (_e, payload) => {
   }
 });
 
-ipcMain.handle('recovery-request', () => readRecoveryMarker());
-ipcMain.handle('recovery-clear', () => { clearRecoveryMarker(); return true; });
+ipcGuard.handle(ipcMain, 'recovery-request', () => readRecoveryMarker());
+ipcGuard.handle(ipcMain, 'recovery-clear', () => { clearRecoveryMarker(); return true; });
 /* Açılış sağlıklıysa "denenen yedekler" listesini unut. */
-ipcMain.handle('recovery-healthy', () => { clearRecoveryHistory(); return true; });
-ipcMain.handle('recovery-offer', () => offerRecovery('menu'));
+ipcGuard.handle(ipcMain, 'recovery-healthy', () => { clearRecoveryHistory(); return true; });
+ipcGuard.handle(ipcMain, 'recovery-offer', () => offerRecovery('menu'));
 /* Kutu açmadan "hangi yedek seçilirdi?" sorusunu yanıtlar (tanılama + test). */
-ipcMain.handle('recovery-plan', () => {
-  const plan = pickRecoveryBackup(Date.now());
+ipcGuard.handle(ipcMain, 'recovery-plan', async () => {
+  const plan = await pickRecoveryBackup(Date.now());
   return {
     total: plan.total,
     tried: plan.tried,
@@ -1864,7 +1857,7 @@ ipcMain.handle('recovery-plan', () => {
     })),
   };
 });
-ipcMain.handle('open-archive', () => {
+ipcGuard.handle(ipcMain, 'open-archive', () => {
   const dir = archiveDir();
   try { fs.mkdirSync(dir, { recursive: true }); } catch { /* sessiz */ }
   return shell.openPath(dir);
@@ -1922,7 +1915,7 @@ const buildStamp = (() => {
       `${two(d.getHours())}:${two(d.getMinutes())}`;
   } catch { return ''; }
 })();
-ipcMain.handle('get-build-stamp', () => buildStamp);
+ipcGuard.handle(ipcMain, 'get-build-stamp', () => buildStamp);
 
 if (!gotLock) {
   app.quit();
@@ -1975,8 +1968,8 @@ if (!gotLock) {
 
     createWindow();
 
-    /* Otomatik gǬncelleme: yaln��zca kurulumlu (NSIS) pakette etkin.
-       Ba�Ylatmay�� bloklamaz; ilk kontrol gecikmeli yap��l��r. */
+    /* Otomatik güncelleme: yalnızca kurulumlu (NSIS) pakette etkin.
+       Başlatmayı bloklamaz; ilk kontrol gecikmeli yapılır. */
     try {
       updateManager = createUpdateManager({
         app,
@@ -1999,6 +1992,7 @@ if (!gotLock) {
 
   app.on('before-quit', () => {
     if (updateManager) { try { updateManager.stop(); } catch { /* sessiz */ } }
+    try { backupInspector.dispose(); } catch { /* sessiz */ }
     finishInstallHandshake(false);
     // Yükleme sürerken pencereleri kapatmak Electron'da iç bir kapanış
     // yarışına yol açabiliyor; önce konuk sayfaları durdur.

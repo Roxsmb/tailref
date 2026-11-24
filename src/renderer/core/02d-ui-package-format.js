@@ -40,16 +40,16 @@
   function err(errors, msg) { errors.push(msg); }
 
   function checkText(value, label, errors, max) {
-    if (typeof value !== 'string') { err(errors, label + ' metin değil'); return; }
-    if (value.length > max) { err(errors, label + ' çok uzun (>' + max + ')'); }
+    if (typeof value !== 'string') { err(errors, label + ' is not text'); return; }
+    if (value.length > max) { err(errors, label + ' is too long (>' + max + ')'); }
     /* CSS dil enjeksiyonu yüzeyi: {} ; @ ve ters bölü (CSS kaçış dizisi)
        belgeye bizim derleyicimizden girmedikçe zararsız olsa da doğrulama
        REDDEDER (hatasız paket ilkesi). Ters bölü olmadan `\7b` gibi bir
        kaçış dizisi `{` olarak çözülüp kural enjekte edebilirdi. */
-    if (/[{};@\\]/.test(value)) { err(errors, label + ' yasaklı karakter'); return; }
+    if (/[{};@\\]/.test(value)) { err(errors, label + ' contains a forbidden character'); return; }
     const low = value.toLowerCase();
     for (const bad of FORBIDDEN_IN_VALUE) {
-      if (low.includes(bad)) { err(errors, label + ' yasaklı içerik: ' + bad); return; }
+      if (low.includes(bad)) { err(errors, label + ' contains forbidden content: ' + bad); return; }
     }
   }
 
@@ -58,15 +58,15 @@
     if (value === 'none') return;
     const low = String(value).toLowerCase();
     if (!/^data:image\/(png|jpeg|gif|webp|svg\+xml);base64,[a-z0-9+/=]+$/.test(low)) {
-      err(errors, 'background-image yalnız data:image/* URI veya none olabilir');
+      err(errors, 'background-image must be a data:image/* URI or none');
     }
   }
 
   /** Seçici: {} ; @ < ve ters bölü yasak — enjeksiyon yüzeyini kapatır. */
   function checkSelector(sel, errors) {
-    if (typeof sel !== 'string' || !sel.trim()) { err(errors, 'boş seçici'); return; }
-    if (sel.length > 120) { err(errors, 'seçici çok uzun'); return; }
-    if (/[{};@<\\]/.test(sel)) { err(errors, 'seçicide yasaklı karakter'); return; }
+    if (typeof sel !== 'string' || !sel.trim()) { err(errors, 'empty selector'); return; }
+    if (sel.length > 120) { err(errors, 'selector is too long'); return; }
+    if (/[{};@<\\]/.test(sel)) { err(errors, 'selector contains a forbidden character'); return; }
   }
 
   /**
@@ -78,29 +78,29 @@
   function validate(pkg, id) {
     const errors = [];
     if (!pkg || typeof pkg !== 'object' || Array.isArray(pkg)) {
-      return { ok: false, errors: ['paket nesne değil'] };
+      return { ok: false, errors: ['package is not an object'] };
     }
     if (pkg.format !== 'tailref-ui@1') {
-      return { ok: false, errors: ['format "tailref-ui@1" değil: ' + JSON.stringify(pkg.format).slice(0, 40)] };
+      return { ok: false, errors: ['format is not "tailref-ui@1": ' + JSON.stringify(pkg.format).slice(0, 40)] };
     }
     const meta = pkg.meta;
     if (!meta || typeof meta !== 'object' || typeof meta.name !== 'string' || !meta.name.trim()) {
-      return { ok: false, errors: ['meta.name zorunlu'] };
+      return { ok: false, errors: ['meta.name is required'] };
     }
     checkText(meta.name, 'meta.name', errors, 40);
     checkText(meta.author || '', 'meta.author', errors, 60);
     checkText(meta.desc || '', 'meta.desc', errors, 200);
     if (meta.version != null && !(typeof meta.version === 'number' && meta.version > 0)) {
-      err(errors, 'meta.version pozitif sayı olmalı');
+      err(errors, 'meta.version must be a positive number');
     }
 
     /* --- tokens: yalnız --ui-* özel özellikleri --- */
     const tokens = pkg.tokens || {};
     const tokenKeys = Object.keys(tokens);
-    if (tokenKeys.length > MAX_TOKENS) err(errors, 'token sayısı > ' + MAX_TOKENS);
+    if (tokenKeys.length > MAX_TOKENS) err(errors, 'token count > ' + MAX_TOKENS);
     let tokenCss = '';
     for (const key of tokenKeys) {
-      if (!/^--ui-[a-z0-9-]{2,40}$/.test(key)) { err(errors, 'token adı whitelist dışı: ' + key); continue; }
+      if (!/^--ui-[a-z0-9-]{2,40}$/.test(key)) { err(errors, 'token name is not whitelisted: ' + key); continue; }
       const value = tokens[key];
       checkText(value, 'token ' + key, errors, 200);
       if (typeof value === 'string' && !/[{};@\\]/.test(value)) {
@@ -110,19 +110,19 @@
 
     /* --- rules: whitelisted property + güvenli değer (denetim turu) --- */
     const rules = Array.isArray(pkg.rules) ? pkg.rules : [];
-    if (rules.length > MAX_RULES) err(errors, 'kural sayısı > ' + MAX_RULES);
+    if (rules.length > MAX_RULES) err(errors, 'rule count > ' + MAX_RULES);
     for (let i = 0; i < rules.length; i++) {
       const rule = rules[i];
-      if (!rule || typeof rule !== 'object') { err(errors, 'kural #' + i + ' nesne değil'); continue; }
+      if (!rule || typeof rule !== 'object') { err(errors, 'rule #' + i + ' is not an object'); continue; }
       checkSelector(rule.selector, errors);
       for (const prop of Object.keys(rule.props || {})) {
         const pl = String(prop).toLowerCase();
-        if (!PROP_ALLOW.has(pl)) { err(errors, 'property whitelist dışı: ' + prop); continue; }
+        if (!PROP_ALLOW.has(pl)) { err(errors, 'property is not whitelisted: ' + prop); continue; }
         const value = rule.props[prop];
-        if (typeof value !== 'string') { err(errors, prop + ' değeri metin değil'); continue; }
-        if (value.length > 300) { err(errors, prop + ' değeri çok uzun'); continue; }
+        if (typeof value !== 'string') { err(errors, prop + ' value is not text'); continue; }
+        if (value.length > 300) { err(errors, prop + ' value is too long'); continue; }
         if (pl === 'background-image') { checkBackgroundImage(value, errors); }
-        else checkText(value, prop + ' değeri', errors, 300);
+        else checkText(value, prop + ' value', errors, 300);
       }
     }
 

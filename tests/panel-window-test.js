@@ -385,11 +385,25 @@ function launch(userDataDir) {
         const list = await panelTargets();
         return list.length === 0 ? 'ok' : '';
       }, `${id} öncesi temiz pencere`);
-      const detached = JSON.parse(await evaluate(mainWs, `(async () => {
+      /* Taşıma sayfada başlatılıp sonucu yoklanıyor: pencere açan bu bekleme
+         Runtime.evaluate içinde await edilirse CDP yanıtı asılı kalabiliyor. */
+      await evaluate(mainWs, `(() => {
+        window.__v5DetachState = 'kick';
+        Promise.resolve()
+          .then(() => detachPanelToWindow(document.getElementById(${JSON.stringify(id)})))
+          .then(r => { window.__v5DetachState = 'done:' + r; })
+          .catch(e => { window.__v5DetachState = 'err:' + (e && e.message); });
+        return true;
+      })()`);
+      const detachState = await waitFor(async () => {
+        const s = await evaluate(mainWs, 'window.__v5DetachState');
+        return s && s !== 'kick' ? s : '';
+      }, `${id} taşıma sonucu`);
+      if (detachState !== 'done:true') throw new Error(`${id} taşıma başarısız: ` + detachState);
+      const detached = JSON.parse(await evaluate(mainWs, `(() => {
         const panel = document.getElementById(${JSON.stringify(id)});
-        const ok = await detachPanelToWindow(panel);
         return JSON.stringify({
-          ok,
+          ok: true,
           flag: panel.dataset.detached || '',
           display: getComputedStyle(panel).display,
           probe: panel.classList.contains('v5-detached-probe'),

@@ -73,27 +73,27 @@
   }
   /** Ham paket metnini doğrula → depola → enjekte et → kaydet. */
   function importText(text) {
-    if (typeof text !== 'string' || !text.length) return { ok: false, errors: ['boş dosya'] };
+    if (typeof text !== 'string' || !text.length) return { ok: false, errors: ['empty file'] };
     if (text.length > window.tailrefUiPackageFormat.MAX_BYTES) {
-      return { ok: false, errors: ['paket 64 KB sınırını aşıyor'] };
+      return { ok: false, errors: ['package exceeds the 64 KB limit'] };
     }
     let pkg = null;
     try { pkg = JSON.parse(text); } catch (e) {
-      return { ok: false, errors: ['JSON çözülemedi: ' + String(e.message).slice(0, 80)] };
+      return { ok: false, errors: ['JSON could not be parsed: ' + String(e.message).slice(0, 80)] };
     }
     const metaName = pkg && pkg.meta && pkg.meta.name;
     let id = slugId(metaName);
     const existing = readStore();
     if (window.tailrefInterfaces.list().some(d => d.id === id) ||
         existing.some(e => e.id === id)) {
-      return { ok: false, errors: ['aynı id zaten kurulu: ' + id] };
+      return { ok: false, errors: ['the same id is already installed: ' + id] };
     }
     const res = window.tailrefUiPackageFormat.validate(pkg, id);
     if (!res.ok) return { ok: false, errors: res.errors.slice(0, 5) };
     let total = existing.reduce((n, e) => n + e.text.length + 32, 0) + text.length;
-    if (total > TOTAL_LIMIT) return { ok: false, errors: ['paket deposu dolu (256 KB)'] };
+    if (total > TOTAL_LIMIT) return { ok: false, errors: ['package store is full (256 KB)'] };
     existing.push({ id, text });
-    if (!writeStore(existing)) return { ok: false, errors: ['depo yazılamadı'] };
+    if (!writeStore(existing)) return { ok: false, errors: ['store could not be written'] };
     injectStyle(id, res.css);
     window.tailrefInterfaces.register({
       id, name: pkg.meta.name, desc: pkg.meta.desc || '', version: pkg.meta.version || 1,
@@ -185,7 +185,7 @@
           document.dispatchEvent(new CustomEvent('tailref-interface-changed',
             { detail: { registered: res.id } }));
         } else {
-          try { window.toast('Package rejected: ' + (res.errors[0] || 'invalid')); } catch { /* sessiz */ }
+          try { window.toast(__t('Package rejected') + ': ' + (res.errors[0] || __t('invalid'))); } catch { /* sessiz */ }
         }
         file.value = '';
       };

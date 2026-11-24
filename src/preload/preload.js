@@ -13,6 +13,22 @@ const { contextBridge, ipcRenderer, webFrame, webUtils } = require('electron');
 let enginePort = null;
 const enginePortPending = new Map();
 let enginePortSeq = 0;
+/* Port yanıtı hiç gelmezse istek sonsuza kadar asılı kalıyordu (P1):
+   undo karo isteği çözülmüyor, çağıran zincir kilitleniyordu. Sınır
+   aşılırsa port oturumu kapatılır ve bekleyen istekler hata olarak
+   çözülür; çağıran taraf senkron JS yoluna düşer. */
+const ENGINE_PORT_TIMEOUT_MS = 8000;
+
+function enginePortDrop(reason) {
+  const port = enginePort;
+  enginePort = null;
+  for (const [id, req] of enginePortPending) {
+    enginePortPending.delete(id);
+    clearTimeout(req.timer);
+    req.resolve({ ok: false, error: reason, timeout: true });
+  }
+  try { if (port && typeof port.close === 'function') port.close(); } catch { /* zaten kapalı */ }
+}
 
 function enginePortWire() {
   if (enginePort !== null) return;
@@ -27,13 +43,17 @@ function enginePortWire() {
         const p = msg ? enginePortPending.get(msg.id) : null;
         if (!p) return;
         enginePortPending.delete(msg.id);
+        clearTimeout(p.timer);
         p.resolve(msg);
       };
+      if ('onmessageerror' in port) {
+        port.onmessageerror = () => enginePortDrop('Engine port message error');
+      }
     });
   } catch { /* sessiz: invoke yedeği yürür */ }
 }
 
-/** tileSlice isteyi — port yoksa/ısrarlı hata varsa invoke yedeğine düşer. */
+/** tileSlice isteği — port yoksa/hata varsa invoke yedeğine düşer. */
 async function enginePortTilesImpl(src, srcW, srcH, slices) {
   const port = enginePort;
   if (!port || !src || src.length == null || !slices || !slices.length ||
@@ -42,14 +62,21 @@ async function enginePortTilesImpl(src, srcW, srcH, slices) {
   }
   const id = ++enginePortSeq;
   return new Promise(resolve => {
+    const timer = setTimeout(() => {
+      if (!enginePortPending.has(id)) return;
+      enginePortPending.delete(id);
+      resolve({ ok: false, error: 'Engine port request timed out', timeout: true });
+      enginePortDrop('Engine port request timed out');
+    }, ENGINE_PORT_TIMEOUT_MS);
+    enginePortPending.set(id, { resolve, timer });
     try {
-      enginePortPending.set(id, { resolve });
       port.postMessage(
         { id, fn: 'tileSlice',
           w: Math.trunc(srcW), h: Math.trunc(srcH), src, slices },
         [src.buffer, slices.buffer]);
     } catch (error) {
       enginePortPending.delete(id);
+      clearTimeout(timer);
       resolve({ ok: false, error: String(error && error.message || error) });
     }
   });

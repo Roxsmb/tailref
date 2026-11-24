@@ -417,11 +417,11 @@ function updateItemBar() {
       hidePanel(itemBarEl);
     }
     itemBarEl.classList.remove('multi');
-    itemBarTitleEl.textContent = 'No selection';
+    itemBarTitleEl.textContent = __t('No selection');
     const itemGroupBtn = $('#btnItemGroup');
     if (itemGroupBtn) {
       itemGroupBtn.disabled = true;
-      itemGroupBtn.title = 'Group at least two items (G)';
+      itemGroupBtn.title = __t('Group at least two items (G)');
       itemGroupBtn.setAttribute('aria-pressed', 'false');
     }
     hidePanel(imageEditorEl, syncStudioPanelState);
@@ -446,16 +446,18 @@ function updateItemBar() {
   }
   if (isPanelVisible(impWheelEl)) positionImpWheel();
   itemBarEl.classList.toggle('multi', its.length > 1);
-  itemBarTitleEl.textContent = its.length > 1 ? its.length + ' image' : 'Image';
+  itemBarTitleEl.textContent = its.length > 1
+    ? its.length + ' ' + __tp('image', its.length)
+    : __t('Image');
   const groupBtn = $('#btnItemGroup');
   if (groupBtn) {
     const grouped = !!selectedGroupId();
     groupBtn.disabled = selection.size < 2;
     groupBtn.title = groupBtn.disabled
-      ? 'Group at least two items (G)'
+      ? __t('Group at least two items (G)')
       : grouped
-        ? 'Ungroup (G)'
-        : 'Group the selected items (G)';
+        ? __t('Ungroup (G)')
+        : __t('Group the selected items (G)');
     groupBtn.setAttribute('aria-pressed', grouped ? 'true' : 'false');
   }
 
@@ -504,8 +506,8 @@ function updateItemBar() {
     btnExportImageEl.disabled = exportBlocked;
     btnExportImageEl.classList.toggle('is-blocked', exportBlocked);
     btnExportImageEl.title = exportBlocked
-      ? 'Select a single photo to export'
-      : 'Export the selected photo as PNG with crop, filter, drawing and rotation';
+      ? __t('Select a single photo to export')
+      : __t('Export the selected photo as PNG with crop, filter, drawing and rotation');
   }
   const selGid = selectedGroupId();
   const anyImportant = selGid ? isGroupImportant(selGid) : its.some(i => i.important);

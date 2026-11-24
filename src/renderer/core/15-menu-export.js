@@ -1196,7 +1196,7 @@ async function exportPerform() {
       if (res && res.ok) {
         if (typeof showProjectNotice === 'function') showProjectNotice('Exported: ' + res.file, 4200);
       } else {
-        alert('Export failed: ' + (res && res.error ? res.error : 'bilinmeyen hata'));
+        alert(__t('Export failed: ') + (res && res.error ? res.error : __t('unknown error')));
         return;
       }
     } else {
@@ -1531,7 +1531,7 @@ async function writeImageExport(blob, fileName) {
         return true;
       }
       if (res && res.canceled) return false;
-      alert('Export failed: ' + (res && res.error ? res.error : 'bilinmeyen hata'));
+      alert(__t('Export failed: ') + (res && res.error ? res.error : __t('unknown error')));
       return false;
     }
     /* Tarayıcı yedeği: aynı blob'u indirir, yeniden kodlama yapmaz. */
@@ -1542,7 +1542,7 @@ async function writeImageExport(blob, fileName) {
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     return true;
   } catch (error) {
-    alert('Export failed: ' + (error && error.message ? error.message : String(error)));
+    alert(__t('Export failed: ') + (error && error.message ? error.message : String(error)));
     return false;
   }
 }

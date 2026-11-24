@@ -1893,7 +1893,7 @@ function inkLayerRow(layer) {
     // düzenlemesini açar/bırakır.
     const pair = document.createElement('span');
     pair.className = 'inkLayerMaskPair' + (maskEditing ? ' is-editing' : '');
-    pair.title = maskEditing ? 'Exit mask editing' : 'Enter mask editing';
+    pair.title = maskEditing ? __t('Exit mask editing') : __t('Enter mask editing');
     const chain = document.createElement('span');
     chain.className = 'inkLayerMaskChain';
     chain.setAttribute('aria-hidden', 'true');
@@ -2067,8 +2067,8 @@ function inkLayerRow(layer) {
       + (layer.mask ? ' on' : '')
       + (maskEditing ? ' is-editing' : '');
     mask.title = !layer.mask
-      ? 'Add mask (white) and start editing — Black/eraser darkens the mask (hides)'
-      : maskEditing ? 'Leave mask editing' : 'Edit mask';
+      ? __t('Add mask (white) and start editing — Black/eraser darkens the mask (hides)')
+      : maskEditing ? __t('Leave mask editing') : __t('Edit mask');
     mask.setAttribute('aria-label', mask.title);
     mask.setAttribute('aria-pressed', layer.mask ? 'true' : 'false');
     mask.innerHTML = inkIcon('ink-mask');

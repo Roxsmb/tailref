@@ -224,6 +224,48 @@ const evaluate = (ws, expression) => new Promise((resolve, reject) => {
     check('Görsel arka plan: kural url içeriyor + #backdrop inline backgroundImage',
       img.ok && img.active.startsWith('ct_') && img.ruleHasUrl && img.computed, JSON.stringify(img));
 
+    /* ---- 8b. Rain/Snow efektli özel tema: yağmur/kar + gradyan korunur ---- */
+    const fx = JSON.parse(await evaluate(ws, `(async () => {
+      const reg = window.tailrefThemeRegistry;
+      const res = reg.save({
+        name: 'Rain Efekt',
+        colors: { bg: '#08121d', panel: '#0b1926', border: '#24445c',
+          text: '#e2f2ff', dim: '#83a7bf', accent: '#55c7ff', accentInk: '#04141c' },
+        panelAlpha: 92, effect: 'rain',
+        backdropCss: 'radial-gradient(circle at 50% 30%, rgb(18, 51, 74) 0%, rgb(6, 16, 26) 76%)',
+      }, true);
+      await new Promise(r => setTimeout(r, 250));
+      const rule = document.getElementById('tailrefCustomThemeStyles').textContent;
+      return JSON.stringify({
+        ok: res.ok, id: res.id,
+        active: document.documentElement.dataset.theme || 'classic',
+        hasGradient: rule.includes('rgb(18, 51, 74)'),
+        effectKind: window.tailrefAmbientEffectKind(),
+        registryEffect: reg.effectOf(res.id),
+      });
+    })()`));
+    check('Rain efektli özel tema: gradyan + efekt türü korunuyor',
+      fx.ok && fx.active === fx.id && fx.hasGradient &&
+      fx.effectKind === 'rain' && fx.registryEffect === 'rain', JSON.stringify(fx));
+
+    /* ---- 8c. Galeri seçimi aktif modun tema anahtarına yazılır ---- */
+    const modeKey = JSON.parse(await evaluate(ws, `(function () {
+      document.body.classList.add('mode-draw');
+      window.tailrefThemeApplyForMode('rain');
+      const out = {
+        drawKey: localStorage.getItem('tailref-theme-draw'),
+        theme: document.documentElement.dataset.theme || 'classic',
+        effectKind: window.tailrefAmbientEffectKind(),
+      };
+      document.body.classList.remove('mode-draw');
+      return JSON.stringify(out);
+    })()`));
+    check('Mod anahtarı: tema seçimi çizim anahtarına yazılıyor (mod dönüşünde geri dönmez)',
+      modeKey.drawKey === 'rain' && modeKey.theme === 'rain' && modeKey.effectKind === 'rain',
+      JSON.stringify(modeKey));
+    await evaluate(ws, `(function () { try { window.tailrefThemeRegistry.delete(${JSON.stringify(fx.id)}); } catch {} })()`);
+    await sleep(250);
+
     /* ---- 9. Gömülü temalar zarar görmedi ---- */
     const builtins = JSON.parse(await evaluate(ws, `JSON.stringify({
       n: themeNames.filter(n => !n.startsWith('ct_')).length,

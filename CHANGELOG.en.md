@@ -7,6 +7,63 @@ the project changelog in [`CHANGELOG.md`](CHANGELOG.md) is kept in Turkish.
 
 Add a `## [X.Y.Z] — YYYY-MM-DD` section here for every release.
 
+## [1.4.4] — 2026-11-24
+
+### Added — macOS support
+
+- **macOS builds:** disk images for Apple silicon (`TailRef-1.4.4-arm64.dmg`)
+  and Intel (`TailRef-1.4.4-x64.dmg`). The configuration lives under
+  `build.mac`; the release pipeline builds the native module for both
+  architectures and produces one image per architecture.
+- **`.tail` file association:** a `CFBundleDocumentTypes` entry plus an
+  `app.on('open-file')` handler. Double-clicking a board in Finder now behaves
+  like Windows and Linux: the path is forwarded to a running window, or
+  consumed by the renderer on a cold start.
+- **Ad-hoc signing:** `mac.identity: "-"`, hardened runtime and
+  `build/entitlements.mac.plist`. Without an Apple Developer ID the images are
+  not notarized, so Gatekeeper asks for confirmation on the first launch
+  (see `docs/MACOS.md`).
+- **`build-native.js --arch=`:** cross-architecture builds from a single
+  runner (x64 `inkcore.node` on an arm64 runner).
+- **A real launch check in CI:** `scripts/launch-smoke.js` starts the `.app`
+  copied out of the disk image in a temporary data folder and on an isolated
+  port, then verifies `appReady` and the board scene. A package that does not
+  start cannot be released.
+
+### Fixed — settings and interface audit
+
+- **High contrast never applied.** Its selector had the same specificity as the
+  theme selector, so the colors were silently overridden.
+- **Rain and snow were invisible in custom themes.** A custom theme saved from
+  Rain/Snow lost both the effect and the backdrop gradient; the theme model now
+  stores `effect` and `backdropCss`, and canvas visibility is driven by
+  `html[data-ambient]`.
+- **The theme reverted on a mode switch.** A gallery pick is now written to the
+  active mode key (`tailref-theme-draw` / `tailref-theme-reference`).
+- **"Cursor-anchored zoom" was a dead setting.** It now zooms around the
+  pointer; the default is on, which preserves the old behavior.
+- **"Editor grid step" was a dead setting.** It now drives the `#gridOverlay`
+  background size; the default is 32 px.
+- **The settings footer was clipped.** The e-mail and copyright lines moved to
+  a CSS grid; the copyright sits under the e-mail and the buttons span both
+  lines.
+- **Narrowing the panel collapsed the settings text to one letter per line.**
+  `#settings` is a container query now: below 560 px the navigation becomes a
+  horizontal strip, the footer text takes the full width and Save/Reset move to
+  their own row.
+- **Empty-board hint:** the logo and wordmark were removed.
+- **Mode order:** identical in every panel (`3D Pose → Reference → Drawing`).
+- **The update panel now describes macOS correctly.** With the updater
+  disabled it said "On Linux…" on every platform; macOS has its own sentence,
+  translated into all nine languages.
+- **Drawing-mode top bar:** buttons are pinned to 30 px, and the bar no longer
+  stretches; the collapse/expand animation is back.
+
+### Localization
+
+- The remaining 275 translation keys were closed in 8 languages: 10 languages,
+  15078 keys, no key falls back to English (`MAX_UNTRANSLATED = 0`).
+
 ## [1.4.3] — 2026-11-23
 
 ### Added — Linux support

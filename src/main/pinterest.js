@@ -12,6 +12,7 @@
    Pinterest alan adları kabul edilir. */
 
 const { ipcMain, session, app, shell } = require('electron');
+const ipcGuard = require('./ipc-guard');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
@@ -290,7 +291,7 @@ function registerPinterest({ isTest = false } = {}) {
     isAuthPopup: url => isAuthPopup(url),
   });
 
-  ipcMain.handle('pinterest-config', async () => {
+  ipcGuard.handle(ipcMain, 'pinterest-config', async () => {
     applyIdentity();
     const loggedIn = await hasPinterestLogin(ses());
     const { mode, startUrl } = startFor({ isTest, loggedIn });
@@ -308,12 +309,12 @@ function registerPinterest({ isTest = false } = {}) {
 
   /* Giriş durumu sayfa gezinirken değişebilir (giriş yapınca `_auth` gelir).
      Panel dom-ready oldukça buradan tazeliyor. */
-  ipcMain.handle('pinterest-session', async () => {
+  ipcGuard.handle(ipcMain, 'pinterest-session', async () => {
     const loggedIn = await hasPinterestLogin(ses());
     return { loggedIn, mode: startFor({ isTest, loggedIn }).mode };
   });
 
-  ipcMain.handle('pinterest-fetch', async (_event, url, options) => {
+  ipcGuard.handle(ipcMain, 'pinterest-fetch', async (_event, url, options) => {
     const result = await fetchFromUrl(url, ses(), !!isTest);
     if (!result || !result.ok || !options || !options.save) return result;
     try {
@@ -321,11 +322,11 @@ function registerPinterest({ isTest = false } = {}) {
       return { ...result, savedPath: saved.file, saveDir: saved.dir };
     } catch (error) {
       // Tahtaya ekleme devam etsin; yalnızca disk kopyası başarısız oldu.
-      return { ...result, saveError: (error && error.message) || 'Diske kaydedilemedi' };
+      return { ...result, saveError: (error && error.message) || 'Could not save to disk' };
     }
   });
 
-  ipcMain.handle('pinterest-open-folder', async () => {
+  ipcGuard.handle(ipcMain, 'pinterest-open-folder', async () => {
     try {
       const dir = saveDirFor(isTest);
       await fs.promises.mkdir(dir, { recursive: true });
@@ -336,7 +337,7 @@ function registerPinterest({ isTest = false } = {}) {
     }
   });
 
-  ipcMain.handle('pinterest-clear', async () => {
+  ipcGuard.handle(ipcMain, 'pinterest-clear', async () => {
     try {
       const current = ses();
       await current.clearStorageData();

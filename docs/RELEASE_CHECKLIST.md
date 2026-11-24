@@ -66,11 +66,13 @@ job layout and manual test builds are in
 - [ ] Release contains `TailRef_Studio_Setup.exe`,
       `TailRef_Studio_Setup.exe.blockmap`, `TailRef_Studio.exe`, `latest.yml`,
       `TailRef-X.Y.Z.AppImage`, `tailref_X.Y.Z_amd64.deb`,
-      `tailref-X.Y.Z.x86_64.rpm` and `SHA256SUMS.txt`.
-- [ ] `latest-linux.yml` is absent from the release assets.
+      `tailref-X.Y.Z.x86_64.rpm`, `TailRef-X.Y.Z-arm64.dmg`,
+      `TailRef-X.Y.Z-x64.dmg` and `SHA256SUMS.txt`.
+- [ ] `latest-linux.yml` and `latest-mac.yml` are absent from the release assets.
 - [ ] Re-download the published files and confirm their checksums.
-- [ ] Release notes separate Windows and Linux downloads and state that Linux
-      has no in-app updater and no Flathub release yet.
+- [ ] Release notes separate Windows, Linux and macOS downloads and state that
+      Linux and macOS have no in-app updater and no Flathub release yet, and that
+      the macOS images are not notarized.
 
 ## After publishing
 
@@ -78,10 +80,12 @@ job layout and manual test builds are in
 - [ ] Old releases remain available.
 - [ ] The AppImage starts on Ubuntu and Fedora; deb and rpm install and
       double-click a `.tail` file successfully.
+- [ ] Both macOS images mount, the app launches after the Gatekeeper
+      right-click → Open, and a `.tail` file opens from Finder.
 - [ ] `Known limitations` in the README is still accurate.
 - [ ] Links in `README.md`, `LICENSE-FAQ.md`, `SECURITY.md` and
       `CONTRIBUTING.md` resolve.
 
 > `release.yml` publishes only from a version tag. It validates the tag, runs
-> every gate, builds Windows and Linux separately, verifies every artifact and
-> then creates the GitHub Release. A failed check never publishes.
+> every gate, builds Windows, Linux and macOS separately, verifies every artifact
+> and then creates the GitHub Release. A failed check never publishes.

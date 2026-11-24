@@ -33,6 +33,20 @@ function gatePath(file) {
 const PURE = [
   'pose3d-unit.js',
   'dialog-l10n-test.js',
+  /* Üretilen app.js kaynaklarla birebir güncel mi? (bayat paket kapısı) */
+  'build-app-test.js',
+  /* Atomik yazım: Windows kilit/rename geri dönüşü ve benzersiz dışa
+     aktarma adı yarışı (P0/P1 veri kaybı regresyonları). */
+  'atomic-write-test.js',
+  /* Yedek sağlık denetimi worker'da; zaman aşımı ve bozuk dosya yolları. */
+  'backup-health-test.js',
+  /* Preload MessagePort isteği zaman aşımı (asılı undo isteği regresyonu). */
+  'preload-engine-port-test.js',
+  /* README/ARCHITECTURE/ROADMAP kapı sayıları gerçek listeyle aynı mı? */
+  'gate-docs-test.js',
+  /* Yerelleştirme: üretilen sözlük güncel mi, çeviri kapsamı sessizce
+     daralıyor mu, yer tutucular kaynakla aynı mı? */
+  'locale-data-test.js',
   'wide-gamut-test.js',
   'ink-tile-canon-test.js',
   'ink-tile-view-test.js',
@@ -43,8 +57,17 @@ const PURE = [
   'external-links-test.js',
   /* Dosya yolu politikası: .tail kapısı + dışa aktarma klasörü allowlist'i. */
   'path-policy-test.js',
+  /* Tarayıcı sürümü: `node src/main/server.js` gerçekten açılıyor mu,
+     statik sunucu klasör dışına sızdırmıyor mu? */
+  'browser-server-test.js',
+  /* .tail kapsayıcısı: imza, sürüm, bozuk gövde, geçersiz JSON, sınırlar. */
+  'tail-format-test.js',
   /* Elektron güvenlik duruşu: CSP, sandbox, webview allowlist, fuses. */
   'security-static-test.js',
+  /* IPC sender validation: every channel through one gate, panel allowlist
+     matches panel-preload, trust cannot be silently dropped. */
+  'ipc-guard-test.js',
+  'ipc-sender-gate-test.js',
   /* Automatic updates: version policy, state machine, static security. */
   'update-policy-test.js',
   'update-manager-test.js',
@@ -57,6 +80,9 @@ const PURE = [
   'doc-links-test.js',
   /* Linux paketleme: hedefler, ikon, MIME, Flatpak, yayın hattı. */
   'linux-packaging-test.js',
+  /* macOS paketleme: DMG hedefleri, entitlements, .tail belge türü,
+     open-file, --arch çapraz derleme, macos yayın işi. */
+  'macos-packaging-test.js',
   'verify-package.js',
 ];
 const FULL_EXTRA = [

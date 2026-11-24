@@ -318,7 +318,7 @@ function inkWorkspaceHistoryKind(raw) {
 const inkWorkspaceHistoryKindCache = new Map();
 
 function inkWorkspaceHistoryLabel(raw) {
-  return inkWorkspaceHistoryKind(raw) === 'stroke' ? 'Brush stroke' : 'Editing';
+  return inkWorkspaceHistoryKind(raw) === 'stroke' ? __t('Brush stroke') : __t('Editing');
 }
 
 function inkWorkspaceHistoryRow(raw, kind, count) {
@@ -336,11 +336,11 @@ function inkWorkspaceHistoryRow(raw, kind, count) {
   label.textContent = inkWorkspaceHistoryLabel(raw);
   const meta = document.createElement('span');
   meta.className = 'inkHistoryMeta';
-  meta.textContent = count === 1 ? '1 step' : count + ' steps';
+  meta.textContent = count + ' ' + __tp('step', count);
   row.append(icon, label, meta);
   row.title = kind === 'undo'
-    ? 'Undo up to here (' + count + ' steps)'
-    : 'Redo up to here (' + count + ' steps)';
+    ? __t('Undo up to here ({n} steps)', { n: count })
+    : __t('Redo up to here ({n} steps)', { n: count });
   return row;
 }
 
@@ -360,7 +360,7 @@ function inkWorkspaceRenderHistory() {
   if (!undoItems.length && !redoItems.length) {
     const empty = document.createElement('div');
     empty.className = 'inkHistoryEmpty';
-    empty.textContent = 'No history yet · steps appear here after the first stroke.';
+    empty.textContent = __t('No history yet · steps appear here after the first stroke.');
     list.appendChild(empty);
     return;
   }
@@ -368,7 +368,7 @@ function inkWorkspaceRenderHistory() {
   if (redoItems.length) {
     const head = document.createElement('div');
     head.className = 'inkHistoryHead';
-    head.textContent = 'REDOABLE';
+    head.textContent = __t('REDOABLE');
     list.appendChild(head);
     for (let i = redoItems.length - 1; i >= 0; i--) {
       list.appendChild(inkWorkspaceHistoryRow(redoItems[i], 'redo', redoItems.length - i));
@@ -377,13 +377,19 @@ function inkWorkspaceRenderHistory() {
 
   const now = document.createElement('div');
   now.className = 'inkHistoryNow';
-  now.innerHTML = '<span class="inkHistoryDot" aria-hidden="true"></span><b>Now</b>';
+  /* Metin sözlükten gelir; innerHTML yerine düğüm kur (XSS yüzeyi yok). */
+  const dot = document.createElement('span');
+  dot.className = 'inkHistoryDot';
+  dot.setAttribute('aria-hidden', 'true');
+  const nowLabel = document.createElement('b');
+  nowLabel.textContent = __t('Now');
+  now.append(dot, nowLabel);
   list.appendChild(now);
 
   if (undoItems.length) {
     const head = document.createElement('div');
     head.className = 'inkHistoryHead';
-    head.textContent = 'RESTORABLE';
+    head.textContent = __t('RESTORABLE');
     list.appendChild(head);
     for (let i = undoItems.length - 1; i >= 0; i--) {
       list.appendChild(inkWorkspaceHistoryRow(undoItems[i], 'undo', undoItems.length - i));

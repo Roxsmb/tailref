@@ -119,7 +119,7 @@ function pinterestFetchOptions() {
 
 /* Tek görsel/batch sonucu için kısa durum eki. */
 function pinterestSaveSuffix(saved, saveError) {
-  if (saveError) return ' · disk copy failed';
+  if (saveError) return ' · ' + __t('disk copy failed');
   return saved ? __t(' · saved to disk') : '';
 }
 

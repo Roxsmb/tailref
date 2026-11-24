@@ -1380,7 +1380,7 @@ body:not(.mode-draw) #psStatusColorSep{display:none}
 /* =========================================================
    TOOLTIP
    ========================================================= */
-button[data-tooltip]::after{
+button[data-tooltip]:not(.settingToggleBtn)::after{
   border:0.5px solid var(--ps-border)!important;
   border-radius:8px!important;
   background:var(--ps-surface-raised)!important;

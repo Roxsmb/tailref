@@ -5,6 +5,61 @@ Format bu repo için sadeleştirilmiş Keep a Changelog'dur; sürümler
 
 ## [Unreleased]
 
+## [1.4.4] — 2026-11-24
+
+### Added — macOS desteği
+
+- **macOS paketleri:** Apple silicon (`TailRef-1.4.4-arm64.dmg`) ve Intel
+  (`TailRef-1.4.4-x64.dmg`) için disk imajları. Yapılandırma `build.mac`
+  altında; yayın hattı `macos` işinde iki mimarinin yerel modülünü ayrı ayrı
+  derleyip iki imajı üretiyor.
+- **`.tail` dosya ilişkilendirmesi:** `CFBundleDocumentTypes` kaydı ve
+  `app.on('open-file')` işleyicisi. Finder'da çift tıklama artık Windows ve
+  Linux ile aynı davranışı veriyor: açık pencereye devredilir, soğuk açılışta
+  dosya renderer tarafından tüketilir.
+- **Ad-hoc imza:** `mac.identity: "-"`, hardened runtime ve
+  `build/entitlements.mac.plist`. Apple Developer ID olmadığı için imajlar
+  notarize edilmiyor; ilk açılışta Gatekeeper onayı gerekiyor
+  (`docs/MACOS.md`).
+- **`build-native.js --arch=`:** tek runner'dan çapraz mimari derleme
+  (arm64 runner'da x64 `inkcore.node`).
+- **CI'da gerçek açılış kontrolü:** `scripts/launch-smoke.js` imajdan çıkarılan
+  `.app`'i geçici veri klasöründe ve izole portta başlatıp `appReady` ile tahta
+  sahnesini doğruluyor. Açılmayan paket yayına çıkmıyor.
+
+### Fixed — ayar ve arayüz denetimi
+
+- **Yüksek kontrast ayarı hiç uygulanmıyordu.** `html[data-hi-contrast]`
+  seçicisi tema seçicisiyle aynı özgüllükteydi; renkler sessizce eziliyordu.
+- **Özel temada yağmur/kar efekti görünmüyordu.** Rain/Snow temalarından
+  kaydedilen özel tema hem efekti hem arka plan gradyanını kaybediyordu;
+  veri modeline `effect` ve `backdropCss` eklendi, canvas görünürlüğü
+  `html[data-ambient]` üzerinden çözüldü.
+- **Mod değişiminde tema geri dönüyordu.** Galeri seçimi artık aktif modun
+  anahtarına (`tailref-theme-draw` / `tailref-theme-reference`) yazılıyor.
+- **"Cursor-anchored zoom" ölü ayardı.** Artık imleç merkezli zoom uygular;
+  varsayılan açık (eski davranış).
+- **"Editor grid step" ölü ayardı.** `#gridOverlay` arka plan aralığını
+  gerçekten ayarlar; varsayılan 32 px.
+- **Ayarlar alt bilgisi kırpılıyordu.** E-posta ve telif satırı CSS grid'e
+  alındı; telif satırı e-posta metninin altında, düğmeler iki satır boyunca
+  ortalanıyor.
+- **Panel daraltılınca Ayarlar içeriği tek harfe çöküyordu.** `#settings`
+  artık container query kullanıyor: 560 px altında nav üstte yatay şeride
+  dönüşür, e-posta/telif tam genişlik olur, Kaydet/Sıfırla alt satıra iner.
+- **Boş tahta ipucu:** logo ve wordmark kaldırıldı.
+- **Mod sırası:** her panelde aynı (`3D Pose → Reference → Drawing`).
+- **Güncelleme paneli macOS'u doğru anlatıyor.** Güncelleyici kapalıyken panel
+  her platformda "On Linux…" diyordu; macOS için ayrı cümle eklendi ve 9 dile
+  çevrildi.
+- **Çizim modu üst hapı:** butonlar 30 px'e sabitlendi, hap uzaması ve
+  kapanma/açılma animasyonu düzeltildi.
+
+### Localization
+
+- Kalan 275 çeviri anahtarı 8 dilde kapatıldı: 10 dil, 15078 anahtar,
+  İngilizceye düşen anahtar yok (`MAX_UNTRANSLATED = 0`).
+
 ## [1.4.3] — 2026-11-23
 
 ### Added — Linux desteği

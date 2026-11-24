@@ -193,7 +193,7 @@ function showFatalError(message) {
   ].join(';');
 
   const title = document.createElement('b');
-  title.textContent = 'Startup error';
+  title.textContent = __t('Startup error');
   title.style.cssText = 'display:block;font-size:16px;letter-spacing:.02em;margin-bottom:10px;';
 
   const body = document.createElement('p');
@@ -201,7 +201,7 @@ function showFatalError(message) {
   body.style.cssText = 'margin:0 0 6px;font-size:13px;line-height:1.55;color:#b9c4d2;white-space:pre-wrap;';
 
   const hint = document.createElement('p');
-  hint.textContent = 'Board data is kept in the browser store (IndexedDB) and can only be read from the app\'s own address. If you opened the page directly as a file, the data is invisible.';
+  hint.textContent = __t('Board data is kept in the browser store (IndexedDB) and can only be read from the app\'s own address. If you opened the page directly as a file, the data is invisible.');
   hint.style.cssText = 'margin:0 0 18px;font-size:12px;line-height:1.5;color:#7f8b9b;';
 
   const actions = document.createElement('div');
@@ -209,7 +209,7 @@ function showFatalError(message) {
 
   const reload = document.createElement('button');
   reload.type = 'button';
-  reload.textContent = 'Yeniden dene';
+  reload.textContent = __t('Try again');
   reload.style.cssText = 'padding:9px 16px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#eef2f7;font:inherit;font-size:13px;cursor:pointer;';
   reload.onclick = () => location.reload();
 
@@ -346,7 +346,7 @@ async function init() {
         ? 'Clean start completed. Old boards are in the archive: ' + recovery.archive
         : 'Clean start completed.', 9000);
     } else if (recovery && recovery.ok) {
-      showProjectNotice('Reverted to the last healthy save: ' + recovery.backup, 6000);
+      showProjectNotice(__t('Reverted to the last healthy save: ') + recovery.backup, 6000);
     } else if (recovery && !recovery.ok) {
       showProjectNotice('Recovery backup could not be loaded: ' + recovery.error, 9000);
     }

@@ -41,6 +41,10 @@ tailref/
 ├── src/
 │   ├── main/                  Electron main process
 │   │   ├── main.js            app lifecycle, windows, IPC, .tail read/write
+│   │   ├── ipc-guard.js       sender/origin gate for every privileged channel
+│   │   ├── atomic-write.js    crash-safe atomic file writes
+│   │   ├── backup-health.js   worker-based backup inspection
+│   │   ├── tail-format.js     .tail container validation
 │   │   ├── static-server.js   tiny dependency-free static file server
 │   │   ├── server.js          browser-only dev entry (node server.js)
 │   │   ├── panel-window-manager.js  detached panel windows
@@ -171,6 +175,24 @@ A panel can be docked in the main window or detached into its own always-on-top
 window (`panel-window-manager.js` + `17b-panel-dock.js`). The detached window
 mirrors the panel DOM and forwards interaction through IPC.
 
+## IPC boundary
+
+All 82 privileged channels in the six main-process modules are registered
+through `src/main/ipc-guard.js`; nothing calls `ipcMain.handle/on` directly.
+A call is accepted only when all of these hold:
+
+1. the sender is the registered main window or a registered detached panel;
+2. the message comes from the top-level frame (iframes are rejected);
+3. the frame origin equals the app's own origin;
+4. panel windows use the panel channel allowlist only, which must match
+   `panel-preload.js`.
+
+Rejected calls get a rejected promise (`E_IPC_UNTRUSTED`) or are dropped for
+fire-and-forget channels, and the log is rate-limited per channel. Guest
+`<webview>` pages never had the `window.tailref` bridge and cannot reach
+`ipcMain`. `tests/ipc-guard-test.js` exercises the rules and
+`tests/ipc-sender-gate-test.js` fails if a new channel bypasses the guard.
+
 ## Automatic updates
 
 `src/main/update-manager.js` owns the update state machine: startup check
@@ -209,9 +231,9 @@ checks that the packaged `package.json` version matches. It prints
 
 `scripts/run-gates.js` runs the quality gates:
 
-- **PURE** (14 gates): pure Node checks - unit tests, format validators, color
+- **PURE** (31 gates): pure Node checks - unit tests, format validators, color
   math, static analysis, package verification.
-- **FULL** (`--full`, 69 gates total): adds Electron + CDP channels that drive
+- **FULL** (`--full`, 86 gates total): adds Electron + CDP channels that drive
   the real app — drawing parity, undo, layers, panels, persistence, themes,
   smoke tests.
 
@@ -258,9 +280,17 @@ Themes and interface skins are data, not code: see
 
 ### A translation
 
-Add or edit keys in `src/renderer/core/01c-locale-data.js` (renderer) and
-`src/main/dialog-l10n.js` (native dialogs), then rebuild. Keep placeholders such
-as `{n}` intact.
+Translation sources live in `locales/<code>.json`. `locales/tr.json` is the
+source of truth; `locales/en.json` holds overrides, and English source literals
+are the keys (so an untranslated string still renders). After editing, run
+`node scripts/build-locales.js` to regenerate
+`src/renderer/core/01c-locale-data.js`; `--check` verifies freshness in the gate
+chain. Keep placeholders such as `{n}` intact. Native dialog strings live in
+`src/main/dialog-l10n.js`.
+
+Renderer code outside `01b-l10n.js` must call `__t()` / `__tp()`: `t` and
+`tPlural` are scoped inside that file's IIFE, and a bare call throws
+`ReferenceError` at runtime (`tests/locale-data-test.js` enforces this).
 
 ## Pitfalls
 

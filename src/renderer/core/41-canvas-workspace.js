@@ -399,7 +399,7 @@ async function newCanvasCreate() {
   if (ui.els.create) ui.els.create.disabled = true;
   if (ui.els.info) {
     ui.els.info.classList.remove('is-error');
-    ui.els.info.textContent = 'Creating the canvas…';
+    ui.els.info.textContent = __t('Creating the canvas…');
   }
 
   try {
@@ -507,7 +507,7 @@ async function newCanvasCreate() {
     ui.busy = false;
     if (ui.els.create) ui.els.create.disabled = false;
     if (ui.els.info) {
-      ui.els.info.textContent = 'Canvas could not be created: ' + (error && error.message ? error.message : String(error));
+      ui.els.info.textContent = __t('Canvas could not be created: ') + (error && error.message ? error.message : String(error));
       ui.els.info.classList.add('is-error');
     }
     return false;

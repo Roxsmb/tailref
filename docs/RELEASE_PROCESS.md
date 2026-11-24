@@ -7,7 +7,7 @@ maintainer-facing procedure. For the older Windows-only notes see
 
 ## Pipeline at a glance
 
-`.github/workflows/release.yml` runs five jobs:
+`.github/workflows/release.yml` runs six jobs:
 
 | Job | Runner | What it does |
 |---|---|---|
@@ -15,16 +15,17 @@ maintainer-facing procedure. For the older Windows-only notes see
 | `test` | `ubuntu-22.04` | Installs from the lockfile, rebuilds the renderer, verifies it is committed, runs the pure gates, audits production dependencies, compiles the Linux native module |
 | `windows` | `windows-latest` | Runs the full test suite, compiles the native module, builds NSIS + portable, verifies `app.asar`, `latest.yml` and `app-update.yml` |
 | `linux` | `ubuntu-22.04` | Builds AppImage + deb + rpm, verifies `app.asar`, rejects Windows binaries in the payload, inspects package contents, installs and removes the deb, smoke-launches the AppImage under Xvfb |
-| `release` | `ubuntu-22.04` | Downloads all artifacts, confirms `latest-linux.yml` is absent, writes `SHA256SUMS.txt`, generates release notes, creates the GitHub Release (a hidden draft on manual runs by default), re-checks the uploaded assets |
+| `macos` | `macos-14` | Compiles the native module for arm64 and x64, builds one DMG per architecture, verifies `app.asar`, Mach-O architecture, `.tail` document type and the ad-hoc signature, mounts both images and launches the packaged app |
+| `release` | `ubuntu-22.04` | Downloads all artifacts, confirms `latest-linux.yml` and `latest-mac.yml` are absent, writes `SHA256SUMS.txt`, generates release notes, creates the GitHub Release (a hidden draft on manual runs by default), re-checks the uploaded assets |
 
-`release` needs all four previous jobs. A failed build or a failed verification
+`release` needs all five previous jobs. A failed build or a failed verification
 means no release is created.
 
 ## Version and changelog
 
-The tag must be `v` + the exact `package.json` version: `v1.4.3` for
-`"version": "1.4.3"`. `prepare` rejects anything else. It also requires a
-`## [1.4.3]` section in `CHANGELOG.md` and an English `## [1.4.3]` section in
+The tag must be `v` + the exact `package.json` version: `v1.4.4` for
+`"version": "1.4.4"`. `prepare` rejects anything else. It also requires a
+`## [1.4.4]` section in `CHANGELOG.md` and an English `## [1.4.4]` section in
 `CHANGELOG.en.md`.
 
 To prepare a release:
@@ -38,7 +39,8 @@ To prepare a release:
    (`ok('version is X.Y.Z', pkg.version === 'X.Y.Z')`). The gate is intentionally
    explicit so an accidental version change cannot slip through.
 4. Update `flatpak/com.tailref.studio.yml` (`tag:`) and add a `<release>` entry
-   to `flatpak/com.tailref.studio.metainfo.xml`.
+   to `flatpak/com.tailref.studio.metainfo.xml`. Update the version badge and
+   the "current release" sentence in `README.md` and `docs/ROADMAP.md`.
 5. Run the local checks:
 
    ```bash
@@ -72,12 +74,17 @@ Linux assets:
 - `tailref_X.Y.Z_amd64.deb`
 - `tailref-X.Y.Z.x86_64.rpm`
 
+macOS assets:
+
+- `TailRef-X.Y.Z-arm64.dmg` (Apple silicon)
+- `TailRef-X.Y.Z-x64.dmg` (Intel)
+
 Plus `SHA256SUMS.txt` covering every file above.
 
-`latest-linux.yml` is produced by electron-builder but **is not uploaded**. The
-Linux build has no in-app updater, and publishing that file would imply one
-exists. The file is not referenced by the workflow and is not in the checksum
-list.
+`latest-linux.yml` and `latest-mac.yml` are produced by electron-builder but
+**are not uploaded**. Neither platform has an in-app updater, and publishing
+those files would imply one exists. The workflow fails if either file reaches
+the release job.
 
 The release notes come from `scripts/release-notes.js`, which writes
 `dist/RELEASE_NOTES.md` with sections for downloads by operating system,
@@ -102,7 +109,7 @@ checksums.
 `workflow_dispatch` builds and verifies without publishing by default:
 
 1. Actions → **Release** → *Run workflow*.
-2. Enter an existing tag (for example `v1.4.3`).
+2. Enter an existing tag (for example `v1.4.4`).
 3. Leave `publish` unchecked.
 
 The `windows` and `linux` jobs upload their artifacts to the workflow run.
@@ -119,13 +126,13 @@ itself is public, because the tag is part of the repository.
 To upload a real release that only you can download:
 
 1. Actions → **Release** → *Run workflow*.
-2. `tag`: the existing tag, for example `v1.4.3`.
+2. `tag`: the existing tag, for example `v1.4.4`.
 3. `publish`: **checked**.
 4. `draft`: **checked** (default).
 
-The workflow builds both platforms, uploads all eight assets and leaves the
+The workflow builds all three platforms, uploads all ten assets and leaves the
 release as a draft. Download the AppImage, deb or rpm from the draft page,
-test them on a Linux machine, and when you are satisfied press **Publish
+test them on a Linux or macOS machine, and when you are satisfied press **Publish
 release** on GitHub. Publishing keeps the same tag and the same files; nothing
 is rebuilt. To delete a rejected draft, delete the release first, then the tag.
 
@@ -185,11 +192,15 @@ the previous `.deb`, `.rpm` or AppImage.
 
 The workflow only uses `secrets.GITHUB_TOKEN`, with `contents: write` scoped to
 the `release` job. No publishing token is stored in the repository. Code
-signing is not configured; the artifacts are unsigned and the release notes say
-so.
+signing is not configured yet; the artifacts are unsigned and the release notes
+say so. The signing policy, current status and the free SignPath Foundation
+application are documented in [`CODE_SIGNING.md`](CODE_SIGNING.md) and
+[`SIGNPATH_APPLICATION.md`](SIGNPATH_APPLICATION.md).
 
 ## Related documents
 
+- [`CODE_SIGNING.md`](CODE_SIGNING.md) — signing policy and verification
+- [`SIGNPATH_APPLICATION.md`](SIGNPATH_APPLICATION.md) — free OSS signing application
 - [`LINUX_BUILD.md`](LINUX_BUILD.md) — reproducing the Linux build locally
 - [`FLATPAK.md`](FLATPAK.md) — Flathub preparation
 - [`RELEASE.md`](RELEASE.md) — versioning and the updater

@@ -20,11 +20,27 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
+const net = require('net');
+
 const ROOT = path.join(__dirname, '..');
-const PORT = 9340;
-const APP_PORT = 5203;
+/* Sabit portlar (5203/9340) iki sorun üretiyordu: `settings-hub-test` de
+   5203'ü kullanıyor ve yeniden denemede kapı, kapanmakta olan/başka bir
+   örneğin hata ayıklama hedefine bağlanıp "editör açılmadı" dalına
+   düşebiliyordu. Her koşu kendi boş portlarını alır. */
+let PORT = 0;
+let APP_PORT = 0;
 const OUT = path.join(os.tmpdir(), 'tailref-radial');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const freePort = () => new Promise((resolve, reject) => {
+  const srv = net.createServer();
+  srv.unref();
+  srv.on('error', reject);
+  srv.listen(0, '127.0.0.1', () => {
+    const { port } = srv.address();
+    srv.close(() => resolve(port));
+  });
+});
 
 const electronPath = () => path.join(ROOT, 'node_modules', 'electron', 'dist', 'electron.exe');
 
@@ -74,6 +90,8 @@ async function waitForTarget(deadlineMs = 30000) {
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
+  PORT = await freePort();
+  APP_PORT = await freePort();
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tailref-radial-check-'));
   const env = { ...process.env, TailRef_USER_DATA: userDataDir, TailRef_PORT: String(APP_PORT), TailRef_TEST_SCREEN: process.env.TailRef_TEST_SCREEN || '3' };
   delete env.ELECTRON_RUN_AS_NODE;
@@ -107,6 +125,12 @@ async function waitForTarget(deadlineMs = 30000) {
     });
     ws.send(JSON.stringify({ id: 1, method: 'Runtime.enable' }));
     await send(ws, 'Page.enable');
+    /* Pencere arka planda/odaksız kaldığında Chromium kare üretimini
+       kısabiliyor; bu makinede belgelenmiş rAF donması tam olarak bunu
+       yapıyor (yeni tuval `requestAnimationFrame` beklerken kilitleniyor).
+       Pencereyi öne al ve odak taklidini aç: kare üretimi yeniden başlar. */
+    try { await send(ws, 'Page.bringToFront'); } catch { /* sessiz */ }
+    try { await send(ws, 'Emulation.setFocusEmulationEnabled', { enabled: true }); } catch { /* sessiz */ }
 
     const deadline = Date.now() + 30000;
     let ready = false;
@@ -262,7 +286,15 @@ async function waitForTarget(deadlineMs = 30000) {
       out.collapsedWheelHidden = wheel ? getComputedStyle(wheel).opacity === '0' : false;
       if (colorEl) {
         colorEl.dispatchEvent(new PointerEvent('pointerenter', { bubbles: false }));
-        await wait(240);
+        /* Görünürlük CSS geçişiyle geliyor; sabit 240 ms yüklü makinede
+           geçişin ilk karesine denk gelip yalancı kırmızı üretiyordu.
+           Koşul gerçekleşene kadar bekle (üst sınır 2 s). */
+        const tHover = Date.now();
+        while (Date.now() - tHover < 2000) {
+          const w = panel.querySelector('.inkRadialWheel');
+          if (w && getComputedStyle(w).opacity !== '0') break;
+          await wait(40);
+        }
       }
       out.diskIsColor = !!disk && disk.classList.contains('is-color');
       out.expandedWheelVisible = wheel ? getComputedStyle(wheel).opacity !== '0' : false;

@@ -1134,15 +1134,18 @@ function psShellSyncReferenceInfo() {
   const setText = (el, next) => {
     if (el && el.textContent !== next) el.textContent = next;
   };
-  setText(psShellEl('psBoardCount'),
-    (psShellEl('count')?.textContent || __t('0 items')).replace(/\s*öğe\s*$/i, '').trim() || '0');
+  /* Toplam öğe sayısı: #count yerelleştirilmiş "12 öğe · 3 metin" taşır;
+     buradaki satır yalnızca sayı ister. Metinden sayı ayıklamak dil
+     eki regex'ine bağlıydı (Türkçe "öğe" soyulurken diğer dillerde
+     "12 items" kalıyordu); doğrudan durumdan oku. */
+  setText(psShellEl('psBoardCount'), String(state.items.length));
   const sel = psShellEl('psBoardSelection');
   if (sel) {
     if (typeof selectedImageItems === 'function') {
       const list = selectedImageItems();
       setText(sel, !list.length ? __t('None')
-        : list.length === 1 ? (list[0].title || '1 ' + __t('image'))
-        : list.length + ' ' + __t('image'));
+        : list.length === 1 ? (list[0].title || '1 ' + __tp('image', 1))
+        : list.length + ' ' + __tp('image', list.length));
     }
   }
   setText(psShellEl('psBoardZoom'), psShellEl('zoom')?.textContent || '100%');

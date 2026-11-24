@@ -148,7 +148,10 @@ strings fall back to English.
   GitHub Releases update check (Windows only, and it can be turned off).
 - Data stays on the local machine.
 
-macOS and ARM64 are **not** currently supported or planned as release targets.
+macOS 12 or newer is supported on Apple silicon and Intel. The macOS builds are
+ad-hoc signed but not notarized, so the first launch needs a right-click → Open,
+and macOS has no in-app updater; see [`MACOS.md`](MACOS.md). ARM64 builds for
+Windows and Linux are **not** release targets.
 The Flatpak manifest for Flathub is prepared but not published; see
 [`FLATPAK.md`](FLATPAK.md).
 

@@ -391,9 +391,159 @@ jobs:
             dist/tailref_*.deb
             dist/tailref-*.rpm
 
+  macos:
+    name: Build and validate macOS artifacts
+    needs: prepare
+    # Apple silicon runner. It can ad-hoc sign and it cross-compiles the Intel
+    # native module with clang, so both architectures come from one job.
+    # mac.identity "-" in package.json selects ad-hoc signing: no Apple
+    # Developer ID is required, but the app is neither signed for distribution
+    # nor notarized. See docs/MACOS.md.
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare.outputs.tag }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build renderer bundle
+        run: node scripts/build-app.js
+
+      - name: Build the native inkcore module (arm64)
+        run: node scripts/build-native.js --arch=arm64
+
+      - name: Build the Apple silicon disk image
+        run: npx electron-builder --mac dmg --arm64 --publish never
+
+      - name: Verify the arm64 payload
+        run: node scripts/verify-package.js dist/mac-arm64
+
+      - name: Build the native inkcore module (x64)
+        run: node scripts/build-native.js --arch=x64
+
+      - name: Build the Intel disk image
+        run: npx electron-builder --mac dmg --x64 --publish never
+
+      - name: Verify the x64 payload
+        run: node scripts/verify-package.js dist/mac
+
+      - name: Validate architecture, document type and signature
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          ARM="dist/TailRef-${VERSION}-arm64.dmg"
+          X64="dist/TailRef-${VERSION}-x64.dmg"
+          for f in "$ARM" "$X64"; do
+            if [ ! -f "$f" ]; then echo "Missing artifact: $f" >&2; exit 1; fi
+            echo "OK $f ($(stat -f%z "$f") bytes)"
+          done
+          # macOS has no in-app updater: electron-builder may still write an
+          # update feed next to a dmg. Drop it, and reject a zip payload that
+          # would imply a working updater.
+          rm -f dist/latest-mac.yml dist/latest.yml
+          if ls dist/*.zip >/dev/null 2>&1; then
+            echo "A zip payload was produced; macOS updates are not supported" >&2
+            exit 1
+          fi
+          leaked="$(find dist/mac dist/mac-arm64 -type f \
+            \( -name '*.exe' -o -name '*.dll' -o -name '*.ico' \) || true)"
+          if [ -n "$leaked" ]; then
+            echo "Windows binaries found in the macOS package:" >&2
+            echo "$leaked" >&2
+            exit 1
+          fi
+          check_app() {
+            local dir="$1" want="$2" app plist bin archs
+            app="$(find "$dir" -maxdepth 1 -name '*.app' -print -quit)"
+            if [ -z "$app" ]; then echo "No .app bundle in $dir" >&2; exit 1; fi
+            plist="$app/Contents/Info.plist"
+            bin="$app/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist")"
+            if [ ! -x "$bin" ]; then echo "Missing executable: $bin" >&2; exit 1; fi
+            archs="$(lipo -archs "$bin")"
+            echo "--- $app ($archs)"
+            case "$archs" in
+              *"$want"*) ;;
+              *) echo "Expected $want in $archs" >&2; exit 1 ;;
+            esac
+            if [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$plist")" != "com.tailref.studio" ]; then
+              echo "Unexpected CFBundleIdentifier" >&2; exit 1
+            fi
+            if [ "$(/usr/libexec/PlistBuddy -c 'Print :LSApplicationCategoryType' "$plist")" != "public.app-category.graphics-design" ]; then
+              echo "Missing graphics-design category" >&2; exit 1
+            fi
+            if [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDocumentTypes:0:CFBundleTypeExtensions:0' "$plist")" != "tail" ]; then
+              echo ".tail document type is not registered" >&2; exit 1
+            fi
+            if [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDocumentTypes:0:CFBundleTypeRole' "$plist")" != "Editor" ]; then
+              echo "Unexpected document role" >&2; exit 1
+            fi
+            codesign --verify --deep --strict --verbose=2 "$app"
+            codesign -dv "$app" 2>&1 | grep -q 'Signature=adhoc'
+            echo "OK $app · $want · ad-hoc signed"
+          }
+          check_app dist/mac-arm64 arm64
+          check_app dist/mac x86_64
+
+      - name: Mount both disk images
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          for arch in arm64 x64; do
+            dmg="dist/TailRef-${VERSION}-${arch}.dmg"
+            mnt="$(mktemp -d)"
+            hdiutil attach "$dmg" -mountpoint "$mnt" -nobrowse -readonly -quiet
+            test -d "$mnt/TailRef Studio.app"
+            test -L "$mnt/Applications"
+            hdiutil detach "$mnt" -quiet
+            echo "OK $dmg mounts and contains TailRef Studio.app"
+          done
+
+      - name: Launch the Apple silicon build (smoke)
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          mnt="$(mktemp -d)"
+          dmg="dist/TailRef-${VERSION}-arm64.dmg"
+          hdiutil attach "$dmg" -mountpoint "$mnt" -nobrowse -readonly -quiet
+          cp -R "$mnt/TailRef Studio.app" "$work/"
+          hdiutil detach "$mnt" -quiet
+          # Yerelde üretilen imajda karantina yok; yine de garantiye al.
+          xattr -dr com.apple.quarantine "$work/TailRef Studio.app" || true
+          # Gerçek açılış: geçici veri klasörü + izole port, appReady != false.
+          node scripts/launch-smoke.js \
+            --exe="$work/TailRef Studio.app/Contents/MacOS/TailRef Studio" \
+            --port=9931 --app-port=5179 --timeout=120000
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            dist/TailRef-*-arm64.dmg
+            dist/TailRef-*-x64.dmg
+
   release:
     name: Create GitHub Release (draft or published)
-    needs: [prepare, test, windows, linux]
+    needs: [prepare, test, windows, linux, macos]
     if: github.event_name == 'push' || inputs.publish
     runs-on: ubuntu-22.04
     permissions:
@@ -430,6 +580,10 @@ jobs:
             echo "latest-linux.yml must not be published: Linux has no in-app updater" >&2
             exit 1
           fi
+          if [ -e latest-mac.yml ]; then
+            echo "latest-mac.yml must not be published: macOS has no in-app updater" >&2
+            exit 1
+          fi
           ls -la
           sha256sum \
             TailRef_Studio_Setup.exe \
@@ -439,6 +593,8 @@ jobs:
             "TailRef-${VERSION}.AppImage" \
             "tailref_${VERSION}_amd64.deb" \
             "tailref-${VERSION}.x86_64.rpm" \
+            "TailRef-${VERSION}-arm64.dmg" \
+            "TailRef-${VERSION}-x64.dmg" \
             > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
@@ -470,6 +626,8 @@ jobs:
             "dist/TailRef-${VERSION}.AppImage"
             "dist/tailref_${VERSION}_amd64.deb"
             "dist/tailref-${VERSION}.x86_64.rpm"
+            "dist/TailRef-${VERSION}-arm64.dmg"
+            "dist/TailRef-${VERSION}-x64.dmg"
             dist/SHA256SUMS.txt
           )
           if [ "$DRAFT" = "true" ]; then
@@ -507,6 +665,8 @@ jobs:
             "TailRef-${VERSION}.AppImage"
             "tailref_${VERSION}_amd64.deb"
             "tailref-${VERSION}.x86_64.rpm"
+            "TailRef-${VERSION}-arm64.dmg"
+            "TailRef-${VERSION}-x64.dmg"
             "SHA256SUMS.txt"
           )
           assets="$(gh release view "$TAG" --json assets --jq '.assets[].name')"

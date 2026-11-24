@@ -953,8 +953,6 @@ body.mode-draw #appModeBar .modeSeg {
   border-radius: 7px !important;
   padding: 0 !important;
 }
-body.mode-draw #appModeBar #modeRefBtn { order: 1; }
-body.mode-draw #appModeBar #modeDrawBtn { order: 2; }
 body.mode-draw #appModeBar .modeBtn {
   flex: 0 0 auto !important;
   height: 26px !important;

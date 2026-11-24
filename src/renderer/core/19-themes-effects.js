@@ -14,6 +14,49 @@ let rainDrops = [];
 let rainFrame = 0;
 let rainWidth = 0;
 let rainHeight = 0;
+
+/* Ortam efekti türü: gömülü rain/snow + özel temada taşınan efekt
+   (kayıt defteri 'effect' alanı). Kare başına localStorage okumamak için
+   liste değişiminde tazelenen bir harita kullanılır. */
+let ambientEffectByTheme = {};
+function ambientEffectKind() {
+  const t = document.documentElement.dataset.theme || 'classic';
+  if (t === 'rain' || t === 'snow') return t;
+  return ambientEffectByTheme[t] || null;
+}
+function ambientEffectCacheRefresh() {
+  ambientEffectByTheme = {};
+  try {
+    const reg = window.tailrefThemeRegistry;
+    if (reg && typeof reg.list === 'function') {
+      for (const t of reg.list()) {
+        if (t && (t.effect === 'rain' || t.effect === 'snow')) {
+          ambientEffectByTheme[t.id] = t.effect;
+        }
+      }
+    }
+  } catch { /* sessiz */ }
+  ambientSyncDataset();
+}
+/* Tuval görünürlüğü CSS'te data-theme="rain|snow" ile kuruluyor; özel tema
+   kimliği ct_... olduğu için o kural tutmuyordu (yağmur/kar görünmüyordu).
+   Etkin efekt türü data-ambient'e yazılır; CSS bu attribute'u da dinler. */
+function ambientSyncDataset() {
+  const root = document.documentElement;
+  const kind = ambientEffectKind();
+  if (kind) root.dataset.ambient = kind;
+  else if ('ambient' in root.dataset) delete root.dataset.ambient;
+}
+function ambientEnsureRunning() {
+  ambientSyncDataset();
+  if (!ambientEffectsOn()) return;
+  const kind = ambientEffectKind();
+  if (kind === 'rain' && !rainFrame) rainFrame = requestAnimationFrame(animateRain);
+  if (kind === 'snow' && !snowFrame) snowFrame = requestAnimationFrame(animateSnow);
+}
+document.addEventListener('tailref-custom-themes-changed', ambientEffectCacheRefresh);
+window.tailrefAmbientEffectKind = ambientEffectKind;
+ambientEffectCacheRefresh();
 function resizeRain() {
   if (!rainCanvas || !rainCtx) return;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -34,7 +77,7 @@ function resizeRain() {
 }
 function animateRain() {
   if (!rainCtx) return;
-  const isRain = document.documentElement.dataset.theme === 'rain';
+  const isRain = ambientEffectKind() === 'rain';
   if (!isRain) {
     rainCtx.clearRect(0, 0, rainWidth, rainHeight);
     rainFrame = 0;
@@ -88,7 +131,7 @@ function resizeSnow() {
 }
 function animateSnow() {
   if (!snowCtx) return;
-  const isSnow = document.documentElement.dataset.theme === 'snow';
+  const isSnow = ambientEffectKind() === 'snow';
   if (!isSnow) {
     snowCtx.clearRect(0, 0, snowWidth, snowHeight);
     snowFrame = 0;
@@ -132,9 +175,7 @@ window.tailrefAmbientEffectsOn = ambientEffectsOn;
 window.tailrefAmbientEffectsSet = function (on) {
   try { localStorage.setItem('tailref-ambient-effects', on ? '1' : '0'); } catch { /* sessiz */ }
   if (!on) { ambientEffectsStop(); return; }
-  const theme = document.documentElement.dataset.theme;
-  if (theme === 'rain' && !rainFrame) rainFrame = requestAnimationFrame(animateRain);
-  if (theme === 'snow' && !snowFrame) snowFrame = requestAnimationFrame(animateSnow);
+  ambientEnsureRunning();
 };
 function applyTheme(name) {
   if (!themeNames.includes(name)) name = 'classic';
@@ -145,15 +186,15 @@ function applyTheme(name) {
   if (prev === name) {
     if (themeSelect) themeSelect.value = name;
     if (themeSelectOverflow) themeSelectOverflow.value = name;
+    /* Aynı id'ye efekt sonradan eklenmiş olabilir (özel tema düzenlemesi):
+       animasyonu yine de başlat. */
+    ambientEnsureRunning();
     return;
   }
   themeIndex = themeNames.indexOf(name);
   if (name === 'classic') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.dataset.theme = name;
-  if (ambientEffectsOn()) {
-    if (name === 'rain' && !rainFrame) rainFrame = requestAnimationFrame(animateRain);
-    if (name === 'snow' && !snowFrame) snowFrame = requestAnimationFrame(animateSnow);
-  }
+  ambientEnsureRunning();
   try { localStorage.setItem('tailref-theme', name); } catch { /* sessiz */ }
   if (themeSelect) themeSelect.value = name;
   if (themeSelectOverflow) themeSelectOverflow.value = name;
@@ -194,6 +235,20 @@ function themeSet(mode, name) {
   const cur = themeModeNow();
   if (cur === mode || !THEME_MODE_KEYS[cur]) applyTheme(name);
 }
+/* Galeri/tema stüdyosu için: seçimi YALNIZ görünüme uygulamakla kalma,
+   aktif modun anahtarına da yaz. Aksi hâlde çizimde seçilen tema mod
+   değişiminde eski anahtara geri dönüyordu (tema "bazen bozuluyor"). */
+function themeApplyForMode(name) {
+  const mode = themeModeNow();
+  const reg = window.tailrefThemeRegistry;
+  if (reg && typeof reg.isCustom === 'function' && reg.isCustom(name)) {
+    if (typeof reg.apply === 'function') reg.apply(name);
+    try { localStorage.setItem(THEME_MODE_KEYS[mode] || 'tailref-theme', name); } catch { /* sessiz */ }
+    return;
+  }
+  themeSet(mode, name);
+}
+window.tailrefThemeApplyForMode = themeApplyForMode;
 function themeModeNow() {
   const body = document.body;
   if (body && body.classList.contains('mode-draw')) return 'draw';

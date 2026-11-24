@@ -574,8 +574,8 @@
   color:var(--irix-text)!important;
 }
 /* araç çubuğu tooltip'leri: dönem sarısı, kare, siyah çerçeve */
-:root[data-interface="irix"] button[data-tooltip]:hover::after,
-:root[data-interface="irix"] button[data-tooltip]:focus-visible::after{
+:root[data-interface="irix"] button[data-tooltip]:not(.settingToggleBtn):hover::after,
+:root[data-interface="irix"] button[data-tooltip]:not(.settingToggleBtn):focus-visible::after{
   background:var(--irix-tooltip)!important;
   color:#000!important;
   border:1px solid #000!important;

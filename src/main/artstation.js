@@ -13,6 +13,7 @@
    ArtStation alan adları kabul edilir. */
 
 const { ipcMain, session, app, shell } = require('electron');
+const ipcGuard = require('./ipc-guard');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
@@ -249,7 +250,7 @@ function registerArtStation({ isTest = false } = {}) {
     isAuthPopup: url => isAuthPopup(url),
   });
 
-  ipcMain.handle('artstation-config', async () => {
+  ipcGuard.handle(ipcMain, 'artstation-config', async () => {
     applyIdentity();
     const fixture = isTest ? process.env.TailRef_ARTSTATION_URL : '';
     return {
@@ -263,7 +264,7 @@ function registerArtStation({ isTest = false } = {}) {
     };
   });
 
-  ipcMain.handle('artstation-fetch', async (_event, url, options) => {
+  ipcGuard.handle(ipcMain, 'artstation-fetch', async (_event, url, options) => {
     const result = await fetchFromUrl(url, ses(), !!isTest);
     if (!result || !result.ok || !options || !options.save) return result;
     try {
@@ -271,11 +272,11 @@ function registerArtStation({ isTest = false } = {}) {
       return { ...result, savedPath: saved.file, saveDir: saved.dir };
     } catch (error) {
       // Tahtaya ekleme devam etsin; yalnızca disk kopyası başarısız oldu.
-      return { ...result, saveError: (error && error.message) || 'Diske kaydedilemedi' };
+      return { ...result, saveError: (error && error.message) || 'Could not save to disk' };
     }
   });
 
-  ipcMain.handle('artstation-open-folder', async () => {
+  ipcGuard.handle(ipcMain, 'artstation-open-folder', async () => {
     try {
       const dir = saveDirFor(isTest);
       await fs.promises.mkdir(dir, { recursive: true });
@@ -286,7 +287,7 @@ function registerArtStation({ isTest = false } = {}) {
     }
   });
 
-  ipcMain.handle('artstation-clear', async () => {
+  ipcGuard.handle(ipcMain, 'artstation-clear', async () => {
     try {
       const current = ses();
       await current.clearStorageData();

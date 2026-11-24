@@ -380,7 +380,7 @@ async function openTailFile() {
     const res = await window.tailref.openTail();
     if (!res || !res.ok) {
       if (res && res.canceled) return false;
-      showProjectNotice('Could not open: ' + (res && res.error || 'hata'), 6000);
+      showProjectNotice(__t('Could not open: ') + (res && res.error || __t('unknown error')), 6000);
       return false;
     }
     /* Otomatik modda panolar yedekli olduğundan ve açma öncesi son hâl
@@ -506,8 +506,10 @@ function itemLabel() {
   const texts = state.items.filter(i => i.kind === 'text').length;
   if (!imgs && !texts) return __t('0 items');
   const parts = [];
-  if (imgs)  parts.push(imgs + ' ' + __t('image'));
-  if (texts) parts.push(texts + ' ' + __t('text'));
+  /* Sayı + çoğul: EN'de "1 image"/"3 images"; TR'de sayıdan sonra tekil
+     kullanılır ("3 görsel"), bu yüzden tr.json *_other = tekil biçim. */
+  if (imgs)  parts.push(imgs + ' ' + __tp('image', imgs));
+  if (texts) parts.push(texts + ' ' + __tp('text', texts));
   return parts.join(' · ');
 }
 /* Dil değişince sayaç etiketi (dinamik yazım) yeniden çevrilsin. */

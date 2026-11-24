@@ -39,6 +39,18 @@ function hasPosixToolchain() {
   return compiler && commandExists('make') && python;
 }
 
+/* Hedef mimari: --arch=<arch> verilirse o, yoksa çalışan sürecin mimarisi.
+   macOS'ta tek (arm64) runner'dan hem arm64 hem x64 paket üretilebilsin diye
+   gerekli: node-gyp --arch ile clang'ı çapraz derlemeye yönlendirir. */
+function targetArch(argv) {
+  const found = (argv || []).find(a => typeof a === 'string' && a.startsWith('--arch='));
+  if (!found) return process.arch;
+  const value = found.slice('--arch='.length).trim();
+  if (value === 'x86_64') return 'x64';
+  if (value === 'aarch64') return 'arm64';
+  return value || process.arch;
+}
+
 function hasToolchain() {
   if (process.platform !== 'win32') return hasPosixToolchain();
   const vswhere = path.join(
@@ -130,15 +142,17 @@ function main() {
     process.exit(0);
   }
   console.log(`[inkcore] node-gyp ${nodeGypVersion(gyp)} (${gyp})`);
-  /* Electron ABI: paketin kendi sürümüne göre derle. */
+  /* Electron ABI: paketin kendi sürümüne göre derle. Mimari --arch ile
+     seçilebilir (varsayılan: çalışan süreç). */
   const electron = require(path.join(ROOT, 'node_modules', 'electron',
     'package.json')).version;
-  console.log(`[inkcore] derleme: electron ${electron} · ${process.platform}/${process.arch}`);
+  const arch = targetArch(process.argv.slice(2));
+  console.log(`[inkcore] derleme: electron ${electron} · ${process.platform}/${arch}`);
   const args = [
     gyp, 'rebuild',
     `--runtime=electron`, `--target=${electron}`,
     '--dist-url=https://electronjs.org/headers',
-    `--arch=${process.arch}`,
+    `--arch=${arch}`,
   ];
   /* Çevrimdışı derleme (ör. Flatpak sandbox): Electron başlıkları hazır
      açılmış bir dizinden kullanılır; ağdan indirme yapılmaz. */

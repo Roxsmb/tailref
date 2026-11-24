@@ -89,10 +89,10 @@ function inkFxParamIsController(type, key) {
 }
 
 function inkFxCategoryLabel(cat) {
-  if (cat === 'printmaking') return 'Baskı';
-  if (cat === 'traditional') return 'Geleneksel Medya';
-  if (cat === 'experimental') return 'Deneysel';
-  return 'Efektler';
+  if (cat === 'printmaking') return __t('Printmaking');
+  if (cat === 'traditional') return __t('Traditional Media');
+  if (cat === 'experimental') return __t('Experimental');
+  return __t('Effects');
 }
 
 /* =========================================================

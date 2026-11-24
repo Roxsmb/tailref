@@ -303,7 +303,7 @@ for (const control of [cropTopEl, cropRightEl, cropBottomEl, cropLeftEl]) {
 function makeValueEditable(out, apply) {
   if (!out) return;
   out.classList.add('ieValEditable');
-  out.title = 'Double-click to type manually';
+  out.title = __t('Double-click to type manually');
   out.addEventListener('dblclick', () => {
     if (out.querySelector('input')) return;
     const prevText = out.textContent;

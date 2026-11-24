@@ -11,6 +11,7 @@ This guide is for people changing TailRef's code. For the big picture, read
 | npm | bundled with Node | dependencies, scripts |
 | Windows 10/11 x64 | — | Windows packaging and the Electron gates |
 | Linux x64 | glibc 2.25+ | Linux packaging, AppImage/deb/rpm gates |
+| macOS 12+ (Apple silicon or Intel) | Xcode command line tools | macOS packaging (dmg), see `docs/MACOS.md` |
 | Visual Studio Build Tools (C++) | optional | building `native/inkcore` |
 | Python + Pillow/NumPy | optional | regenerating brand assets |
 
@@ -31,11 +32,13 @@ npm start
 ```bash
 npm run bundle        # regenerate src/renderer/app.js only
 npm start             # bundle + launch the app
-npm run gates         # fast chain: 20 pure gates
-npm run gates:full    # full chain: 74 gates (Electron + CDP, slow)
+npm run gates         # fast chain: 31 pure gates
+npm run gates:full    # full chain: 86 gates (Electron + CDP, slow)
 npm run build:dir     # unpacked Windows build in dist/win-unpacked
 npm run build:linux   # AppImage + deb + rpm (Linux host)
+npm run build:mac     # dmg for the host architecture (macOS host)
 npm run test:package  # verify app.asar matches the working tree
+node scripts/launch-smoke.js --exe="dist/win-unpacked/TailRef Studio.exe"  # launch the packaged app
 npm run build:portable
 npm run build:setup
 ```

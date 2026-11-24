@@ -762,7 +762,7 @@ async function readWorkspace(ws) {
     const scannedHuge = plan.scanned.find(entry => entry.name === hugeName);
     check('aşırı yüklenmiş yedek sağlıksız işaretleniyor',
       !!scannedHuge && scannedHuge.ok === false && scannedHuge.items >= 1600 &&
-      /öğe/.test(scannedHuge.reason || ''),
+      scannedHuge.reason === 'too-many-items',
       scannedHuge ? `${scannedHuge.items} öğe · ${scannedHuge.reason}` : 'taranmadı');
     check('kurtarma bozuk yedek yerine sağlıklı olanı seçiyor',
       plan.chosen && plan.chosen.name === oldHealthyName,
