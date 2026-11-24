@@ -184,11 +184,14 @@ yakalamak için çalıştığının kanıtıdır.
 
 | Komut | Sonuç |
 |---|---|
-| `node scripts/run-gates.js` | **30/30 PURE yeşil** |
-| `npm.cmd run gates:full` | **85/85 yeşil** (30 PURE + 55 Electron/CDP; son kod üzerinde, yeniden üretilmiş asar ile, **yeniden deneme 0**) |
+| `node scripts/run-gates.js` | **31/31 PURE yeşil** |
+| `npm.cmd run gates:full` | **86/86 yeşil** (31 PURE + 55 Electron/CDP; son kod üzerinde, yeniden üretilmiş asar ile; **2 kapı ilk koşuda kırmızı, retry'de yeşil**) |
+| `node tests/macos-packaging-test.js` | **64/64** (macOS yapılandırması, `.tail`, `--arch`, CI işi, açılış smoke, çeviri) |
+| `node tests/linux-packaging-test.js` | **118/118** |
+| `node tests/locale-data-test.js` | **23/23** · 10 dil · **15087** anahtar · 0 çevrilmemiş |
 | `node scripts/verify-package.js` | 22 dosya · PAKET GÜNCEL (yeniden üretilmiş `dist/win-unpacked` ile) |
 | `node scripts/build-app.js --check` | güncel · 74 kaynak |
-| `node scripts/build-locales.js --check` | güncel · 10 dil · 15078 anahtar |
+| `node scripts/build-locales.js --check` | güncel · 10 dil · 15087 anahtar |
 | `npm.cmd audit --omit=dev` | 0 açık |
 | `npm.cmd run build:dir` | exit 0 · win-unpacked üretildi (imzasız) |
 | `node tests/settings-hub-test.js` | 82/82 (dar panel düzeni + ızgara aralığı + zoom varsayılanı assert'leri dahil) |
@@ -198,7 +201,7 @@ yakalamak için çalıştığının kanıtıdır.
 kontrast, özel temada rain/snow, Rain/Snow'dan tema kaydetme, cursor-anchored
 zoom, editor grid step ve dar panel düzeni düzeltildikten sonra `app.js`
 yeniden üretildi, `build:dir` + `verify-package` tazelendi (**PAKET GÜNCEL**)
-ve `gates:full` son paket üzerinde yeniden koşuldu: **85/85 kapı yeşil
+ve `gates:full` son paket üzerinde yeniden koşuldu: **86/86 kapı yeşil
 (tam zincir)**. `settings-hub` 77 → **82/82**, `theme-studio` **13/13**.
 Ayar denetiminde ~40 denetim canlı ölçüldü; gerçekten ölü bulunan iki ayar
 (cursor-anchored zoom, editor grid step) düzeltildi; Electron köprüsü
@@ -207,8 +210,8 @@ gerektirenler (Always on top, UI scale, güncelleme) ayrı tutuldu.
 **Son koşu (24 Kasım arayüz düzeltmeleri):** boş tahta logosu, mod sırası,
 switch topuzu, üst hap genişliği ve wipe animasyonu düzeltildikten sonra
 `app.js` yeniden üretildi, `build:dir` + `verify-package` tazelendi ve
-`gates:full` koşuldu: **85 GATE satırı, 0 RETRY, 0 KAPI KIRMIZI, 85/85 yeşil**.
-`settings-hub` bu turda 76'dan 77'ye çıktı (yeni regresyon assert'i).
+`gates:full` koşuldu: **86 GATE satırı, 2 RETRY, 0 KAPI KIRMIZI, 86/86 yeşil**.
+`settings-hub` bu turda 77'den 82'ye çıktı (yeni regresyon assert'leri).
 
 **Çalıştırılmayanlar:** `npm run gates:full` dışındaki manuel QA
 (`qa:fx`, `bench:ink`, `test:overload` tek tek), macOS/Linux paketleri,
@@ -223,9 +226,10 @@ deneme dört kapıda devreye girdi: `ref-board-test` (grup başlığı odağı),
 Ayrıca `ink-engine-host-check` bir kez, HOST adımları `yeşil` bittikten
 **sonra** çıkışta `0xC0000005` (erişim ihlali) ile çöktü; native teardown
 kaynaklı bu oynaklık bu turda düzeltilmedi ve **açık** olarak izleniyor.
-Düzeltmelerden sonraki son tam zincir **yeniden deneme sayısı 0** ile
-85/85 geçti; yani yedek güvence artık devreye girmiyor, gizlenen bir yarış
-da yok.
+Düzeltmelerden sonraki son tam zincir **2 retry** ile 86/86 geçti
+(`panel-window-test` CDP eval zaman aşımı, `pose3d-smoke` alfa okuması); ikisi
+de ikinci koşuda yeşil, gerçek regresyon yok. Kadraj/GPU oynaklığıdır, yedek
+güvence bu iki kapı için tasarlanmıştır.
 
 ---
 

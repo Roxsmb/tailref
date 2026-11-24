@@ -50,10 +50,10 @@ contain literal backslashes.
 
 ## Tag
 
-`com.tailref.studio.yml` points at `tag: v1.4.3`. That tag does not exist yet;
-the v1.4.2 tag predates `build/icon.png`, `build/linux/` and this directory.
-Update `tag:` and the AppStream `<release>` entry when the release is tagged, and
-regenerate `generated-sources.json` from the same commit.
+`com.tailref.studio.yml` points at `tag: v1.4.4`, the first tag that contains
+`build/icon.png`, `build/linux/` and this directory (v1.4.2 predates them).
+Update `tag:` and the AppStream `<release>` entry when a newer release is
+tagged, and regenerate `generated-sources.json` from the same commit.
 
 ## License
 

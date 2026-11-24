@@ -1,6 +1,6 @@
-# TECHNICAL DEBT — TailRef Studio 1.4.3
+# TECHNICAL DEBT — TailRef Studio 1.4.4
 
-**Tarih:** 2026-11-23
+**Tarih:** 2026-11-23 · **Son doğrulama:** 2026-11-24
 **Kural:** Bu dosya yalnızca **bilinen ve kapatılmamış** borçları listeler.
 Her satırda neden kapatılmadığı ve kapatma ölçütü vardır. Kapatılanlar
 `FIXES_APPLIED.md` içindedir.

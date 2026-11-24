@@ -80,7 +80,7 @@ npx electron-builder --mac dmg --x64 --publish never
 
 ## Continuous integration
 
-The `macos` job in `.github/workflows/release.yml` runs on `macos-14` for every
+The `macos` job in `.github/workflows/release.yml` runs on `macos-15` for every
 tagged release and:
 
 1. builds the native module for `arm64`, packages and verifies the payload,

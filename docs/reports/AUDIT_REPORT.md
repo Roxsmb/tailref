@@ -1,6 +1,6 @@
-# AUDIT REPORT — TailRef Studio 1.4.3
+# AUDIT REPORT — TailRef Studio 1.4.4
 
-**Tarih:** 2026-11-23 · **Son doğrulama:** 2026-11-24 (tam zincir 85/85, yeniden deneme 0)
+**Tarih:** 2026-11-23 · **Son doğrulama:** 2026-11-24 (tam zincir 86/86; 2 kapı retry sonrası yeşil)
 **Kapsam:** Tüm depo (main, preload, renderer, native köprü, build/paketleme, test altyapısı)
 **Temel commit:** `c62c820` (inceleme sırasında çalışma ağacı değişiklikleriyle birlikte)
 **Ortam:** Windows 10.0.26300 x64 · Electron 45.4.1 · Node 26.8.2 · electron-builder 26.18.0 · node-gyp 12.4.0 · VS 2022 BuildTools · Python 3.14.5
@@ -20,10 +20,10 @@
 | Açık kalan hata | **4** — 2'si eksik özellik (Magic Wand, `.abr` dinamikleri), 1'i kod imzalama/dağıtım, 1'i sınırlı P3 |
 | Güvenlik sorunu | IPC gönderen doğrulaması kapatıldı (82/82 kanal) · 1 kabul edilen risk: kod imzalama bütçe nedeniyle beklemede; GPL OSS için SignPath Foundation başvuru paketi hazır · üretim bağımlılığı açığı 0 |
 | Performans sorunu | 3 kapatıldı (senkron `.tail`, 200 MB yedek parse'ı, 1 GB yedek okuma) · 2 açık (senkron native `tileSlice`, ölçüm tabanı yok) |
-| Eklenen test | 7 yeni kapı dosyası + 2 genişletme; **107 yeni assert**; zincir 85 kapı (30 PURE + 55 FULL) |
-| Test sonucu | PURE **30/30** · FULL **85/85** · başarısız 0 (ayrıntı: `TEST_COVERAGE_REPORT.md`) |
+| Eklenen test | 8 yeni kapı dosyası + genişletmeler; **171 yeni assert** (macOS kapısı dahil); zincir 86 kapı (31 PURE + 55 FULL) |
+| Test sonucu | PURE **31/31** · FULL **86/86** (2 kapı retry sonrası) · başarısız 0 (ayrıntı: `TEST_COVERAGE_REPORT.md`) |
 | Kalan kritik sorun | P0 yok. P1: kod imzalama (SignPath onayı), gerçek tablet + macOS/Linux doğrulaması |
-| Sonraki kilometre taşı | 1.4.3 sürümünü yayınla + SignPath başvurusunu gönder + ilk imzalı Windows build + gerçek tablet regresyon turu |
+| Sonraki kilometre taşı | 1.4.4 yayınlandı (2026-11-24) → SignPath başvurusunu gönder + ilk imzalı Windows build + gerçek tablet/macOS/Linux doğrulaması |
 | Karar | **CONDITIONALLY READY** (Windows beta için) |
 
 ---
@@ -77,7 +77,7 @@ Ayrıntılar aşağıda; uygulanan değişikliklerin tam listesi `FIXES_APPLIED.
 
 ## 3. Kullanıcının ilettiği "şu anki hata ve eksik listesi"
 
-Ekran görüntüsü: [`docs/audit/known-issues-2026-11-23.png`](docs/audit/known-issues-2026-11-23.png).
+Ekran görüntüsü: [`../audit/known-issues-2026-11-23.png`](../audit/known-issues-2026-11-23.png).
 Sekiz maddenin her biri kodda arandı; sonuç:
 
 | # | Kullanıcı maddesi | Bulgu | Yapılan |
@@ -198,7 +198,7 @@ Sekiz maddenin her biri kodda arandı; sonuç:
 - **Kanıt:** `tests/ipc-guard-test.js` 22/22; `tests/ipc-sender-gate-test.js`
   27/27 (kaynaktan 82 kanal ve panel-preload eşleşmesi);
   `tests/panel-window-test.js` 31/31; `tests/desktop-smoke.js` 20/20;
-  tam zincir 85/85.
+  tam zincir 86/86 (2 retry).
 - **Kalan risk:** Ana pencerenin kendi origin'i güvenilirdir; ana renderer'da
   kod çalıştırma zinciri kırılırsa o pencerenin kanalları açıktır. CSP +
   sandbox + dar preload bu zinciri kapalı tutar.
@@ -213,8 +213,8 @@ Sekiz maddenin her biri kodda arandı; sonuç:
 - **SignPath:** GPL-3.0-or-later uygunluğu nedeniyle ücretsiz foundation yolu
   seçildi; `docs/CODE_SIGNING.md` (politika, roller, gizlilik) ve
   `docs/SIGNPATH_APPLICATION.md` (uygunluk tablosu, form yanıtları, kalan
-  adımlar) hazır. Kalan: yayınlanmış 1.4.3, maintainer e-postası/MFA ve
-  SignPath hesabı.
+  adımlar) hazır. Kalan: maintainer e-postası/MFA ve SignPath hesabı
+  (v1.4.4 yayınlandı, 2026-11-24).
 - **Durum:** Açık (dağıtım/altyapı; kod düzeltmesi değil).
 
 ### TR-U01 · P2 · Karışık dil

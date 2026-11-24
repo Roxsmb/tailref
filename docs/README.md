@@ -26,8 +26,15 @@ material; some of it is historical and written in Turkish.
 | [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) | Short pre-flight list before a build |
 | [`CODE_SIGNING.md`](CODE_SIGNING.md) | Code signing policy: scope, roles, privacy, verification; current unsigned status |
 | [`SIGNPATH_APPLICATION.md`](SIGNPATH_APPLICATION.md) | Eligibility evidence and remaining steps for the free SignPath Foundation signing application |
-| [`PROJECT_AUDIT.md`](PROJECT_AUDIT.md) | The pre-publication audit: findings and resolutions |
 | [`LICENSE_MIGRATION.md`](LICENSE_MIGRATION.md) | The 2026 relicensing to GPL-3.0-or-later: audit, compatibility notes, open questions |
+
+## Reports
+
+Engineering reports from the audit rounds (internal, kept for traceability):
+
+| Document | What it covers |
+|---|---|
+| [`reports/`](reports/) | Index: audit, fixes, security, performance, technical debt and test coverage |
 
 ## Technical reference
 
@@ -53,6 +60,7 @@ the code disagree, the code is the source of truth.
 
 | Folder | Contents |
 |---|---|
+| [`reports/`](reports/) | Engineering reports: audit, fixes, security, performance, technical debt, test coverage |
 | [`todo/`](todo/) | Deferred work and redesign notes |
 | [`archive/`](archive/) | Historical documents kept for context, not current |
 | [`screenshots/`](screenshots/) | Screenshot guidelines and the public README images |

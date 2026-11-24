@@ -181,7 +181,8 @@ o günkü gerçek **28 pure / 83 toplam**.
 `run-gates.js` listelerinden **yorumları soyduktan sonra** türetir, her
 girişin dosyasının var olduğunu ve tekrarlanmadığını doğrular. IPC kapıları
 eklenince sayı **30 pure / 85 toplam** oldu ve belgeler aynı turda güncellendi
-(gate-docs-test bunu zorunlu kılar).
+(gate-docs-test bunu zorunlu kılar). 1.4.4 turunda macOS kapısı eklenince
+sayı **31 pure / 86 toplam** oldu.
 
 > Not: İlk denemede sayım yorumlardaki Türkçe kesme işaretlerini
 > ("Windows'ta") dosya adı sandı ve 29/84 üretti. Kapı bu tuzağı yakaladı;
@@ -491,7 +492,7 @@ alt çerçeve, yabancı origin, panel allowlist, trust iptali, uyarı sınırı.
 `node tests/ipc-sender-gate-test.js` → 27/27 · kaynaktan 82 kanal, sızan ham
 kayıt yok, panel-preload eşleşmesi, trust kancaları.
 `update-manager-test` 53/53, `ink-engine-host-check` yeşil,
-`panel-window-test` 31/31, `desktop-smoke` 20/20, tam zincir 85/85.
+`panel-window-test` 31/31, `desktop-smoke` 20/20, tam zincir 86/86 (2 retry).
 
 **Kalan risk:** Ana pencerenin kendi origin'i güvenilir kabul edilir. Ana
 renderer'da kod çalıştırma zinciri kırılırsa o pencerenin kanalları açıktır;
@@ -533,7 +534,7 @@ gerçekten odak ister). İki ardışık koşu 110/110, `deneme=1 · odak=true`.
   imzalanan/ imzalanmayan artefaktlar, gizlilik, ağ erişimi, kaldırma ve
   imza doğrulama komutu.
 - `docs/SIGNPATH_APPLICATION.md`: uygunluk tablosu (her şart → kanıt),
-  form için proje bilgileri, **engelleyici ön koşullar** (yayınlanmış 1.4.3
+  form için proje bilgileri, **engelleyici ön koşullar** (yayınlanmış 1.4.4
   sürümü, maintainer e-postası/MFA, SignPath hesabı), onay sonrası CI
   değişkenleri ve iki aşamalı imzalama notu.
 - README: "not code-signed" ifadesi "not code-signed yet" oldu, politika
@@ -567,7 +568,7 @@ dosyalar başvuruyu hızlandıran kanıt paketidir, imza değildir.
 4. `src/main/main.js`: `app.on('open-file')` — Finder `.tail` dosyasını argv'ye
    koymadığı için belge olayı dinlenir; açık pencereye devredilir, soğuk
    açılışta bekletilir. İkon seçimi `win32 ? icon.ico : icon.png`.
-5. `release.yml` → yeni `macos` işi (`macos-14`): iki mimari native derleme,
+5. `release.yml` → yeni `macos` işi (`macos-15`): iki mimari native derleme,
    iki DMG, `verify-package`, `lipo` ile Mach-O mimarisi, `PlistBuddy` ile
    `.tail` belge türü, `codesign --verify --deep --strict` + `Signature=adhoc`
    kontrolü, `hdiutil attach` ile imaj bağlama, artifact yükleme. `release` işi
@@ -588,7 +589,7 @@ dosyalar başvuruyu hızlandıran kanıt paketidir, imza değildir.
     çevrildi (locale ratchet 0'da kaldı).
 
 **Dürüst sınır:** macOS paketi bu Windows makinesinde **derlenmedi ve
-çalıştırılmadı**; DMG'ler ilk kez CI'da (`macos-14`) üretilecek. Bunu telafi
+çalıştırılmadı**; DMG'ler ilk kez CI'da (`macos-15`) üretilecek. Bunu telafi
 etmek için iş akışı paketi gerçekten başlatıyor (`scripts/launch-smoke.js`),
 ama bu script Mac'te değil, aynı mantıkla Windows paketine karşı burada
 doğrulandı (6/6). Etkileşimli çizim, paneller ve Finder'dan `.tail` açma hâlâ

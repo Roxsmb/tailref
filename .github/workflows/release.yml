@@ -399,7 +399,7 @@ jobs:
     # mac.identity "-" in package.json selects ad-hoc signing: no Apple
     # Developer ID is required, but the app is neither signed for distribution
     # nor notarized. See docs/MACOS.md.
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4

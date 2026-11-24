@@ -107,7 +107,11 @@ ok('build-native.js accepts x86_64 and aarch64 aliases',
 /* --- release pipeline --- */
 const release = read('.github/workflows/release.yml');
 ok('release workflow has the macos job', /^  macos:/m.test(release));
-ok('macos job runs on an Apple silicon runner', /runs-on: macos-14/.test(release));
+/* macos-14 arm64 imajı GitHub tarafından kaldırıldı ("configuration
+   'macos-14-arm64-us-default' is not supported"). Desteklenen arm64
+   etiketleri: macos-15, macos-26, macos-latest. */
+ok('macos job runs on a supported Apple silicon runner',
+  /runs-on: macos-(15|26|latest)\b/.test(release) && !/runs-on: macos-14\b/.test(release));
 ok('macos job builds the native module for both architectures',
   /build-native\.js --arch=arm64/.test(release) && /build-native\.js --arch=x64/.test(release));
 ok('macos job packages both disk images',

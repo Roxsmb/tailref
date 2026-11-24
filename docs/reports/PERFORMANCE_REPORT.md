@@ -1,6 +1,6 @@
-# PERFORMANCE REPORT — TailRef Studio 1.4.3
+# PERFORMANCE REPORT — TailRef Studio 1.4.4
 
-**Tarih:** 2026-11-23
+**Tarih:** 2026-11-23 · **Son doğrulama:** 2026-11-24
 **Ortam:** Windows 10.0.26300 x64 · Electron 45.4.1 · Node 26.8.2 · SSD
 **Yöntem:** kaynak analizi + bu makinede koşulan ölçümler. Profiler
 (RenderDoc/NSight/Chrome tracing) **koşulmadı**; aşağıda "ölçüldü" ve

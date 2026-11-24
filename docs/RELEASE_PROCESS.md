@@ -15,7 +15,7 @@ maintainer-facing procedure. For the older Windows-only notes see
 | `test` | `ubuntu-22.04` | Installs from the lockfile, rebuilds the renderer, verifies it is committed, runs the pure gates, audits production dependencies, compiles the Linux native module |
 | `windows` | `windows-latest` | Runs the full test suite, compiles the native module, builds NSIS + portable, verifies `app.asar`, `latest.yml` and `app-update.yml` |
 | `linux` | `ubuntu-22.04` | Builds AppImage + deb + rpm, verifies `app.asar`, rejects Windows binaries in the payload, inspects package contents, installs and removes the deb, smoke-launches the AppImage under Xvfb |
-| `macos` | `macos-14` | Compiles the native module for arm64 and x64, builds one DMG per architecture, verifies `app.asar`, Mach-O architecture, `.tail` document type and the ad-hoc signature, mounts both images and launches the packaged app |
+| `macos` | `macos-15` (arm64) | Compiles the native module for arm64 and x64, builds one DMG per architecture, verifies `app.asar`, Mach-O architecture, `.tail` document type and the ad-hoc signature, mounts both images and launches the packaged app |
 | `release` | `ubuntu-22.04` | Downloads all artifacts, confirms `latest-linux.yml` and `latest-mac.yml` are absent, writes `SHA256SUMS.txt`, generates release notes, creates the GitHub Release (a hidden draft on manual runs by default), re-checks the uploaded assets |
 
 `release` needs all five previous jobs. A failed build or a failed verification

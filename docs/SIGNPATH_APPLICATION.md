@@ -13,11 +13,11 @@ Source: <https://signpath.org/terms> (checked 2026-11-23).
 
 | Foundation condition | TailRef evidence | Status |
 |---|---|---|
-| No malware / unwanted programs | No telemetry, no adware, no bundleware; `SECURITY_REPORT.md`; production dependency audit is clean | Met |
+| No malware / unwanted programs | No telemetry, no adware, no bundleware; `reports/SECURITY_REPORT.md`; production dependency audit is clean | Met |
 | OSI-approved OSS license, no commercial dual licensing | GPL-3.0-or-later (`LICENSE`, `package.json`); no paid tier or proprietary add-on | Met |
 | No proprietary code | All application code is in the public repository; dependencies are OSS; Electron/Chromium are unmodified system libraries listed in `THIRD_PARTY_NOTICES.md` | Met |
-| Maintained | Active history through 2026-11-23; version 1.4.3 | Met |
-| **Released in the form to be signed** | **No public GitHub Release exists yet.** The release workflow is ready (`.github/workflows/release.yml`) but a tag has not been published | **Blocking - must publish 1.4.3 first** |
+| Maintained | Active history through 2026-11-24; version 1.4.4 | Met |
+| **Released in the form to be signed** | `v1.4.4` is tagged and the public workflow (`.github/workflows/release.yml`) builds the Windows, Linux and macOS artifacts from that tag | **Met** (confirm the public release page before submitting) |
 | Documented functionality | `README.md`, `docs/INSTALLATION.md`, `docs/LINUX_INSTALLATION.md`, feature and screenshot sections | Met |
 | Sign own binaries only | The Windows artifacts are built from this repository by GitHub Actions; no third-party binaries are signed with TailRef's certificate | Met |
 | No hacking / exploitation tools | Not applicable; TailRef is a drawing and reference tool | Met |
@@ -25,7 +25,7 @@ Source: <https://signpath.org/terms> (checked 2026-11-23).
 | Uninstallation | NSIS uninstaller registered in Windows Settings > Apps; user data is kept by design and documented | Met |
 | Code signing policy on the home page | `docs/CODE_SIGNING.md`, linked from the README | Met |
 | Product metadata | `productName: TailRef Studio`; version comes from `package.json` | Met |
-| GitHub-hosted CI only | `release.yml` uses `windows-latest` and `ubuntu-22.04` | Met |
+| GitHub-hosted CI only | `release.yml` uses `windows-latest`, `ubuntu-22.04` and `macos-15` | Met |
 | MFA on GitHub and SignPath | Required by policy; maintainer must confirm it is enabled before signing | **Maintainer confirmation needed** |
 | Manual approval per release | One approver role, assigned below | Met |
 
@@ -38,12 +38,12 @@ Source: <https://signpath.org/terms> (checked 2026-11-23).
 | License | GPL-3.0-or-later |
 | Short description | A free, offline reference board, drawing workspace and 3D pose reference for artists. Windows, Linux and macOS desktop app built with Electron. |
 | Home page / README | <https://github.com/Roxsmb/tailref#readme> |
-| Download / release page | <https://github.com/Roxsmb/tailref/releases> (publish 1.4.4 first) |
+| Download / release page | <https://github.com/Roxsmb/tailref/releases> |
 | Code signing policy | <https://github.com/Roxsmb/tailref/blob/main/docs/CODE_SIGNING.md> |
 | Privacy section | <https://github.com/Roxsmb/tailref/blob/main/docs/CODE_SIGNING.md#privacy> |
 | CI system | GitHub Actions |
 | Workflow | `.github/workflows/release.yml` |
-| Build runners | `windows-latest` (signing target), `ubuntu-22.04` (Linux artifacts) |
+| Build runners | `windows-latest` (signing target), `ubuntu-22.04` (Linux artifacts), `macos-15` (macOS artifacts) |
 | Artifacts to sign | `TailRef_Studio_Setup.exe` (NSIS installer), `TailRef_Studio.exe` (portable) |
 | Artifact configuration | To be created in SignPath after approval (Windows Authenticode, PE files) |
 | Signing policy | Manual approval; approver below |
@@ -62,21 +62,20 @@ Suggested project description (short version for the form):
 
 ## 3. What has to happen before submission
 
-1. **Publish a public 1.4.3 release.** The foundation requires an existing
-   release in the form to be signed. The working tree intentionally has no
-   commits yet (the audit was requested uncommitted), so this is a manual
-   maintainer step:
+1. **Publish a public 1.4.4 release.** The foundation requires an existing
+   release in the form to be signed. The release is produced by the public
+   workflow from the `v1.4.4` tag:
 
    ```powershell
-   git add -A
-   git commit -m "TailRef 1.4.3: audit fixes, IPC guard, signing policy"
-   git tag v1.4.3
-   git push origin main --tags
+   git tag -a v1.4.4 -m "TailRef 1.4.4"
+   git push origin main
+   git push origin v1.4.4
    ```
 
-   Then run the existing Release workflow (GitHub > Actions > Release >
-   Run workflow, `publish: true`) or push the tag. The release must include
-   the Windows installer, portable build and `SHA256SUMS.txt`.
+   Pushing the tag runs `release.yml`, which builds and verifies the Windows,
+   Linux and macOS artifacts and creates the GitHub Release. The release must
+   include the Windows installer, the portable build, the Linux packages, the
+   two macOS disk images and `SHA256SUMS.txt`.
 2. **Enable MFA on GitHub** (and keep it enabled). SignPath also requires MFA
    on the SignPath account.
 3. **Create a SignPath account** at <https://signpath.io/> with the maintainer
@@ -135,6 +134,6 @@ the first signed release is verified end to end.
 
 - [ ] E-mail address for the SignPath account and application form
 - [ ] Confirmation that GitHub MFA is enabled
-- [ ] Decision to publish the 1.4.3 GitHub Release (required before applying)
+- [x] Publish the 1.4.4 GitHub Release (tag `v1.4.4` pushed 2026-11-24)
 - [ ] SignPath account creation and acceptance of the foundation terms
 - [ ] After approval: organization ID, project slug, policy slug and API token

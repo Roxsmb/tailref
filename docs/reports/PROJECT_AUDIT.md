@@ -7,7 +7,7 @@ what was intentionally left alone.
 > **License note (2026-11-21).** This audit records the repository as it was
 > before the original GitHub publication. The project has since been relicensed
 > from PolyForm Noncommercial 1.0.0 to GPL-3.0-or-later. The licensing findings
-> below are kept as history; see [`LICENSE_MIGRATION.md`](LICENSE_MIGRATION.md)
+> below are kept as history; see [`../LICENSE_MIGRATION.md`](../LICENSE_MIGRATION.md)
 > for the current state.
 
 ## 1. Method
@@ -110,7 +110,7 @@ arbitrary remote content.
 
 - The license text as it stood during that audit (PolyForm Noncommercial 1.0.0,
   apart from the Required Notice line). It was replaced by GPL-3.0-or-later on
-  2026-11-21; see [`LICENSE_MIGRATION.md`](LICENSE_MIGRATION.md).
+  2026-11-21; see [`../LICENSE_MIGRATION.md`](../LICENSE_MIGRATION.md).
 - Third-party licenses and copyright notices (three.js, fflate, Electron,
   Chromium, fonts).
 - The drawing engine, persistence formats, IPC surface and UI behaviour.

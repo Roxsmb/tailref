@@ -16,7 +16,7 @@
 #
 # IMPORTANT: `tag:` must point at a release tag that contains the Linux
 # packaging files (build/icon.png, build/linux/, flatpak/). The v1.4.2 tag
-# predates them, so this manifest targets v1.4.3 or later. Update the tag when
+# predates them, so this manifest targets v1.4.4 or later. Update the tag when
 # a newer release exists (the sha256 values in flatpak/generated-sources.json
 # are already pinned to the Electron and npm versions in package-lock.json).
 

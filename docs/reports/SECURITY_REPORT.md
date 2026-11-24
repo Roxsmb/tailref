@@ -1,6 +1,6 @@
-# SECURITY REPORT — TailRef Studio 1.4.3
+# SECURITY REPORT — TailRef Studio 1.4.4
 
-**Tarih:** 2026-11-23
+**Tarih:** 2026-11-23 · **Son doğrulama:** 2026-11-24 (tam zincir 86/86)
 **Kapsam:** Electron ana süreç, preload köprüsü, renderer CSP, webview
 konukları, dosya yolu politikaları, güncelleme akışı, paketleme/fuses,
 bağımlılıklar.
@@ -57,7 +57,7 @@ kod imzası doğrulaması, macOS/Linux güvenlik testi.
   çerçeve, yabancı origin, panel allowlist, trust iptali, uyarı sınırı);
   `tests/ipc-sender-gate-test.js` 27/27 (kaynaktan 82 kanal, panel-preload
   eşleşmesi, trust kancaları); `tests/panel-window-test.js` 31/31;
-  `tests/desktop-smoke.js` 20/20; tam zincir 85/85.
+  `tests/desktop-smoke.js` 20/20; tam zincir 86/86 (2 retry).
 - **Kalan risk:** Doğrulama, ana pencerenin kendi origin'ini güvenilir kabul
   eder. Ana renderer'da kod çalıştırma zinciri kırılırsa o pencereye ait
   kanallar açıktır. CSP `script-src 'self'`, sandbox ve dar preload bu zinciri
@@ -74,8 +74,8 @@ kod imzası doğrulaması, macOS/Linux güvenlik testi.
 - **Durum:** Açık (altyapı/dağıtım; kod düzeltmesi değil). Ücretli sertifika
   bütçe dışı; GPL-3.0-or-later uygunluğu nedeniyle **SignPath Foundation**
   ücretsiz programına başvuru paketi hazırlandı: `docs/CODE_SIGNING.md` ve
-  `docs/SIGNPATH_APPLICATION.md`. Kalan ön koşullar: yayınlanmış 1.4.3
-  sürümü, maintainer e-postası/MFA onayı ve SignPath hesabı.
+  `docs/SIGNPATH_APPLICATION.md`. Kalan ön koşullar: maintainer e-postası/MFA
+  onayı ve SignPath hesabı (v1.4.4 yayınlandı, 2026-11-24).
 
 ### SEC-03 · P2 · Worker `eval` kaynağı
 
