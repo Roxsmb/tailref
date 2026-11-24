@@ -13,6 +13,7 @@ pnpm-debug.log*
 /dist-test/
 /dist-gumroad/
 /dist-itch/
+/dist-web/
 /dist_studio*/
 # NOTE: the generated bundles are committed on purpose so a fresh clone can be
 # verified against a build; only the root-level copies are ignored.

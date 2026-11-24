@@ -28,6 +28,7 @@
     "build:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --win dir",
     "build:linux": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --linux --publish never",
     "build:linux:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --linux dir",
+    "build:web": "node scripts/build-app.js && node scripts/build-web.js",
     "build:mac": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --mac --publish never",
     "build:mac:dir": "node scripts/build-app.js && node scripts/build-native.js && electron-builder --mac dir",
     "release:notes": "node scripts/release-notes.js",
