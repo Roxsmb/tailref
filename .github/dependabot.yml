@@ -18,6 +18,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    # node-gyp 13 dropped the toolchains Electron 45 builds with; the v13 PR
+    # (#5) failed the native build on both Windows and Linux. Revisit it as a
+    # dedicated migration, not as an automatic bump.
+    ignore:
+      - dependency-name: "node-gyp"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -29,3 +36,8 @@ updates:
       - "ci"
     commit-message:
       prefix: "ci"
+    # One reviewable PR for all Action bumps instead of five separate ones.
+    groups:
+      github-actions:
+        patterns:
+          - "*"

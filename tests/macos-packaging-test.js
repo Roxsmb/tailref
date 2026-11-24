@@ -120,6 +120,14 @@ ok('macos job packages both disk images',
 ok('macos job verifies both unpacked payloads',
   /verify-package\.js dist\/mac-arm64/.test(release) &&
   /verify-package\.js dist\/mac\b/.test(release));
+/* macOS arşivi .app paketinin içindedir; verify-package.js bu düzeni
+   çözmezse iş "app.asar bulunamadı" ile düşer (2026-11-24 koşusu). */
+const verifyPackage = read('scripts/verify-package.js');
+ok('verify-package.js resolves the macOS .app bundle layout',
+  /Contents', 'Resources', 'app\.asar'/.test(verifyPackage) &&
+  /endsWith\('\.app'\)/.test(verifyPackage));
+ok('verify-package.js derives the platform from the dist output folder',
+  /lastIndexOf\('dist'\)/.test(verifyPackage));
 ok('macos job validates the Mach-O architecture', /lipo -archs/.test(release));
 ok('macos job validates the .tail document type',
   /CFBundleDocumentTypes:0:CFBundleTypeExtensions:0/.test(release) &&

@@ -578,8 +578,9 @@ dosyalar başvuruyu hızlandıran kanıt paketidir, imza değildir.
    güncelleyici olmadığı, `shasum -a 256` örneği, sorun giderme maddesi.
 7. `docs/MACOS.md`: kurulum, Gatekeeper, yerel derleme, CI doğrulaması,
    Developer ID + notarization'a geçiş adımları, sınırlamalar.
-8. `tests/macos-packaging-test.js`: 64 assert — yapılandırma, entitlement'lar,
-   `--arch`, `open-file`, CI adımları, release notları, belge ve kapı sayıları.
+8. `tests/macos-packaging-test.js`: 66 assert — yapılandırma, entitlement'lar,
+   `--arch`, `open-file`, CI adımları, release notları, belge ve kapı sayıları;
+   `verify-package.js`'in macOS `.app/Contents/Resources` düzenini çözmesi.
 9. `scripts/launch-smoke.js`: paketlenmiş uygulamayı geçici veri klasöründe ve
    izole portta başlatıp `appReady`, pencere ölçüsü ve tahta sahnesini
    doğrulayan gerçek açılış kontrolü. `macos` işi DMG'den çıkardığı `.app`'e
@@ -626,8 +627,8 @@ INSTALLATION ve DEVELOPMENT belgeleri 1.4.4 ve macOS ile güncellendi.
 | `node scripts/run-gates.js` | 31/31 PURE |
 | `npm.cmd run gates:full` | **86/86** (31 PURE + 55 Electron/CDP) · 2 kapı ilk koşuda kırmızı, retry'de yeşil |
 | `node tests/linux-packaging-test.js` | 118/118 |
-| `node tests/macos-packaging-test.js` | 64/64 |
+| `node tests/macos-packaging-test.js` | 66/66 |
 | `node tests/locale-data-test.js` | 23/23 · 10 dil · 15087 anahtar · 0 çevrilmemiş |
-| `node tests/doc-links-test.js` | 183 yerel bağlantı temiz |
+| `node tests/doc-links-test.js` | 191 yerel bağlantı temiz |
 | `node scripts/launch-smoke.js --exe="dist/win-unpacked/TailRef Studio.exe"` | 6/6 (paket açılıyor, sahne çiziliyor) |
 | `npm.cmd run build:dir` | exit 0 · imzasız `dist/win-unpacked` yeniden üretildi |

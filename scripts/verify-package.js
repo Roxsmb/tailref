@@ -11,24 +11,39 @@ const asar = require('@electron/asar');
 const ROOT = path.join(__dirname, '..');
 /* Build çıktısı: package.json `build.directories.output` = dist
    Platforma göre paketlenmemiş dizin: Windows, Linux veya macOS.
-   İsteğe bağlı ilk argüman: app.asar ya da *-unpacked dizini. */
+   İsteğe bağlı ilk argüman: app.asar ya da *-unpacked / mac* dizini.
+
+   Windows ve Linux arşivi `<dizin>/resources/app.asar` altındadır. macOS'ta
+   electron-builder bir uygulama paketi üretir:
+   `<dizin>/TailRef Studio.app/Contents/Resources/app.asar`. Bu farkı
+   gözetmezsek yalnızca macOS'ta "app.asar bulunamadı" hatası çıkar. */
 const UNPACKED_DIRS = ['win-unpacked', 'linux-unpacked', 'mac', 'mac-arm64'];
+function archiveIn(dir) {
+  const direct = path.join(dir, 'resources', 'app.asar');
+  if (fs.existsSync(direct)) return direct;
+  if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) return direct;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory() || !entry.name.endsWith('.app')) continue;
+    const bundled = path.join(dir, entry.name, 'Contents', 'Resources', 'app.asar');
+    if (fs.existsSync(bundled)) return bundled;
+  }
+  return direct;
+}
 function candidateArchives() {
   const explicit = process.argv[2];
   if (explicit) {
     const resolved = path.resolve(explicit);
-    const asarPath = fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()
-      ? path.join(resolved, 'resources', 'app.asar')
-      : resolved;
-    return [asarPath];
+    const isDir = fs.existsSync(resolved) && fs.statSync(resolved).isDirectory();
+    return [isDir ? archiveIn(resolved) : resolved];
   }
   return UNPACKED_DIRS
-    .map(dir => path.join(ROOT, 'dist', dir, 'resources', 'app.asar'))
+    .map(dir => archiveIn(path.join(ROOT, 'dist', dir)))
     .filter(f => fs.existsSync(f));
 }
 const archiveCandidates = candidateArchives();
 if (!archiveCandidates.length) {
-  throw new Error('app.asar bulunamadi (dist/win-unpacked, dist/linux-unpacked veya dist/mac*)');
+  throw new Error('app.asar bulunamadi (dist/win-unpacked, dist/linux-unpacked, '
+    + 'dist/mac/ *.app/Contents/Resources veya dist/mac-arm64)');
 }
 const ARCHIVE = archiveCandidates[0];
 console.log('paket: ' + path.relative(ROOT, ARCHIVE));
@@ -81,12 +96,17 @@ const read = file => fs.readFileSync(path.join(ROOT, file));
 /* @electron/asar Windows'ta ters eğik çizgili yollar ister */
 const archivePath = f => f.split('/').join(path.sep);
 
-/* Paket dizininden hedef platformun ikili biçimini çıkar. */
-function expectedFormat(unpackedDir) {
-  const base = path.basename(unpackedDir).toLowerCase();
-  if (base.startsWith('win')) return 'pe';
-  if (base.startsWith('linux')) return 'elf';
-  if (base.startsWith('mac')) return 'macho';
+/* Paket dizininden hedef platformun ikili biçimini çıkar. macOS'ta arşiv
+   `dist/mac-arm64/*.app/Contents/Resources` içinde olduğu için iki üst
+   dizine bakmak yanıltıcıdır; platformu `dist/` altındaki çıktı dizininden
+   okuruz. */
+function expectedFormat(archive) {
+  const parts = path.resolve(archive).split(path.sep);
+  const distIndex = parts.lastIndexOf('dist');
+  const dirName = distIndex >= 0 ? String(parts[distIndex + 1] || '').toLowerCase() : '';
+  if (dirName.startsWith('win')) return 'pe';
+  if (dirName.startsWith('linux')) return 'elf';
+  if (dirName.startsWith('mac')) return 'macho';
   return null;
 }
 
@@ -132,11 +152,13 @@ function binaryFormat(head) {
   /* Yerel modül hedef platformun ikilisi mi?
      Windows'ta üretilmiş bir inkcore.node Linux paketine girerse uygulama
      sessizce JS yoluna düşer; bu kontrol onu paket hatası sayar.
-     Modül yoksa sorun değil: JS yedeği zaten desteklenen yol. */
-  const unpackedDir = path.dirname(path.dirname(ARCHIVE));
-  const nativePath = path.join(unpackedDir, 'resources', 'app.asar.unpacked',
+     Modül yoksa sorun değil: JS yedeği zaten desteklenen yol.
+     `app.asar.unpacked` her platformda arşivin yanındaki Resources
+     dizinindedir (macOS'ta `*.app/Contents/Resources`). */
+  const resourcesDir = path.dirname(ARCHIVE);
+  const nativePath = path.join(resourcesDir, 'app.asar.unpacked',
     'native', 'inkcore', 'build', 'Release', 'inkcore.node');
-  const expected = expectedFormat(unpackedDir);
+  const expected = expectedFormat(ARCHIVE);
   if (!fs.existsSync(nativePath)) {
     console.log('OK   native/inkcore · yok (JS yedeği kullanılır)');
   } else if (!expected) {

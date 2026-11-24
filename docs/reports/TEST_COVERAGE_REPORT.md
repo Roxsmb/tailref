@@ -58,9 +58,9 @@ kapısı asserti + 12 paket dosyası.
 | 25 | `shape-snap-check.js` | Şekil tanıma/iyileştirme | 95/95 |
 | 26 | `color-wheel-audit.js` | Çark grid doğruluğu | 6/6 |
 | 27 | `ui-package-validate.js` | Arayüz paketi CSS güvenliği | 14/14 |
-| 28 | `doc-links-test.js` | 175 yerel bağlantı | 1/1 |
+| 28 | `doc-links-test.js` | 191 yerel bağlantı | 1/1 |
 | 29 | `linux-packaging-test.js` | Linux/Flatpak/release statikleri | 118/118 |
-| 30 | `macos-packaging-test.js` | macOS DMG/entitlements/.tail/open-file/--arch/yayın işi + CI açılış smoke'u | 64/64 |
+| 30 | `macos-packaging-test.js` | macOS DMG/entitlements/.tail/open-file/--arch/yayın işi + CI açılış smoke'u + `.app` arşiv düzeni | 66/66 |
 | 31 | `verify-package.js` | `app.asar` ↔ çalışma ağacı (22 dosya) | PAKET GÜNCEL |
 
 > Not: `verify-package` yeniden üretilmiş `dist/win-unpacked` gerektirir.
@@ -186,7 +186,7 @@ yakalamak için çalıştığının kanıtıdır.
 |---|---|
 | `node scripts/run-gates.js` | **31/31 PURE yeşil** |
 | `npm.cmd run gates:full` | **86/86 yeşil** (31 PURE + 55 Electron/CDP; son kod üzerinde, yeniden üretilmiş asar ile; **2 kapı ilk koşuda kırmızı, retry'de yeşil**) |
-| `node tests/macos-packaging-test.js` | **64/64** (macOS yapılandırması, `.tail`, `--arch`, CI işi, açılış smoke, çeviri) |
+| `node tests/macos-packaging-test.js` | **66/66** (macOS yapılandırması, `.tail`, `--arch`, CI işi, açılış smoke, çeviri, `.app` arşiv düzeni) |
 | `node tests/linux-packaging-test.js` | **118/118** |
 | `node tests/locale-data-test.js` | **23/23** · 10 dil · **15087** anahtar · 0 çevrilmemiş |
 | `node scripts/verify-package.js` | 22 dosya · PAKET GÜNCEL (yeniden üretilmiş `dist/win-unpacked` ile) |
