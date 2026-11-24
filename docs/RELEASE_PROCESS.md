@@ -61,7 +61,12 @@ To prepare a release:
 
 ## What the pipeline publishes
 
-Windows assets keep their existing names, so the in-app updater keeps working:
+GitHub does not support folders inside a release, so every asset name starts
+with its platform. The list therefore groups itself, and the release notes
+repeat the same three sections. `latest.yml` keeps its exact name because the
+Windows updater looks it up; it points at the renamed installer.
+
+Windows assets:
 
 - `Windows-TailRef-<version>-Setup.exe`
 - `Windows-TailRef-<version>-Setup.exe.blockmap`
