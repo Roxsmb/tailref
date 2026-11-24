@@ -44,7 +44,7 @@ Source: <https://signpath.org/terms> (checked 2026-11-23).
 | CI system | GitHub Actions |
 | Workflow | `.github/workflows/release.yml` |
 | Build runners | `windows-latest` (signing target), `ubuntu-22.04` (Linux artifacts), `macos-15` (macOS artifacts) |
-| Artifacts to sign | `TailRef_Studio_Setup.exe` (NSIS installer), `TailRef_Studio.exe` (portable) |
+| Artifacts to sign | `Windows-TailRef-<version>-Setup.exe` (NSIS installer), `Windows-TailRef-<version>-Portable.exe` (portable) |
 | Artifact configuration | To be created in SignPath after approval (Windows Authenticode, PE files) |
 | Signing policy | Manual approval; approver below |
 | Committers and reviewers | Emre Melik Nameli ([@Roxsmb](https://github.com/Roxsmb)) |

@@ -218,8 +218,8 @@ scripts/build-app.js      core/*.js  →  src/renderer/app.js
 scripts/build-native.js   native/inkcore → .node (optional, falls back)
 scripts/build-locales.js  locale sources → locales/*.json
 electron-builder          src/** + native/** + LICENSE + NOTICE + notices
-                          → dist/TailRef_Studio.exe (portable)
-                          → dist/TailRef_Studio_Setup.exe (NSIS)
+                          → dist/Windows-TailRef-<version>-Portable.exe (portable)
+                          → dist/Windows-TailRef-<version>-Setup.exe (NSIS)
 ```
 
 `scripts/verify-package.js` opens `dist/win-unpacked/resources/app.asar` and

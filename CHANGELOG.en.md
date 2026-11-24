@@ -11,8 +11,8 @@ Add a `## [X.Y.Z] — YYYY-MM-DD` section here for every release.
 
 ### Added — macOS support
 
-- **macOS builds:** disk images for Apple silicon (`TailRef-1.4.4-arm64.dmg`)
-  and Intel (`TailRef-1.4.4-x64.dmg`). The configuration lives under
+- **macOS builds:** disk images for Apple silicon (`macOS-TailRef-1.4.4-arm64.dmg`)
+  and Intel (`macOS-TailRef-1.4.4-x64.dmg`). The configuration lives under
   `build.mac`; the release pipeline builds the native module for both
   architectures and produces one image per architecture.
 - **`.tail` file association:** a `CFBundleDocumentTypes` entry plus an
@@ -30,7 +30,17 @@ Add a `## [X.Y.Z] — YYYY-MM-DD` section here for every release.
   port, then verifies `appReady` and the board scene. A package that does not
   start cannot be released.
 
-### Fixed — settings and interface audit
+### Changed - platform-prefixed release assets
+
+Release assets are now named after the platform first, so the download list
+groups itself: `Windows-TailRef-<version>-Setup.exe` and
+`Windows-TailRef-<version>-Portable.exe`, `Linux-TailRef-<version>-x86_64.AppImage`,
+`Linux-TailRef-<version>-amd64.deb` and `Linux-TailRef-<version>-x86_64.rpm`,
+`macOS-TailRef-<version>-arm64.dmg` and `macOS-TailRef-<version>-x64.dmg`.
+`latest.yml` keeps its name because the Windows updater requires it; it points
+at the renamed installer, so in-app updates keep working.
+
+### Fixed - settings and interface audit
 
 - **High contrast never applied.** Its selector had the same specificity as the
   theme selector, so the colors were silently overridden.
@@ -62,7 +72,7 @@ Add a `## [X.Y.Z] — YYYY-MM-DD` section here for every release.
 ### Localization
 
 - The remaining 275 translation keys were closed in 8 languages: 10 languages,
-  15078 keys, no key falls back to English (`MAX_UNTRANSLATED = 0`).
+  15087 keys, no key falls back to English (`MAX_UNTRANSLATED = 0`).
 
 ## [1.4.3] — 2026-11-23
 

@@ -63,21 +63,21 @@ To prepare a release:
 
 Windows assets keep their existing names, so the in-app updater keeps working:
 
-- `TailRef_Studio_Setup.exe`
-- `TailRef_Studio_Setup.exe.blockmap`
-- `TailRef_Studio.exe`
+- `Windows-TailRef-<version>-Setup.exe`
+- `Windows-TailRef-<version>-Setup.exe.blockmap`
+- `Windows-TailRef-<version>-Portable.exe`
 - `latest.yml`
 
 Linux assets:
 
-- `TailRef-X.Y.Z.AppImage`
-- `tailref_X.Y.Z_amd64.deb`
-- `tailref-X.Y.Z.x86_64.rpm`
+- `Linux-TailRef-X.Y.Z-x86_64.AppImage`
+- `Linux-TailRef-X.Y.Z-amd64.deb`
+- `Linux-TailRef-X.Y.Z-x86_64.rpm`
 
 macOS assets:
 
-- `TailRef-X.Y.Z-arm64.dmg` (Apple silicon)
-- `TailRef-X.Y.Z-x64.dmg` (Intel)
+- `macOS-TailRef-X.Y.Z-arm64.dmg` (Apple silicon)
+- `macOS-TailRef-X.Y.Z-x64.dmg` (Intel)
 
 Plus `SHA256SUMS.txt` covering every file above.
 
@@ -151,10 +151,10 @@ After the workflow is green, check:
 1. The release page lists exactly these eight assets, including
    `SHA256SUMS.txt`.
 2. `sha256sum -c SHA256SUMS.txt` passes on a Linux machine.
-3. `TailRef_Studio_Setup.exe` updates an older installation (Windows).
+3. `Windows-TailRef-<version>-Setup.exe` updates an older installation (Windows).
 4. The AppImage starts on Ubuntu and on Fedora.
-5. `apt install ./tailref_X.Y.Z_amd64.deb` and
-   `dnf install ./tailref-X.Y.Z.x86_64.rpm` work, and double-clicking a `.tail`
+5. `apt install ./Linux-TailRef-X.Y.Z-amd64.deb` and
+   `dnf install ./Linux-TailRef-X.Y.Z-x86_64.rpm` work, and double-clicking a `.tail`
    file opens TailRef.
 6. `latest-linux.yml` is **absent** from the release assets.
 

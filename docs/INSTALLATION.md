@@ -13,7 +13,7 @@ Both are built from the same source.
 
 ### Portable build (recommended)
 
-1. Download `TailRef_Studio.exe` from the release page.
+1. Download `Windows-TailRef-<version>-Portable.exe` from the release page.
 2. Move it to a folder you control (for example `C:\Tools\TailRef\`).
 3. Run it. No installation, no admin rights.
 
@@ -23,7 +23,7 @@ copy your projects.
 
 ### Installer
 
-Download `TailRef_Studio_Setup.exe`, run it and choose an install directory.
+Download `Windows-TailRef-<version>-Setup.exe`, run it and choose an install directory.
 The installer can create desktop and Start Menu shortcuts. Uninstalling does
 **not** delete your project data by default.
 
@@ -38,7 +38,7 @@ The installed (NSIS) build updates itself from GitHub Releases:
   whether to save, restart without saving, or cancel.
 - You can turn automatic checks off in Settings → About.
 
-The portable `TailRef_Studio.exe` cannot replace itself. When an update exists,
+The portable `Windows-TailRef-<version>-Portable.exe` cannot replace itself. When an update exists,
 TailRef shows **Open download page**; download the new `.exe` and replace the
 old file. Your projects and preferences are kept.
 
@@ -58,7 +58,7 @@ To verify a download:
 2. In PowerShell:
 
    ```powershell
-   Get-FileHash .\TailRef_Studio.exe -Algorithm SHA256
+   Get-FileHash .\Windows-TailRef-<version>-Portable.exe -Algorithm SHA256
    ```
 
 3. Compare the two values. If they differ, do not run the file.
@@ -110,14 +110,14 @@ npm start
 
 ```bash
 npm run build:portable
-# → dist/TailRef_Studio.exe
+# → dist/Windows-TailRef-<version>-Portable.exe
 ```
 
 ### Build the installer
 
 ```bash
 npm run build:setup
-# → dist/TailRef_Studio_Setup.exe
+# → dist/Windows-TailRef-<version>-Setup.exe
 ```
 
 ### Verify a build

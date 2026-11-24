@@ -12,7 +12,7 @@ warning. Every release publishes `SHA256SUMS.txt`; verify a download before
 running it:
 
 ```powershell
-Get-FileHash .\TailRef_Studio_Setup.exe -Algorithm SHA256
+Get-FileHash .\Windows-TailRef-<version>-Setup.exe -Algorithm SHA256
 ```
 
 TailRef has prepared an application for the **SignPath Foundation** free
@@ -55,8 +55,8 @@ account and the SignPath account.
 
 | Artifact | Built by | Signed |
 |---|---|---|
-| `TailRef_Studio_Setup.exe` (NSIS installer) | GitHub Actions, Windows runner | Yes, once SignPath is active |
-| `TailRef_Studio.exe` (portable) | GitHub Actions, Windows runner | Yes, once SignPath is active |
+| `Windows-TailRef-<version>-Setup.exe` (NSIS installer) | GitHub Actions, Windows runner | Yes, once SignPath is active |
+| `Windows-TailRef-<version>-Portable.exe` (portable) | GitHub Actions, Windows runner | Yes, once SignPath is active |
 | Linux AppImage / deb / rpm / tar.gz | GitHub Actions, Ubuntu runner | Not applicable (no Windows Authenticode) |
 | `native/inkcore` (`inkcore.node`) | Built from `native/inkcore` in this repository | Covered by the signed package on Windows |
 
@@ -93,7 +93,7 @@ NSIS uninstaller is available from Windows Settings > Apps.
 After signing is active, check the signature:
 
 ```powershell
-Get-AuthenticodeSignature .\TailRef_Studio_Setup.exe |
+Get-AuthenticodeSignature .\Windows-TailRef-<version>-Setup.exe |
   Format-List Status, StatusMessage, SignerCertificate
 ```
 

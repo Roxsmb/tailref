@@ -126,7 +126,7 @@
       ]
     },
     "portable": {
-      "artifactName": "TailRef_Studio.exe"
+      "artifactName": "Windows-TailRef-${version}-Portable.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -138,7 +138,7 @@
       "shortcutName": "TailRef Studio",
       "uninstallDisplayName": "TailRef Studio",
       "deleteAppDataOnUninstall": false,
-      "artifactName": "TailRef_Studio_Setup.exe",
+      "artifactName": "Windows-TailRef-${version}-Setup.${ext}",
       "language": "1055",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
@@ -191,7 +191,7 @@
       }
     },
     "appImage": {
-      "artifactName": "TailRef-${version}.${ext}"
+      "artifactName": "Linux-TailRef-${version}-x86_64.${ext}"
     },
     "mac": {
       "icon": "build/icon.png",
@@ -219,10 +219,10 @@
       ]
     },
     "dmg": {
-      "artifactName": "TailRef-${version}-${arch}.${ext}"
+      "artifactName": "macOS-TailRef-${version}-${arch}.${ext}"
     },
     "deb": {
-      "artifactName": "tailref_${version}_${arch}.${ext}",
+      "artifactName": "Linux-TailRef-${version}-amd64.${ext}",
       "packageName": "tailref",
       "priority": "optional",
       "depends": [
@@ -240,7 +240,7 @@
       ]
     },
     "rpm": {
-      "artifactName": "tailref-${version}.${arch}.${ext}",
+      "artifactName": "Linux-TailRef-${version}-x86_64.${ext}",
       "packageName": "tailref",
       "depends": [
         "gtk3",

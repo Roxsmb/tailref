@@ -224,13 +224,13 @@ Get the latest build from the
 
 | File | What it is |
 |---|---|
-| `TailRef_Studio.exe` | Portable Windows build. Run it from any folder; no installation or admin rights. |
-| `TailRef_Studio_Setup.exe` | Windows installer with optional desktop and Start Menu shortcuts. |
-| `TailRef-<version>.AppImage` | Linux AppImage. One file, no installation. |
-| `tailref_<version>_amd64.deb` | Debian/Ubuntu package. Adds the menu entry and `.tail` association. |
-| `tailref-<version>.x86_64.rpm` | Fedora/openSUSE package. Adds the menu entry and `.tail` association. |
-| `TailRef-<version>-arm64.dmg` | macOS disk image for Apple silicon (M1 and later). |
-| `TailRef-<version>-x64.dmg` | macOS disk image for Intel Macs. |
+| `Windows-TailRef-<version>-Portable.exe` | Portable Windows build. Run it from any folder; no installation or admin rights. |
+| `Windows-TailRef-<version>-Setup.exe` | Windows installer with optional desktop and Start Menu shortcuts. |
+| `Linux-TailRef-<version>-x86_64.AppImage` | Linux AppImage. One file, no installation. |
+| `Linux-TailRef-<version>-amd64.deb` | Debian/Ubuntu package. Adds the menu entry and `.tail` association. |
+| `Linux-TailRef-<version>-x86_64.rpm` | Fedora/openSUSE package. Adds the menu entry and `.tail` association. |
+| `macOS-TailRef-<version>-arm64.dmg` | macOS disk image for Apple silicon (M1 and later). |
+| `macOS-TailRef-<version>-x64.dmg` | macOS disk image for Intel Macs. |
 | `SHA256SUMS.txt` | SHA-256 checksums for every file above. |
 
 Official builds are published on this repository's Releases page. Because
@@ -242,9 +242,9 @@ build you download.
 
 1. Download the build for your system.
 2. **Windows:** run the portable `.exe`, or the installer and follow the wizard.
-3. **Linux:** `chmod +x TailRef-<version>.AppImage && ./TailRef-<version>.AppImage`,
-   or `sudo apt install ./tailref_<version>_amd64.deb`, or
-   `sudo dnf install ./tailref-<version>.x86_64.rpm`.
+3. **Linux:** `chmod +x Linux-TailRef-<version>-x86_64.AppImage && ./Linux-TailRef-<version>-x86_64.AppImage`,
+   or `sudo apt install ./Linux-TailRef-<version>-amd64.deb`, or
+   `sudo dnf install ./Linux-TailRef-<version>-x86_64.rpm`.
 4. **macOS:** open the `.dmg`, drag **TailRef Studio** into `Applications`, then
    right-click the app → **Open** on the first launch (the build is ad-hoc
    signed, not notarized).
@@ -279,12 +279,12 @@ signing is active, verify every download with the checksums below.
 Verify a download before running it:
 
 ```powershell
-Get-FileHash .\TailRef_Studio.exe -Algorithm SHA256
+Get-FileHash .\Windows-TailRef-<version>-Portable.exe -Algorithm SHA256
 ```
 
 ```bash
-sha256sum TailRef-1.4.4.AppImage
-shasum -a 256 TailRef-1.4.4-arm64.dmg     # macOS
+sha256sum Linux-TailRef-1.4.4-x86_64.AppImage
+shasum -a 256 macOS-TailRef-1.4.4-arm64.dmg     # macOS
 sha256sum -c SHA256SUMS.txt --ignore-missing   # the files you downloaded
 ```
 

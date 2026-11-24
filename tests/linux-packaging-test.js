@@ -47,13 +47,13 @@ ok('all Linux targets are x64',
   linuxTargets.every((t) => !t.arch || (Array.isArray(t.arch) && t.arch.length === 1 && t.arch[0] === 'x64')));
 
 ok('AppImage artifact name',
-  build.appImage && build.appImage.artifactName === 'TailRef-${version}.${ext}',
+  build.appImage && build.appImage.artifactName === 'Linux-TailRef-${version}-x86_64.${ext}',
   build.appImage && build.appImage.artifactName);
 ok('deb artifact name',
-  build.deb && build.deb.artifactName === 'tailref_${version}_${arch}.${ext}',
+  build.deb && build.deb.artifactName === 'Linux-TailRef-${version}-amd64.${ext}',
   build.deb && build.deb.artifactName);
 ok('rpm artifact name',
-  build.rpm && build.rpm.artifactName === 'tailref-${version}.${arch}.${ext}',
+  build.rpm && build.rpm.artifactName === 'Linux-TailRef-${version}-x86_64.${ext}',
   build.rpm && build.rpm.artifactName);
 
 const assoc = (build.fileAssociations || [])[0] || {};
@@ -171,8 +171,8 @@ const winTargets = (build.win.target || []).map((t) => t.target);
 ok('Windows NSIS target kept', winTargets.includes('nsis'));
 ok('Windows portable target kept', winTargets.includes('portable'));
 ok('Windows artifact names unchanged',
-  build.nsis.artifactName === 'TailRef_Studio_Setup.exe' &&
-  build.portable.artifactName === 'TailRef_Studio.exe');
+  build.nsis.artifactName === 'Windows-TailRef-${version}-Setup.${ext}' &&
+  build.portable.artifactName === 'Windows-TailRef-${version}-Portable.${ext}');
 ok('GitHub publisher unchanged',
   build.publish && build.publish[0].provider === 'github' &&
   build.publish[0].owner === 'Roxsmb' && build.publish[0].repo === 'tailref');
@@ -331,9 +331,9 @@ for (const heading of ['## Windows', '## Linux', '## Requirements', '## Checksum
   ok(`release notes include "${heading}"`, notes.includes(heading));
 }
 ok('release notes name the Linux artifacts',
-  /TailRef-\$\{version\}\.AppImage/.test(notes) &&
-  /tailref_\$\{version\}_amd64\.deb/.test(notes) &&
-  /tailref-\$\{version\}\.x86_64\.rpm/.test(notes));
+  /Linux-TailRef-\$\{version\}-x86_64\.AppImage/.test(notes) &&
+  /Linux-TailRef-\$\{version\}-amd64\.deb/.test(notes) &&
+  /Linux-TailRef-\$\{version\}-x86_64\.rpm/.test(notes));
 ok('release notes state Linux auto-update is unavailable',
   /Automatic in-app updates are Windows-only/.test(notes));
 ok('release notes read the English changelog only',
@@ -355,8 +355,8 @@ ok('release notes embed the English changelog section for the current version',
 ok('release notes are English-only',
   !/[çğışöüÇĞİŞÖÜ]/.test(notesText), 'no Turkish letters');
 ok('release notes use the current version in the Linux file names',
-  notesText.includes(`TailRef-${pkg.version}.AppImage`) &&
-  notesText.includes(`tailref_${pkg.version}_amd64.deb`));
+  notesText.includes(`Linux-TailRef-${pkg.version}-x86_64.AppImage`) &&
+  notesText.includes(`Linux-TailRef-${pkg.version}-amd64.deb`));
 
 let missingSectionFailed = false;
 try {

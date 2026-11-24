@@ -55,7 +55,7 @@ ok('both Apple silicon and Intel are built',
 ok('no zip target (macOS has no in-app updater)',
   !macTargetNames.includes('zip'), macTargetNames.join(','));
 ok('dmg artifact name carries the architecture',
-  build.dmg && build.dmg.artifactName === 'TailRef-${version}-${arch}.${ext}',
+  build.dmg && build.dmg.artifactName === 'macOS-TailRef-${version}-${arch}.${ext}',
   build.dmg && build.dmg.artifactName);
 
 const macIcons = (mac.extraResources || []).map((r) => r.to);
@@ -137,7 +137,7 @@ ok('macos job mounts the produced images', /hdiutil attach/.test(release));
 ok('macos job rejects Windows binaries in the payload',
   /Windows binaries found in the macOS package/.test(release));
 ok('macos job uploads its artifacts',
-  /name: macos-release/.test(release) && /TailRef-\*-arm64\.dmg/.test(release));
+  /name: macos-release/.test(release) && /macOS-TailRef-\*-arm64\.dmg/.test(release));
 ok('release job waits for the macos job',
   /needs: \[prepare, test, windows, linux, macos\]/.test(release));
 ok('macos job drops the update feed', /rm -f dist\/latest-mac\.yml/.test(release));
@@ -156,20 +156,20 @@ ok('launch-smoke.js cleans up its process tree',
 ok('release job rejects latest-mac.yml',
   /if \[ -e latest-mac\.yml \]; then/.test(release));
 ok('checksums cover both macOS images',
-  /TailRef-\$\{VERSION\}-arm64\.dmg/.test(release) &&
-  /TailRef-\$\{VERSION\}-x64\.dmg/.test(release));
+  /macOS-TailRef-\$\{VERSION\}-arm64\.dmg/.test(release) &&
+  /macOS-TailRef-\$\{VERSION\}-x64\.dmg/.test(release));
 ok('release publishes both macOS images',
-  /"dist\/TailRef-\$\{VERSION\}-arm64\.dmg"/.test(release) &&
-  /"dist\/TailRef-\$\{VERSION\}-x64\.dmg"/.test(release));
+  /"dist\/macOS-TailRef-\$\{VERSION\}-arm64\.dmg"/.test(release) &&
+  /"dist\/macOS-TailRef-\$\{VERSION\}-x64\.dmg"/.test(release));
 ok('release verification expects both macOS images',
-  /"TailRef-\$\{VERSION\}-arm64\.dmg"/.test(release) &&
-  /"TailRef-\$\{VERSION\}-x64\.dmg"/.test(release));
+  /"macOS-TailRef-\$\{VERSION\}-arm64\.dmg"/.test(release) &&
+  /"macOS-TailRef-\$\{VERSION\}-x64\.dmg"/.test(release));
 
 /* --- release notes generator --- */
 const notes = read('scripts/release-notes.js');
 ok('release notes include a macOS section', notes.includes("lines.push('## macOS')"));
 ok('release notes name both macOS images',
-  /TailRef-\$\{version\}-arm64\.dmg/.test(notes) && /TailRef-\$\{version\}-x64\.dmg/.test(notes));
+  /macOS-TailRef-\$\{version\}-arm64\.dmg/.test(notes) && /macOS-TailRef-\$\{version\}-x64\.dmg/.test(notes));
 ok('release notes explain the missing notarization', /not notarized/.test(notes));
 ok('release notes give the quarantine command',
   /xattr -dr com\.apple\.quarantine/.test(notes));
@@ -191,8 +191,8 @@ ok('release notes generate for the current version', notesText.length > 0, notes
 ok('generated notes carry the macOS section',
   notesText.includes('## macOS') && notesText.includes('not notarized'));
 ok('generated notes use the current version in the macOS file names',
-  notesText.includes(`TailRef-${pkg.version}-arm64.dmg`) &&
-  notesText.includes(`TailRef-${pkg.version}-x64.dmg`));
+  notesText.includes(`macOS-TailRef-${pkg.version}-arm64.dmg`) &&
+  notesText.includes(`macOS-TailRef-${pkg.version}-x64.dmg`));
 
 /* --- documentation --- */
 ok('docs/MACOS.md exists', exists('docs/MACOS.md'));

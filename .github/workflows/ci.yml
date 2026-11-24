@@ -118,9 +118,9 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="$(node -p "require('./package.json').version")"
-          DEB="dist/tailref_${VERSION}_amd64.deb"
-          RPM="dist/tailref-${VERSION}.x86_64.rpm"
-          APPIMAGE="dist/TailRef-${VERSION}.AppImage"
+          DEB="dist/Linux-TailRef-${VERSION}-amd64.deb"
+          RPM="dist/Linux-TailRef-${VERSION}-x86_64.rpm"
+          APPIMAGE="dist/Linux-TailRef-${VERSION}-x86_64.AppImage"
           test -f "$DEB" && test -f "$RPM" && test -f "$APPIMAGE"
           DEB_LIST="$(dpkg-deb -c "$DEB")"
           RPM_LIST="$(rpm -qlp "$RPM")"
@@ -147,7 +147,7 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="$(node -p "require('./package.json').version")"
-          sudo apt-get install -y "./dist/tailref_${VERSION}_amd64.deb"
+          sudo apt-get install -y "./dist/Linux-TailRef-${VERSION}-amd64.deb"
           test -f /usr/share/mime/packages/tailref.xml
           grep -q '<glob pattern="\*\.tail"/>' /usr/share/mime/packages/tailref.xml
           grep -rl 'MimeType=application/x-tailref-board' /usr/share/applications/ | sed -n '1p'
@@ -164,7 +164,7 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="$(node -p "require('./package.json').version")"
-          APPIMAGE="dist/TailRef-${VERSION}.AppImage"
+          APPIMAGE="dist/Linux-TailRef-${VERSION}-x86_64.AppImage"
           chmod +x "$APPIMAGE"
           set +e
           xvfb-run -a --server-args="-screen 0 1280x800x24" \
@@ -187,6 +187,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
           path: |
-            dist/TailRef-*.AppImage
-            dist/tailref_*.deb
-            dist/tailref-*.rpm
+            dist/Linux-TailRef-*.AppImage
+            dist/Linux-TailRef-*.deb
+            dist/Linux-TailRef-*.rpm

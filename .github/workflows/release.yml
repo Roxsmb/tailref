@@ -189,9 +189,9 @@ jobs:
         run: |
           $version = "${{ needs.prepare.outputs.version }}"
           $required = @(
-            "dist/TailRef_Studio_Setup.exe",
-            "dist/TailRef_Studio_Setup.exe.blockmap",
-            "dist/TailRef_Studio.exe",
+            "dist/Windows-TailRef-$version-Setup.exe",
+            "dist/Windows-TailRef-$version-Setup.exe.blockmap",
+            "dist/Windows-TailRef-$version-Portable.exe",
             "dist/latest.yml",
             "dist/win-unpacked/resources/app-update.yml"
           )
@@ -202,7 +202,7 @@ jobs:
           if ($latest -notmatch "(?m)^version:\s*$([regex]::Escape($version))\s*$") {
             throw "latest.yml version does not match $version"
           }
-          if ($latest -notmatch "TailRef_Studio_Setup\.exe") {
+          if ($latest -notmatch "Windows-TailRef-$([regex]::Escape($version))-Setup\.exe") {
             throw "latest.yml does not reference the NSIS installer"
           }
           $updateYml = Get-Content dist/win-unpacked/resources/app-update.yml -Raw
@@ -217,9 +217,9 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: |
-            dist/TailRef_Studio_Setup.exe
-            dist/TailRef_Studio_Setup.exe.blockmap
-            dist/TailRef_Studio.exe
+            dist/Windows-TailRef-*-Setup.exe
+            dist/Windows-TailRef-*-Setup.exe.blockmap
+            dist/Windows-TailRef-*-Portable.exe
             dist/latest.yml
 
   linux:
@@ -282,9 +282,9 @@ jobs:
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -euo pipefail
-          APPIMAGE="dist/TailRef-${VERSION}.AppImage"
-          DEB="dist/tailref_${VERSION}_amd64.deb"
-          RPM="dist/tailref-${VERSION}.x86_64.rpm"
+          APPIMAGE="dist/Linux-TailRef-${VERSION}-x86_64.AppImage"
+          DEB="dist/Linux-TailRef-${VERSION}-amd64.deb"
+          RPM="dist/Linux-TailRef-${VERSION}-x86_64.rpm"
           for f in "$APPIMAGE" "$DEB" "$RPM"; do
             if [ ! -f "$f" ]; then echo "Missing artifact: $f" >&2; exit 1; fi
             echo "OK $f ($(stat -c%s "$f") bytes)"
@@ -339,7 +339,7 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${{ needs.prepare.outputs.version }}"
-          sudo apt-get install -y "./dist/tailref_${VERSION}_amd64.deb"
+          sudo apt-get install -y "./dist/Linux-TailRef-${VERSION}-amd64.deb"
           find /opt -maxdepth 3 -name tailref -type f | sed -n '1p'
           test -f /usr/share/mime/packages/tailref.xml
           grep -q 'application/x-tailref-board' /usr/share/mime/packages/tailref.xml
@@ -365,7 +365,7 @@ jobs:
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -euo pipefail
-          APPIMAGE="dist/TailRef-${VERSION}.AppImage"
+          APPIMAGE="dist/Linux-TailRef-${VERSION}-x86_64.AppImage"
           chmod +x "$APPIMAGE"
           set +e
           xvfb-run -a --server-args="-screen 0 1280x800x24" \
@@ -387,9 +387,9 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: |
-            dist/TailRef-*.AppImage
-            dist/tailref_*.deb
-            dist/tailref-*.rpm
+            dist/Linux-TailRef-*.AppImage
+            dist/Linux-TailRef-*.deb
+            dist/Linux-TailRef-*.rpm
 
   macos:
     name: Build and validate macOS artifacts
@@ -444,8 +444,8 @@ jobs:
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           set -euo pipefail
-          ARM="dist/TailRef-${VERSION}-arm64.dmg"
-          X64="dist/TailRef-${VERSION}-x64.dmg"
+          ARM="dist/macOS-TailRef-${VERSION}-arm64.dmg"
+          X64="dist/macOS-TailRef-${VERSION}-x64.dmg"
           for f in "$ARM" "$X64"; do
             if [ ! -f "$f" ]; then echo "Missing artifact: $f" >&2; exit 1; fi
             echo "OK $f ($(stat -f%z "$f") bytes)"
@@ -504,7 +504,7 @@ jobs:
         run: |
           set -euo pipefail
           for arch in arm64 x64; do
-            dmg="dist/TailRef-${VERSION}-${arch}.dmg"
+            dmg="dist/macOS-TailRef-${VERSION}-${arch}.dmg"
             mnt="$(mktemp -d)"
             hdiutil attach "$dmg" -mountpoint "$mnt" -nobrowse -readonly -quiet
             test -d "$mnt/TailRef Studio.app"
@@ -520,7 +520,7 @@ jobs:
           set -euo pipefail
           work="$(mktemp -d)"
           mnt="$(mktemp -d)"
-          dmg="dist/TailRef-${VERSION}-arm64.dmg"
+          dmg="dist/macOS-TailRef-${VERSION}-arm64.dmg"
           hdiutil attach "$dmg" -mountpoint "$mnt" -nobrowse -readonly -quiet
           cp -R "$mnt/TailRef Studio.app" "$work/"
           hdiutil detach "$mnt" -quiet
@@ -538,8 +538,8 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: |
-            dist/TailRef-*-arm64.dmg
-            dist/TailRef-*-x64.dmg
+            dist/macOS-TailRef-*-arm64.dmg
+            dist/macOS-TailRef-*-x64.dmg
 
   release:
     name: Create GitHub Release (draft or published)
@@ -586,15 +586,15 @@ jobs:
           fi
           ls -la
           sha256sum \
-            TailRef_Studio_Setup.exe \
-            TailRef_Studio_Setup.exe.blockmap \
-            TailRef_Studio.exe \
+            "Windows-TailRef-${VERSION}-Setup.exe" \
+            "Windows-TailRef-${VERSION}-Setup.exe.blockmap" \
+            "Windows-TailRef-${VERSION}-Portable.exe" \
             latest.yml \
-            "TailRef-${VERSION}.AppImage" \
-            "tailref_${VERSION}_amd64.deb" \
-            "tailref-${VERSION}.x86_64.rpm" \
-            "TailRef-${VERSION}-arm64.dmg" \
-            "TailRef-${VERSION}-x64.dmg" \
+            "Linux-TailRef-${VERSION}-x86_64.AppImage" \
+            "Linux-TailRef-${VERSION}-amd64.deb" \
+            "Linux-TailRef-${VERSION}-x86_64.rpm" \
+            "macOS-TailRef-${VERSION}-arm64.dmg" \
+            "macOS-TailRef-${VERSION}-x64.dmg" \
             > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
@@ -619,15 +619,15 @@ jobs:
           fi
           args=(
             "$TAG"
-            dist/TailRef_Studio_Setup.exe
-            dist/TailRef_Studio_Setup.exe.blockmap
-            dist/TailRef_Studio.exe
+            "dist/Windows-TailRef-${VERSION}-Setup.exe"
+            "dist/Windows-TailRef-${VERSION}-Setup.exe.blockmap"
+            "dist/Windows-TailRef-${VERSION}-Portable.exe"
             dist/latest.yml
-            "dist/TailRef-${VERSION}.AppImage"
-            "dist/tailref_${VERSION}_amd64.deb"
-            "dist/tailref-${VERSION}.x86_64.rpm"
-            "dist/TailRef-${VERSION}-arm64.dmg"
-            "dist/TailRef-${VERSION}-x64.dmg"
+            "dist/Linux-TailRef-${VERSION}-x86_64.AppImage"
+            "dist/Linux-TailRef-${VERSION}-amd64.deb"
+            "dist/Linux-TailRef-${VERSION}-x86_64.rpm"
+            "dist/macOS-TailRef-${VERSION}-arm64.dmg"
+            "dist/macOS-TailRef-${VERSION}-x64.dmg"
             dist/SHA256SUMS.txt
           )
           if [ "$DRAFT" = "true" ]; then
@@ -658,15 +658,15 @@ jobs:
         run: |
           set -euo pipefail
           expected=(
-            "TailRef_Studio_Setup.exe"
-            "TailRef_Studio_Setup.exe.blockmap"
-            "TailRef_Studio.exe"
+            "Windows-TailRef-${VERSION}-Setup.exe"
+            "Windows-TailRef-${VERSION}-Setup.exe.blockmap"
+            "Windows-TailRef-${VERSION}-Portable.exe"
             "latest.yml"
-            "TailRef-${VERSION}.AppImage"
-            "tailref_${VERSION}_amd64.deb"
-            "tailref-${VERSION}.x86_64.rpm"
-            "TailRef-${VERSION}-arm64.dmg"
-            "TailRef-${VERSION}-x64.dmg"
+            "Linux-TailRef-${VERSION}-x86_64.AppImage"
+            "Linux-TailRef-${VERSION}-amd64.deb"
+            "Linux-TailRef-${VERSION}-x86_64.rpm"
+            "macOS-TailRef-${VERSION}-arm64.dmg"
+            "macOS-TailRef-${VERSION}-x64.dmg"
             "SHA256SUMS.txt"
           )
           assets="$(gh release view "$TAG" --json assets --jq '.assets[].name')"

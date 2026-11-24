@@ -34,8 +34,8 @@ job layout and manual test builds are in
 ## Update metadata
 
 - [ ] `dist/latest.yml` exists and its `version` matches `package.json`.
-- [ ] `dist/latest.yml` references `TailRef_Studio_Setup.exe`.
-- [ ] `dist/TailRef_Studio_Setup.exe.blockmap` exists.
+- [ ] `dist/latest.yml` references `Windows-TailRef-<version>-Setup.exe`.
+- [ ] `dist/Windows-TailRef-<version>-Setup.exe.blockmap` exists.
 - [ ] `dist/win-unpacked/resources/app-update.yml` names provider `github`,
       owner `Roxsmb`, repo `tailref`.
 - [ ] `dist/latest-linux.yml` is **not** uploaded (Linux has no in-app updater).
@@ -63,11 +63,11 @@ job layout and manual test builds are in
       `windows`, `linux`, `release`).
 - [ ] Stable tag → release marked **latest**. Prerelease tag → marked
       **prerelease**, never latest.
-- [ ] Release contains `TailRef_Studio_Setup.exe`,
-      `TailRef_Studio_Setup.exe.blockmap`, `TailRef_Studio.exe`, `latest.yml`,
-      `TailRef-X.Y.Z.AppImage`, `tailref_X.Y.Z_amd64.deb`,
-      `tailref-X.Y.Z.x86_64.rpm`, `TailRef-X.Y.Z-arm64.dmg`,
-      `TailRef-X.Y.Z-x64.dmg` and `SHA256SUMS.txt`.
+- [ ] Release contains `Windows-TailRef-<version>-Setup.exe`,
+      `Windows-TailRef-<version>-Setup.exe.blockmap`, `Windows-TailRef-<version>-Portable.exe`, `latest.yml`,
+      `Linux-TailRef-X.Y.Z-x86_64.AppImage`, `Linux-TailRef-X.Y.Z-amd64.deb`,
+      `Linux-TailRef-X.Y.Z-x86_64.rpm`, `macOS-TailRef-X.Y.Z-arm64.dmg`,
+      `macOS-TailRef-X.Y.Z-x64.dmg` and `SHA256SUMS.txt`.
 - [ ] `latest-linux.yml` and `latest-mac.yml` are absent from the release assets.
 - [ ] Re-download the published files and confirm their checksums.
 - [ ] Release notes separate Windows, Linux and macOS downloads and state that

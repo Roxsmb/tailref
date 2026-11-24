@@ -139,8 +139,8 @@ Check the generated files:
 ```powershell
 Get-Content .\dist\latest.yml
 Get-Content .\dist\win-unpacked\resources\app-update.yml
-Get-FileHash .\dist\TailRef_Studio.exe -Algorithm SHA256
-Get-FileHash .\dist\TailRef_Studio_Setup.exe -Algorithm SHA256
+Get-FileHash .\dist\Windows-TailRef-<version>-Portable.exe -Algorithm SHA256
+Get-FileHash .\dist\Windows-TailRef-<version>-Setup.exe -Algorithm SHA256
 ```
 
 Launch `dist\win-unpacked\TailRef Studio.exe` and confirm Settings → About shows
@@ -171,12 +171,12 @@ release:
 
 - [ ] `https://github.com/Roxsmb/tailref/releases/latest` points at the intended
       stable release.
-- [ ] The release contains `TailRef_Studio_Setup.exe`,
-      `TailRef_Studio_Setup.exe.blockmap`, `TailRef_Studio.exe`, `latest.yml`,
-      `TailRef-X.Y.Z.AppImage`, `tailref_X.Y.Z_amd64.deb`,
-      `tailref-X.Y.Z.x86_64.rpm` and `SHA256SUMS.txt`.
+- [ ] The release contains `Windows-TailRef-<version>-Setup.exe`,
+      `Windows-TailRef-<version>-Setup.exe.blockmap`, `Windows-TailRef-<version>-Portable.exe`, `latest.yml`,
+      `Linux-TailRef-X.Y.Z-x86_64.AppImage`, `Linux-TailRef-X.Y.Z-amd64.deb`,
+      `Linux-TailRef-X.Y.Z-x86_64.rpm` and `SHA256SUMS.txt`.
 - [ ] `latest-linux.yml` is **absent**: Linux has no in-app updater.
-- [ ] `latest.yml` references `TailRef_Studio_Setup.exe` and the correct
+- [ ] `latest.yml` references `Windows-TailRef-<version>-Setup.exe` and the correct
       version.
 - [ ] Re-download the assets and compare their SHA-256 hashes.
 - [ ] The release notes render correctly and state the license

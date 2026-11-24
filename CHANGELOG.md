@@ -9,8 +9,8 @@ Format bu repo için sadeleştirilmiş Keep a Changelog'dur; sürümler
 
 ### Added — macOS desteği
 
-- **macOS paketleri:** Apple silicon (`TailRef-1.4.4-arm64.dmg`) ve Intel
-  (`TailRef-1.4.4-x64.dmg`) için disk imajları. Yapılandırma `build.mac`
+- **macOS paketleri:** Apple silicon (`macOS-TailRef-1.4.4-arm64.dmg`) ve Intel
+  (`macOS-TailRef-1.4.4-x64.dmg`) için disk imajları. Yapılandırma `build.mac`
   altında; yayın hattı `macos` işinde iki mimarinin yerel modülünü ayrı ayrı
   derleyip iki imajı üretiyor.
 - **`.tail` dosya ilişkilendirmesi:** `CFBundleDocumentTypes` kaydı ve
@@ -27,7 +27,18 @@ Format bu repo için sadeleştirilmiş Keep a Changelog'dur; sürümler
   `.app`'i geçici veri klasöründe ve izole portta başlatıp `appReady` ile tahta
   sahnesini doğruluyor. Açılmayan paket yayına çıkmıyor.
 
-### Fixed — ayar ve arayüz denetimi
+### Changed - platform önekli yayın dosyaları
+
+Yayın dosyaları artık platform adıyla başlıyor; indirme listesi kendiliğinden
+gruplanıyor: `Windows-TailRef-<sürüm>-Setup.exe` ve
+`Windows-TailRef-<sürüm>-Portable.exe`, `Linux-TailRef-<sürüm>-x86_64.AppImage`,
+`Linux-TailRef-<sürüm>-amd64.deb` ve `Linux-TailRef-<sürüm>-x86_64.rpm`,
+`macOS-TailRef-<sürüm>-arm64.dmg` ve `macOS-TailRef-<sürüm>-x64.dmg`.
+`latest.yml` adını koruyor (Windows güncelleyicisi bunu arar) ve yeniden
+adlandırılmış kurulumu gösterdiği için uygulama içi güncelleme çalışmaya devam
+ediyor.
+
+### Fixed - ayar ve arayüz denetimi
 
 - **Yüksek kontrast ayarı hiç uygulanmıyordu.** `html[data-hi-contrast]`
   seçicisi tema seçicisiyle aynı özgüllükteydi; renkler sessizce eziliyordu.
@@ -57,7 +68,7 @@ Format bu repo için sadeleştirilmiş Keep a Changelog'dur; sürümler
 
 ### Localization
 
-- Kalan 275 çeviri anahtarı 8 dilde kapatıldı: 10 dil, 15078 anahtar,
+- Kalan 275 çeviri anahtarı 8 dilde kapatıldı: 10 dil, 15087 anahtar,
   İngilizceye düşen anahtar yok (`MAX_UNTRANSLATED = 0`).
 
 ## [1.4.3] — 2026-11-23

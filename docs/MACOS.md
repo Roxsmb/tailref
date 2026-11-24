@@ -4,8 +4,8 @@ TailRef Studio ships as two disk images built from the same source tree:
 
 | File | Architecture | Runs on |
 |---|---|---|
-| `TailRef-<version>-arm64.dmg` | `arm64` | Apple silicon (M1 and later) |
-| `TailRef-<version>-x64.dmg` | `x86_64` | Intel Macs |
+| `macOS-TailRef-<version>-arm64.dmg` | `arm64` | Apple silicon (M1 and later) |
+| `macOS-TailRef-<version>-x64.dmg` | `x86_64` | Intel Macs |
 
 macOS 12 (Monterey) or newer. The app is not sandboxed and is not distributed
 through the Mac App Store.
@@ -126,8 +126,8 @@ claiming otherwise would be false.
 ## Verifying a downloaded image
 
 ```bash
-shasum -a 256 TailRef-<version>-arm64.dmg     # compare with SHA256SUMS.txt
-MNT="$(hdiutil attach -nobrowse -readonly TailRef-<version>-arm64.dmg \
+shasum -a 256 macOS-TailRef-<version>-arm64.dmg     # compare with SHA256SUMS.txt
+MNT="$(hdiutil attach -nobrowse -readonly macOS-TailRef-<version>-arm64.dmg \
   | awk -F'\t' '/\/Volumes\//{print $NF}')"
 codesign -dv "$MNT/TailRef Studio.app"
 codesign --verify --deep --strict "$MNT/TailRef Studio.app"
