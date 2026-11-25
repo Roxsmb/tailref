@@ -8,6 +8,7 @@
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Download TailRef Studio for Windows, Linux and macOS" src="https://img.shields.io/badge/Download-Windows%20%7C%20Linux%20%7C%20macOS-2F6FB0?style=for-the-badge&logo=linux&logoColor=white"></a>
   <a href="https://github.com/Roxsmb/tailref/releases/latest"><img alt="Latest version 1.4.4" src="https://img.shields.io/badge/version-1.4.4-1F6FEB?style=for-the-badge"></a>
   <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-2F6FB0?style=for-the-badge"></a>
+  <a href="https://tailref.github.io/"><img alt="TailRef Studio website" src="https://img.shields.io/badge/website-tailref.github.io-2F6FB0?style=for-the-badge&logo=githubpages&logoColor=white"></a>
   <a href="https://www.buymeacoffee.com/roxsmb"><img alt="Buy me a coffee" src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
 </p>
 
